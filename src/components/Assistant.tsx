@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight, ArrowUp, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { create } from 'zustand'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { nextActions } from '../lib/actions'
 import { isoDate } from '../lib/dates'
 import { api, errorMessage } from '../lib/api'
 import { isReportDone } from '../lib/reportRules'
 import { skillProgress } from '../lib/stats'
+import { useAssistant } from '../store/useAssistant'
 import { useStore } from '../store/useStore'
 import { openDialog, setPaletteOpen } from '../store/useUi'
 
@@ -26,9 +26,6 @@ interface Message {
 const STORE_KEY = 'swimtrack:assistant'
 const SUGGESTIONS = ['What should I do today?', 'How do I write report cards?', 'What are the Swimmer 4 skills?', 'How do I turn on two-factor?']
 
-/** Open state lives here so the phone top bar can open the panel too. `enabled` is null until the server answers. */
-export const useAssistant = create<{ open: boolean; enabled: boolean | null }>(() => ({ open: false, enabled: null }))
-export const openAssistant = () => useAssistant.setState({ open: true })
 const setOpen = (open: boolean) => useAssistant.setState({ open })
 
 /** Class summaries for the assistant: names, levels and counts only. Never swimmer names or records. */
