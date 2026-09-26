@@ -1,5 +1,5 @@
 import { Toaster } from 'sonner'
-import { useIsMobile } from '../../lib/hooks'
+import { usePhoneLayout } from '../../lib/hooks'
 import { useTheme } from '../../lib/theme'
 import { useUi } from '../../store/useUi'
 import { Button } from './Button'
@@ -9,7 +9,8 @@ import { Modal } from './Modal'
 export function Overlays() {
   const req = useUi((s) => s.confirmRequest)
   const theme = useTheme((s) => s.resolved)
-  const mobile = useIsMobile()
+  // Toasts move to the top wherever the bottom tab bar is showing.
+  const phone = usePhoneLayout()
 
   return (
     <>
@@ -35,8 +36,8 @@ export function Overlays() {
 
       <Toaster
         theme={theme}
-        position={mobile ? 'top-center' : 'bottom-right'}
-        offset={mobile ? 16 : 24}
+        position={phone ? 'top-center' : 'bottom-right'}
+        offset={phone ? 16 : 24}
         gap={10}
         toastOptions={{
           classNames: {

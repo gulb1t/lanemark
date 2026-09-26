@@ -158,11 +158,11 @@ export function Assistant() {
             whileTap={{ scale: 0.94 }}
             onClick={() => setOpen(true)}
             aria-label="Ask the SwimTrack assistant"
-            className="no-print btn-primary fixed bottom-[5.6rem] right-4 z-40 flex size-12 items-center justify-center gap-2 rounded-full sm:bottom-6 sm:right-6 sm:h-11 sm:w-auto sm:px-4"
+            className="no-print btn-primary fixed bottom-[5.6rem] right-4 z-40 flex size-12 items-center justify-center gap-2 rounded-full md:bottom-6 md:right-6 md:h-11 md:w-auto md:px-4"
             style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
           >
             <Sparkles size={17} />
-            <span className="hidden text-[14px] sm:inline">Ask</span>
+            <span className="hidden text-[14px] md:inline">Ask</span>
           </motion.button>
         )}
       </AnimatePresence>

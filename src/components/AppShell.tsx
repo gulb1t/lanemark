@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { BookOpen, LayoutGrid, LogOut, MailWarning, Moon, Search, Settings, Sparkles, Sun, Users, X } from 'lucide-react'
+import { BookOpen, LayoutGrid, LogOut, MailWarning, Moon, Plus, Search, Settings, Sparkles, Sun, UserPlus, Users, X } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom'
@@ -84,68 +84,12 @@ export default function AppShell() {
 
       {status === 'signedIn' && <VerifyEmailBanner />}
 
-      {/* Desktop: floating pill nav */}
-      <header className="no-print sticky top-3 z-30 mx-auto hidden w-[calc(100%-2rem)] max-w-6xl sm:block">
-        <div className="pill-nav flex h-14 items-center gap-2 rounded-2xl pl-3 pr-2">
-          <Link to="/app" className="mr-3 flex items-center gap-2.5" aria-label="SwimTrack home">
-            <Logo size={30} />
-            <Wordmark />
-          </Link>
-          <nav className="flex items-center gap-0.5" aria-label="Main">
-            {NAV.map(({ to, label, icon: Icon, end }) => (
-              <NavLink key={to} to={to} end={end} className="relative rounded-xl px-3 py-2 text-[13.5px] font-medium">
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <motion.span
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-xl bg-fg/[0.08] shadow-[inset_0_0_0_1px_var(--color-line)]"
-                        transition={{ type: 'spring', stiffness: 480, damping: 38 }}
-                      />
-                    )}
-                    <span className={`relative flex items-center gap-2 transition-colors ${isActive ? 'text-fg' : 'text-muted hover:text-fg'}`}>
-                      <Icon size={15} />
-                      {label}
-                    </span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="hidden h-9 items-center gap-2 rounded-xl border border-line bg-fg/[0.03] pl-3 pr-1.5 text-[13px] text-dim transition-colors hover:border-line-2 hover:text-muted md:flex"
-          >
-            <Search size={14} />
-            <span className="mr-6">Search or jump to…</span>
-            <Kbd>{isMac ? '⌘' : 'Ctrl'}</Kbd>
-            <Kbd>K</Kbd>
-          </button>
-          <button type="button" onClick={() => setPaletteOpen(true)} aria-label="Search" className="inline-flex size-9 items-center justify-center rounded-full text-muted hover:bg-fg/[0.07] hover:text-fg md:hidden">
-            <Search size={16} />
-          </button>
-          <SyncIndicator />
-          <ThemeToggle />
-          <UserMenu />
-        </div>
-      </header>
+      <DesktopNav />
 
-      {/* Mobile: compact top bar */}
-      <header className="no-print sticky top-0 z-30 border-b border-line bg-ink/75 backdrop-blur-xl sm:hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="flex h-14 items-center gap-2 px-4">
-          <Link to="/app" className="flex items-center gap-2" aria-label="SwimTrack home">
-            <Logo size={28} />
-            <Wordmark />
-          </Link>
-          <div className="flex-1" />
-          <SyncIndicator compact />
-          <UserMenu />
-        </div>
-      </header>
+      {/* Phones and small tablets: compact top bar, see-through until the page scrolls under it */}
+      <MobileBar />
 
-      <main id="main" tabIndex={-1} className="relative z-10 mx-auto w-full max-w-6xl flex-1 outline-none px-4 pb-28 pt-6 sm:px-6 sm:pb-12 sm:pt-10">
+      <main id="main" tabIndex={-1} className="relative z-10 mx-auto w-full max-w-6xl flex-1 outline-none px-4 pb-28 pt-6 sm:px-6 sm:pt-10 md:pb-12">
         <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
           {outlet}
         </motion.div>
@@ -153,7 +97,7 @@ export default function AppShell() {
 
       {/* Mobile: bottom tab bar */}
       <nav
-        className="no-print fixed inset-x-3 bottom-3 z-30 flex h-16 items-stretch justify-around rounded-2xl pill-nav sm:hidden"
+        className="no-print fixed inset-x-3 bottom-3 z-30 flex h-16 items-stretch justify-around rounded-2xl pill-nav md:hidden"
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Main"
       >
@@ -193,6 +137,138 @@ export default function AppShell() {
         {theme} theme
       </span>
     </div>
+  )
+}
+
+/** True once the page has scrolled a little, for bars that turn to glass when content slides under them. */
+function useScrolled(threshold = 8) {
+  const [scrolled, setScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > threshold)
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > threshold)
+    window.addEventListener('scroll', on, { passive: true })
+    return () => window.removeEventListener('scroll', on)
+  }, [threshold])
+  return scrolled
+}
+
+/**
+ * Desktop: a floating pill, like the landing page's. Clear at the top of the page, frosted glass once content scrolls
+ * under it. Links get a sliding hover highlight; the current page gets a filled pill and an aqua icon.
+ */
+function DesktopNav() {
+  const scrolled = useScrolled()
+  const [hover, setHover] = useState<string | null>(null)
+  return (
+    <header className="no-print sticky top-3 z-30 mx-auto hidden w-[calc(100%-2rem)] max-w-6xl md:block">
+      <div
+        className={`flex h-14 items-center gap-1 rounded-full pl-4 pr-2 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${scrolled ? 'pill-nav' : 'border border-transparent'}`}
+      >
+        <Link to="/app" className="flex shrink-0 items-center gap-2.5" aria-label="SwimTrack home">
+          <Logo size={28} />
+          <span className="max-lg:hidden">
+            <Wordmark />
+          </span>
+        </Link>
+        <span aria-hidden className="mx-3 h-5 w-px bg-line-2" />
+        <nav className="flex items-center" aria-label="Main" onMouseLeave={() => setHover(null)}>
+          {NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink key={to} to={to} end={end} onMouseEnter={() => setHover(to)} onFocus={() => setHover(to)} className="relative rounded-full px-3.5 py-2 text-[13.5px] font-medium">
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="app-nav-active"
+                      className="absolute inset-0 rounded-full bg-fg/[0.08] shadow-[inset_0_0_0_1px_var(--color-line)]"
+                      transition={{ type: 'spring', stiffness: 480, damping: 38 }}
+                    />
+                  )}
+                  {hover === to && !isActive && (
+                    <motion.span layoutId="app-nav-hover" className="absolute inset-0 rounded-full bg-fg/[0.05]" transition={{ type: 'spring', stiffness: 520, damping: 40 }} />
+                  )}
+                  <span className={`relative flex items-center gap-2 transition-colors ${isActive ? 'text-fg' : 'text-muted hover:text-fg'}`}>
+                    <Icon size={15} className={`transition-colors ${isActive ? 'text-aqua' : ''}`} />
+                    {label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="flex-1" />
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="Search or jump to"
+            className="flex h-9 items-center gap-2 rounded-full border border-line bg-fg/[0.03] pl-3 pr-1.5 text-[13px] text-dim transition-colors hover:border-line-2 hover:text-muted max-lg:w-9 max-lg:justify-center max-lg:px-0"
+          >
+            <Search size={14} />
+            <span className="mr-1 max-lg:hidden">Search</span>
+            <span className="flex gap-0.5 max-lg:hidden">
+              <Kbd>{isMac ? '⌘' : 'Ctrl'}</Kbd>
+              <Kbd>K</Kbd>
+            </span>
+          </button>
+          <NewMenu />
+          <span aria-hidden className="mx-1 h-5 w-px bg-line-2" />
+          <SyncIndicator />
+          <ThemeToggle />
+          <UserMenu />
+        </div>
+      </div>
+    </header>
+  )
+}
+
+/** "+ New": the two things people create, one click from any page. */
+function NewMenu() {
+  return (
+    <Popover
+      label="Create"
+      trigger={({ toggle, open }) => (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-label="New"
+          className="btn-primary ml-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full pl-3 pr-3.5 text-[13px] font-semibold max-md:w-9 max-md:px-0"
+        >
+          <Plus size={15} strokeWidth={2.5} className={`transition-transform duration-200 ${open ? 'rotate-45' : ''}`} />
+          <span className="max-md:hidden">New</span>
+        </button>
+      )}
+    >
+      {(close) => (
+        <>
+          <MenuItem icon={<LayoutGrid size={15} />} hint={<Kbd>N</Kbd>} onSelect={() => (close(), openDialog('newClass'))}>
+            New class
+          </MenuItem>
+          <MenuItem icon={<UserPlus size={15} />} onSelect={() => (close(), openDialog('newSwimmer'))}>
+            New swimmer
+          </MenuItem>
+        </>
+      )}
+    </Popover>
+  )
+}
+
+function MobileBar() {
+  const scrolled = useScrolled()
+  return (
+    <header
+      className={`no-print sticky top-0 z-30 border-b transition-[background-color,border-color,backdrop-filter] duration-300 md:hidden ${scrolled ? 'border-line bg-ink/75 backdrop-blur-xl' : 'border-transparent'}`}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
+      <div className="flex h-14 items-center gap-2 px-4">
+        <Link to="/app" className="flex items-center gap-2" aria-label="SwimTrack home">
+          <Logo size={28} />
+          <Wordmark />
+        </Link>
+        <div className="flex-1" />
+        <SyncIndicator compact />
+        <UserMenu />
+      </div>
+    </header>
   )
 }
 

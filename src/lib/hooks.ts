@@ -41,6 +41,8 @@ export function useMediaQuery(query: string): boolean {
 }
 
 export const useIsMobile = () => useMediaQuery('(max-width: 639px)')
+/** Below this width the app uses the phone layout: top bar plus bottom tabs. */
+export const usePhoneLayout = () => useMediaQuery('(max-width: 767px)')
 export const useReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)')
 
 export function useOnline(): boolean {
