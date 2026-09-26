@@ -21,6 +21,8 @@ import {
   ClassDoc,
   CodeBody,
   firstIssue,
+  SecurityPrefsBody,
+  VerifyLoginBody,
   ForgotBody,
   LoginBody,
   PasswordAndCodeBody,
@@ -37,6 +39,9 @@ const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
 const SESSION_TTL = 30 * DAY
+/** "Remember me" off: the cookie dies with the browser and the server forgets the session after 12 hours. */
+const SHORT_TTL = 12 * HOUR
+const TRUST_TTL = 30 * DAY
 const MFA_TTL = 5 * MINUTE
 const MFA_MAX_ATTEMPTS = 5
 const MAX_DOCS_PER_USER = 5000
@@ -68,6 +73,7 @@ export function publicUser(u: UserRecord) {
     email: u.email,
     name: u.name,
     emailVerified: Boolean(u.emailVerifiedAt),
+    trustDevices: u.trustDevices !== false,
     twoFactor: Boolean(u.totpSecretEnc),
     recoveryCodesLeft: u.recoveryCodes.length,
     createdAt: u.createdAt,
@@ -82,6 +88,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   const secure = config.production
   const SESSION_COOKIE = secure ? '__Host-st_session' : 'st_session'
   const MFA_COOKIE = secure ? '__Host-st_mfa' : 'st_mfa'
+  const TRUST_COOKIE = secure ? '__Host-st_trust' : 'st_trust'
 
   // ── helpers ───────────────────────────────────────────────────────
   const fail = (c: Ctx, status: 400 | 401 | 403 | 404 | 409 | 413 | 415 | 429, code: string, message: string) =>
@@ -114,8 +121,10 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   const cookieOpts = (maxAgeMs: number) =>
     ({ httpOnly: true, secure, sameSite: 'Lax', path: '/', maxAge: Math.floor(maxAgeMs / 1000) }) as const
+  /** No Max-Age: the browser drops it when it closes. */
+  const browserCookie = { httpOnly: true, secure, sameSite: 'Lax', path: '/' } as const
 
-  async function startSession(c: Ctx, user: UserRecord) {
+  async function startSession(c: Ctx, user: UserRecord, persistent = true) {
     const token = randomToken()
     const t = now()
     await repo.createSession({
@@ -127,10 +136,43 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       ip: maskIp(clientIp(c)),
       createdAt: t,
       lastSeenAt: t,
-      expiresAt: t + SESSION_TTL,
+      expiresAt: t + (persistent ? SESSION_TTL : SHORT_TTL),
+      attempts: 0,
+      persistent,
+    })
+    setCookie(c, SESSION_COOKIE, token, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
+  }
+
+  /** Remembers this device for 30 days so sign-ins here skip the authenticator code. */
+  async function trustDevice(c: Ctx, user: UserRecord) {
+    const token = randomToken()
+    const t = now()
+    await repo.createSession({
+      id: randomUUID(),
+      userId: user.id,
+      tokenHash: sha256(token),
+      kind: 'trusted',
+      userAgent: (c.req.header('user-agent') ?? '').slice(0, 300),
+      ip: maskIp(clientIp(c)),
+      createdAt: t,
+      lastSeenAt: t,
+      expiresAt: t + TRUST_TTL,
       attempts: 0,
     })
-    setCookie(c, SESSION_COOKIE, token, cookieOpts(SESSION_TTL))
+    setCookie(c, TRUST_COOKIE, token, cookieOpts(TRUST_TTL))
+  }
+
+  /** True when this browser carries a live trusted-device mark for this user. */
+  async function isTrusted(c: Ctx, user: UserRecord) {
+    if (user.trustDevices === false) return false
+    const token = getCookie(c, TRUST_COOKIE)
+    if (!token) return false
+    const rec = await repo.getSessionByTokenHash(sha256(token))
+    return Boolean(rec && rec.kind === 'trusted' && rec.userId === user.id && rec.expiresAt > now())
+  }
+
+  async function forgetTrustedDevices(userId: string) {
+    for (const s of await repo.listSessions(userId, 'trusted')) await repo.deleteSession(s.id)
   }
 
   const secretOf = (enc: string) => decrypt(config.secretKey, enc)
@@ -161,7 +203,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   const badLink = (c: Ctx) => fail(c, 400, 'invalid_link', 'This link has expired or was already used. Ask for a new one.')
   const notice = (to: string, subject: string, heading: string, text: string) =>
-    deliver(emails.notice(to, subject, heading, text, `${config.appUrl}/app/settings`))
+    deliver(emails.notice(to, subject, heading, text, `${config.appUrl}/forgot-password`))
 
   async function sendVerification(user: UserRecord) {
     deliver(emails.verify(user.email, user.name, await issueLink(user, 'verify-email', user.email, VERIFY_TTL)))
@@ -258,10 +300,11 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       return fail(c, 401, 'unauthenticated', 'Please sign in.')
     }
     if (t - session.lastSeenAt > HOUR) {
+      const persistent = session.persistent !== false
       session.lastSeenAt = t
-      session.expiresAt = t + SESSION_TTL
+      session.expiresAt = t + (persistent ? SESSION_TTL : SHORT_TTL)
       await repo.updateSession(session.id, { lastSeenAt: t, expiresAt: session.expiresAt })
-      setCookie(c, SESSION_COOKIE, token!, cookieOpts(SESSION_TTL))
+      setCookie(c, SESSION_COOKIE, token!, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
     }
     c.set('user', user)
     c.set('session', session)
@@ -315,8 +358,9 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     const ok = user ? await verifyPassword(data.password, user.passwordHash) : await fakeVerify(data.password)
     if (!user || !ok) return fail(c, 401, 'invalid_credentials', 'Incorrect email or password.')
     limiter.reset(`login:acct:${data.email}`)
+    const persistent = data.remember !== false
 
-    if (user.totpSecretEnc) {
+    if (user.totpSecretEnc && !(await isTrusted(c, user))) {
       const token = randomToken()
       const t = now()
       await repo.createSession({
@@ -330,16 +374,17 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
         lastSeenAt: t,
         expiresAt: t + MFA_TTL,
         attempts: 0,
+        persistent,
       })
       setCookie(c, MFA_COOKIE, token, cookieOpts(MFA_TTL))
-      return c.json({ twoFactor: true })
+      return c.json({ twoFactor: true, trustAllowed: user.trustDevices !== false })
     }
-    await startSession(c, user)
-    return c.json({ user: publicUser(user) })
+    await startSession(c, user, persistent)
+    return c.json({ user: publicUser(user), trustedDevice: Boolean(user.totpSecretEnc) })
   })
 
   app.post('/api/auth/login/verify', async (c) => {
-    const data = await body(c, CodeBody)
+    const data = await body(c, VerifyLoginBody)
     if (data instanceof Response) return data
     const wait = limiter.hit([[`mfa:ip:${clientIp(c)}`, 30, 15 * MINUTE]])
     if (wait) return tooMany(c, wait)
@@ -368,7 +413,8 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     }
     await repo.deleteSession(ticket.id)
     deleteCookie(c, MFA_COOKIE, { path: '/', secure })
-    await startSession(c, user)
+    await startSession(c, user, ticket.persistent !== false)
+    if (data.trust && user.trustDevices !== false) await trustDevice(c, user)
     const fresh = (await repo.getUserById(user.id))!
     return c.json({ user: publicUser(fresh), usedRecoveryCode: method === 'recovery' })
   })
@@ -520,10 +566,36 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ ok: true })
   })
 
+  app.patch('/api/account/security', async (c) => {
+    const data = await body(c, SecurityPrefsBody)
+    if (data instanceof Response) return data
+    const user = c.get('user')
+    await repo.updateUser(user.id, { trustDevices: data.trustDevices, updatedAt: now() })
+    if (!data.trustDevices) await forgetTrustedDevices(user.id)
+    return c.json({ user: publicUser({ ...user, trustDevices: data.trustDevices }) })
+  })
+
+  app.delete('/api/account/trusted-devices', async (c) => {
+    await forgetTrustedDevices(c.get('user').id)
+    deleteCookie(c, TRUST_COOKIE, { path: '/', secure })
+    return c.json({ ok: true })
+  })
+
+  // Signed in but can't remember the current password: mail a reset link to the account's own address.
+  app.post('/api/account/password/reset-link', async (c) => {
+    const user = c.get('user')
+    const wait = limiter.hit([[`forgot:acct:${user.id}`, 3, HOUR]])
+    if (wait) return tooMany(c, wait)
+    deliver(emails.reset(user.email, await issueLink(user, 'reset-password', user.email, RESET_TTL)))
+    return c.json({ ok: true, email: user.email })
+  })
+
   app.get('/api/account/sessions', async (c) => {
     const current = c.get('session').id
     const list = await repo.listSessions(c.get('user').id, 'session')
+    const trusted = (await repo.listSessions(c.get('user').id, 'trusted')).filter((s) => s.expiresAt > now())
     return c.json({
+      trusted: trusted.map((s) => ({ id: s.id, device: describeUserAgent(s.userAgent), createdAt: s.createdAt, expiresAt: s.expiresAt })),
       sessions: list
         .filter((s) => s.expiresAt > now())
         .sort((a, b) => b.lastSeenAt - a.lastSeenAt)
@@ -595,6 +667,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     const denied = await confirmIdentity(c, user, data.password, data.code)
     if (denied) return denied
     await repo.updateUser(user.id, { totpSecretEnc: null, totpPendingEnc: null, recoveryCodes: [], updatedAt: now() })
+    await forgetTrustedDevices(user.id)
     notice(user.email, 'Two-factor authentication was turned off', 'Two-factor authentication is off', 'Signing in to your account now only needs your password.')
     return c.json({ ok: true })
   })

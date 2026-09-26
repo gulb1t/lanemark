@@ -150,7 +150,7 @@ describe('two-factor authentication', () => {
     const { app, clock, secret } = await enable2fa()
     const c = client(app)
     const step1 = await c.post('/api/auth/login', { email: 'coach@example.com', password: PASSWORD })
-    expect(step1.json).toEqual({ twoFactor: true })
+    expect(step1.json).toMatchObject({ twoFactor: true })
     expect(c.jar.has('st_session')).toBe(false)
     expect((await c.get('/api/me')).status).toBe(401)
     const code = totp(secret, clock.t)

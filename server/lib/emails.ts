@@ -84,14 +84,14 @@ export const emails = {
       footnote: 'If you didn’t ask for this, you can ignore this email. Your password stays the same.',
     }),
 
-  notice: (to: string, subject: string, heading: string, body: string, settingsUrl: string) =>
+  notice: (to: string, subject: string, heading: string, body: string, resetUrl: string) =>
     render({
       to,
       subject,
       preview: body,
       heading,
-      paragraphs: [body, 'If this wasn’t you, reset your password straight away and sign out of your other devices from Settings.'],
-      action: { label: 'Review account security', url: settingsUrl },
+      paragraphs: [body, 'If this wasn’t you, reset your password now. Resetting signs every device out, then review Settings → Security.'],
+      action: { label: 'Reset my password', url: resetUrl },
       footnote: 'You’re getting this because it’s a security change to your SwimTrack account.',
     }),
 }

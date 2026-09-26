@@ -104,7 +104,7 @@ describe('password reset', () => {
     await tick()
     expect((await client(app).post('/api/auth/password/reset', { token: linkToken(mailer)!, password: NEW_PASSWORD })).status).toBe(200)
     const login = await client(app).post('/api/auth/login', { email: 'coach@example.com', password: NEW_PASSWORD })
-    expect(login.json).toEqual({ twoFactor: true })
+    expect(login.json).toMatchObject({ twoFactor: true })
   })
 })
 

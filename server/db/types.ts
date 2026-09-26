@@ -14,6 +14,8 @@ export interface UserRecord {
   recoveryCodes: string[]
   /** When the address was confirmed through an emailed link. Missing on accounts made before verification existed. */
   emailVerifiedAt?: number | null
+  /** Whether "don't ask for a code on this device for 30 days" is offered. Missing means yes. */
+  trustDevices?: boolean
   createdAt: number
   updatedAt: number
 }
@@ -35,13 +37,16 @@ export interface TokenRecord {
 
 /**
  * Server-side session. `kind: 'mfa'` rows are short-lived tickets issued after a correct password when the
- * account still needs its second factor.
+ * account still needs its second factor. `kind: 'trusted'` rows mark a device that may skip the second factor
+ * for 30 days; they never grant access on their own.
  */
 export interface SessionRecord {
   id: string
   userId: string
   tokenHash: string
-  kind: 'session' | 'mfa'
+  kind: 'session' | 'mfa' | 'trusted'
+  /** False for "don't remember me" sign-ins: a browser-session cookie and a short server-side lifetime. */
+  persistent?: boolean
   userAgent: string
   ip: string
   createdAt: number
