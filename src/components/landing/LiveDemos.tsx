@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useInView } from 'motion/react'
 import { Check, Clock, Cloud, CloudOff, Loader2, Minus, Search, ShieldCheck, Smartphone, Wifi, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { LEVEL_BY_ID, LEVELS, PROGRAMS } from '../../data/curriculum'
+import { generateComment } from '../../lib/report'
 import { Avatar } from '../ui/Avatar'
 import { LevelChip } from '../ui/bits'
 
@@ -113,8 +114,21 @@ export function LiveAttendance() {
 }
 
 // ── Report card typewriter ───────────────────────────────────────────
-const REPORT =
-  'Good effort this session, Noah. When doing your back crawl, remember to keep your body on your back. Also, for your whip kick on back, make sure your feet are always wider than your knees. Great job with your front crawl. Best of luck next session!'
+// Written by the real generator, so the landing page shows exactly what the app produces.
+const REPORT = (() => {
+  const skills = LEVEL_BY_ID.sw3.skills
+  const id = (prefix: string) => skills.find((s) => s.name.startsWith(prefix))?.id ?? ''
+  return generateComment({
+    name: 'Noah Patel',
+    passed: false,
+    praiseSkillId: id('Front crawl'),
+    focus: [
+      { skillId: id('Back crawl'), element: 'body' },
+      { skillId: id('Whip kick on back'), element: 'legs' },
+    ],
+    skills,
+  })
+})()
 export function LiveReport() {
   const { ref, n } = useTicker(28)
   const len = n % (REPORT.length + 90)

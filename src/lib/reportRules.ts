@@ -1,5 +1,5 @@
 import type { Enrollment, LevelDef, Skill } from '../types'
-import { plainSkillName, skillPhrase } from './report'
+import { plainSkillName, skillPhrase, skillWords } from './report'
 import { passedLevel, skillProgress } from './stats'
 
 /**
@@ -26,8 +26,9 @@ export function mentionedSkills(comment: string, skills: Skill[]): string[] {
   const text = comment.toLowerCase()
   const names = new Set<string>()
   for (const s of skills) {
-    // Comments use either the item name ("tread water") or how instructors say it ("treading").
-    for (const n of [plainSkillName(s.name), skillPhrase(s.name)]) {
+    // Comments use either the item name ("tread water") or how instructors say it ("treading", "treading water").
+    const words = skillWords(s.name)
+    for (const n of [plainSkillName(s.name), words.noun, words.verb ?? '']) {
       const name = n.toLowerCase()
       if (name.length >= 4 && text.includes(name)) names.add(skillPhrase(s.name).toLowerCase())
     }

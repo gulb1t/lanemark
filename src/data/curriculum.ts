@@ -341,7 +341,7 @@ export const LEVELS: LevelDef[] = [
         ['Surface dives', 'surfaceDives'],
         ['Lifesaving kick: eggbeater', 'eggbeater'],
         ['Lifesaving kick: scissor kick', 'scissor'],
-        ['Lifesaving kick: whip kick', 'breaststrokeS6'],
+        ['Lifesaving kick: whip kick', 'breaststrokeLegsS6'],
         ['Front crawl, 50 m', 'frontCrawlS6'],
         ['Back crawl, 50 m', 'backCrawlS6'],
         ['Breaststroke, 50 m', 'breaststrokeS6'],
