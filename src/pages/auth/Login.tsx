@@ -2,7 +2,7 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
-import { Field } from '../../components/ui/bits'
+import { Checkbox, Field } from '../../components/ui/bits'
 import { PasswordInput } from '../../components/ui/PasswordInput'
 import { errorMessage } from '../../lib/api'
 import { safeNext } from '../../lib/redirect'
@@ -15,6 +15,7 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
@@ -25,10 +26,10 @@ export default function Login() {
     setBusy(true)
     setError(null)
     try {
-      const res = await login(email, password)
-      if (res.twoFactor) navigate(`/login/verify?next=${encodeURIComponent(next)}`)
+      const res = await login(email, password, remember)
+      if (res.twoFactor) navigate(`/login/verify?next=${encodeURIComponent(next)}`, { state: { trustAllowed: res.trustAllowed } })
       else {
-        toast('Welcome back')
+        toast(res.trustedDevice ? 'Welcome back. This device is trusted, so no code was needed.' : 'Welcome back')
         navigate(next, { replace: true })
       }
     } catch (err) {
@@ -60,7 +61,10 @@ export default function Login() {
         <Field label="Password">
           <PasswordInput className="h-11" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
-        <div className="-mt-1 text-right">
+        <div className="-mt-1 flex items-center justify-between gap-3">
+          <Checkbox checked={remember} onChange={setRemember}>
+            Remember me for 30 days
+          </Checkbox>
           <Link to="/forgot-password" state={{ email }} className="text-[13px] font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
             Forgot password?
           </Link>

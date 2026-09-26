@@ -27,7 +27,7 @@ import { Button, ButtonLink } from '../components/ui/Button'
 import { CodeInput } from '../components/ui/CodeInput'
 import { Modal } from '../components/ui/Modal'
 import { PasswordInput, StrengthMeter } from '../components/ui/PasswordInput'
-import { Field, Spinner } from '../components/ui/bits'
+import { Field, Spinner, Switch } from '../components/ui/bits'
 import { api, errorMessage, type User } from '../lib/api'
 import { timeAgo, useNow } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
@@ -347,6 +347,39 @@ function SecuritySection() {
   )
 }
 
+/** Signed in but forgot the current password: email a reset link to the account's address. */
+function ResetLink() {
+  const [sent, setSent] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  async function send() {
+    setBusy(true)
+    try {
+      const res = await api<{ email: string }>('/account/password/reset-link', 'POST')
+      setSent(res.email)
+    } catch (err) {
+      toast(errorMessage(err), 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <p className="mt-5 border-t border-line pt-4 text-[13px] text-muted">
+      {sent ? (
+        <span className="inline-flex items-center gap-1.5 text-good">
+          <MailCheck size={14} /> Reset link sent to {sent}. It works once, for 30 minutes.
+        </span>
+      ) : (
+        <>
+          Can’t remember your current password?{' '}
+          <button type="button" onClick={() => void send()} disabled={busy} className="font-semibold text-fg underline-offset-4 hover:underline disabled:opacity-50">
+            Email me a reset link
+          </button>
+        </>
+      )}
+    </p>
+  )
+}
+
 function PasswordPanel({ user }: { user: User }) {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -392,7 +425,75 @@ function PasswordPanel({ user }: { user: User }) {
           </Button>
         </div>
       </form>
+      <ResetLink />
     </Panel>
+  )
+}
+
+/** "Don't ask on this device for 30 days": the account-wide switch and a way to forget every trusted device. */
+function TrustedDevices({ user }: { user: User }) {
+  const [count, setCount] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const enabled = user.trustDevices !== false
+
+  useEffect(() => {
+    let live = true
+    api<{ trusted: unknown[] }>('/account/sessions')
+      .then((r) => live && setCount(r.trusted.length))
+      .catch(() => live && setCount(null))
+    return () => {
+      live = false
+    }
+  }, [enabled])
+
+  async function toggle(next: boolean) {
+    setBusy(true)
+    try {
+      const res = await api<{ user: User }>('/account/security', 'PATCH', { trustDevices: next })
+      setUser(res.user)
+      toast(next ? 'Trusted devices can skip the code for 30 days' : 'Every sign-in will ask for a code')
+    } catch (err) {
+      toast(errorMessage(err), 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function forget() {
+    setBusy(true)
+    try {
+      await api('/account/trusted-devices', 'DELETE')
+      setCount(0)
+      toast('Trusted devices forgotten. Every device will ask for a code next time.')
+    } catch (err) {
+      toast(errorMessage(err), 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-5 rounded-2xl border border-line p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-[14.5px] font-semibold">Remember trusted devices</div>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted">When you tick “don’t ask for a code” at sign-in, that device skips the code for 30 days. Changing your password forgets every device.</p>
+        </div>
+        <Switch checked={enabled} onChange={(v) => void toggle(v)} disabled={busy} label="Remember trusted devices" />
+      </div>
+      {enabled && count !== null && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3 text-[13px] text-muted">
+          <span>
+            {count === 0 ? 'No trusted devices right now.' : `${count} trusted device${count === 1 ? '' : 's'}.`}
+          </span>
+          {count > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => void forget()} disabled={busy}>
+              Forget all
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -497,6 +598,8 @@ function TwoFactorPanel({ user }: { user: User }) {
             </Button>
           ))}
       </div>
+
+      {user.twoFactor && step === 'idle' && <TrustedDevices user={user} />}
 
       {user.twoFactor && user.recoveryCodesLeft <= 3 && step === 'idle' && (
         <p className="mt-3 flex items-center gap-2 text-[13px] text-warn">

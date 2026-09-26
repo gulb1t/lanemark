@@ -1,9 +1,9 @@
 import { ShieldCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { CodeInput } from '../../components/ui/CodeInput'
-import { Field } from '../../components/ui/bits'
+import { Checkbox, Field } from '../../components/ui/bits'
 import { ApiError, errorMessage } from '../../lib/api'
 import { safeNext } from '../../lib/redirect'
 import { verifyLogin } from '../../store/useSession'
@@ -18,13 +18,15 @@ export default function Verify() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
+  const trustAllowed = (useLocation().state as { trustAllowed?: boolean } | null)?.trustAllowed !== false
+  const [trust, setTrust] = useState(true)
 
   async function submit(value = code) {
     if (busy) return
     setBusy(true)
     setError(null)
     try {
-      const { usedRecoveryCode } = await verifyLogin(value)
+      const { usedRecoveryCode } = await verifyLogin(value, trustAllowed && trust)
       if (usedRecoveryCode) toast('Recovery code used. Generate new codes in Settings if you’re running low.')
       navigate(safeNext(params.get('next')), { replace: true })
     } catch (err) {
@@ -40,6 +42,12 @@ export default function Verify() {
       setBusy(false)
     }
   }
+
+  const trustBox = trustAllowed && (
+    <Checkbox checked={trust} onChange={setTrust}>
+      Don’t ask for a code on this device for 30 days
+    </Checkbox>
+  )
 
   return (
     <AuthLayout
@@ -58,6 +66,7 @@ export default function Verify() {
       {mode === 'totp' ? (
         <div className="space-y-5">
           <CodeInput value={code} onChange={setCode} onComplete={(v) => void submit(v)} disabled={busy} error={Boolean(error)} autoFocus />
+          {trustBox}
           <Button variant="primary" size="lg" className="w-full" loading={busy} disabled={code.length !== 6} onClick={() => void submit()}>
             Verify
           </Button>
@@ -73,6 +82,7 @@ export default function Verify() {
           <Field label="Recovery code">
             <input className="input h-11 font-mono tracking-wider" placeholder="xxxxx-xxxxx" value={code} onChange={(e) => setCode(e.target.value)} autoFocus autoComplete="off" spellCheck={false} />
           </Field>
+          {trustBox}
           <Button variant="primary" size="lg" type="submit" className="w-full" loading={busy} disabled={code.trim().length < 10}>
             Verify
           </Button>

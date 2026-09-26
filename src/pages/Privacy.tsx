@@ -25,7 +25,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
             ['Instructor account', 'Name, email address, a salted scrypt hash of the password (never the password itself), and the two-factor secret, encrypted with AES-256-GCM.'],
             ['Swimmers', 'Name, optional photo (shrunk on the device before upload), optional notes.'],
             ['Classes', 'Level, session, schedule, lesson dates and topics, attendance marks, skill marks, report card comments and the recommended next level.'],
-            ['Sessions', 'A hashed session token, the device’s browser name and a shortened IP address (the last part is dropped before saving), so you can see and sign out your devices.'],
+            ['Sessions', 'A hashed session token, the device’s browser name and a shortened IP address (the last part is dropped before saving), so you can see and sign out your devices. If you tick “don’t ask for a code on this device”, a hashed 30-day trusted-device mark is kept too.'],
             ['Emailed links', 'A hash of each confirm-email or reset-password link, deleted once it expires (24 hours or 30 minutes).'],
           ]}
         />

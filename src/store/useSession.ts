@@ -73,17 +73,17 @@ export async function bootstrap() {
   }
 }
 
-export type LoginResult = { twoFactor: true } | { twoFactor: false }
+export type LoginResult = { twoFactor: true; trustAllowed: boolean } | { twoFactor: false; trustedDevice: boolean }
 
-export async function login(email: string, password: string): Promise<LoginResult> {
-  const res = await api<{ user?: User; twoFactor?: boolean }>('/auth/login', 'POST', { email, password })
-  if (res.twoFactor) return { twoFactor: true }
+export async function login(email: string, password: string, remember = true): Promise<LoginResult> {
+  const res = await api<{ user?: User; twoFactor?: boolean; trustAllowed?: boolean; trustedDevice?: boolean }>('/auth/login', 'POST', { email, password, remember })
+  if (res.twoFactor) return { twoFactor: true, trustAllowed: res.trustAllowed !== false }
   await enter(res.user!)
-  return { twoFactor: false }
+  return { twoFactor: false, trustedDevice: Boolean(res.trustedDevice) }
 }
 
-export async function verifyLogin(code: string): Promise<{ usedRecoveryCode: boolean }> {
-  const res = await api<{ user: User; usedRecoveryCode: boolean }>('/auth/login/verify', 'POST', { code })
+export async function verifyLogin(code: string, trust = false): Promise<{ usedRecoveryCode: boolean }> {
+  const res = await api<{ user: User; usedRecoveryCode: boolean }>('/auth/login/verify', 'POST', { code, trust })
   await enter(res.user)
   return { usedRecoveryCode: res.usedRecoveryCode }
 }

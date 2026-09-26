@@ -235,3 +235,35 @@ export function Spinner({ size = 16 }: { size?: number }) {
     />
   )
 }
+
+/** Large, thumb-friendly checkbox with a label. */
+export function Checkbox({ checked, onChange, children, className = '' }: { checked: boolean; onChange: (v: boolean) => void; children: ReactNode; className?: string }) {
+  return (
+    <label className={`flex cursor-pointer select-none items-center gap-2.5 text-[13.5px] text-muted ${className}`}>
+      <input type="checkbox" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="flex size-5 shrink-0 items-center justify-center rounded-md border border-line-2 bg-panel text-ink transition-colors peer-checked:border-aqua peer-checked:bg-aqua peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-aqua">
+        <svg viewBox="0 0 12 12" className={`size-3 transition-transform ${checked ? 'scale-100' : 'scale-0'}`} aria-hidden>
+          <path d="M2.5 6.2l2.2 2.2L9.5 3.6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+      <span>{children}</span>
+    </label>
+  )
+}
+
+/** On/off toggle. */
+export function Switch({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors disabled:opacity-50 ${checked ? 'border-aqua bg-aqua' : 'border-line-2 bg-fg/[0.08]'}`}
+    >
+      <motion.span layout transition={{ type: 'spring', stiffness: 600, damping: 35 }} className={`block size-[18px] rounded-full bg-white shadow ${checked ? 'ml-[22px]' : 'ml-[2px]'}`} />
+    </button>
+  )
+}

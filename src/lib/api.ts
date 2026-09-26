@@ -27,6 +27,8 @@ export interface User {
   name: string
   /** Absent on a user restored from the offline cache. */
   emailVerified?: boolean
+  /** Whether 2FA sign-ins may trust a device for 30 days. */
+  trustDevices?: boolean
   twoFactor: boolean
   recoveryCodesLeft: number
   createdAt: number
