@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="4" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4ce8d4"/>
+      <stop offset="1" stop-color="#2f6bf2"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="32" y1="0" x2="32" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="17" fill="url(#bg)"/>
+  <rect width="64" height="64" rx="17" fill="url(#shine)"/>
+  <!-- a length of water that finishes as a check mark -->
+  <path d="M12 37.5c4.2-4.6 8.4-4.6 12.6 0s8.4 4.6 12.6 0L50.5 22" fill="none" stroke="#fff" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 48c4.2-4.6 8.4-4.6 12.6 0s8.4 4.6 12.6 0c4.2-4.6 8.4-4.6 12.6 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="4.2" stroke-linecap="round"/>
+</svg>

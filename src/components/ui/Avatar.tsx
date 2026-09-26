@@ -1,0 +1,42 @@
+import { initials } from '../../lib/stats'
+
+/** Stable hue derived from a name so a swimmer keeps the same colour everywhere. */
+function hueOf(name: string) {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360
+  return h
+}
+
+interface Props {
+  name: string
+  photo?: string
+  size?: number
+  className?: string
+}
+
+export function Avatar({ name, photo, size = 40, className = '' }: Props) {
+  const style = { width: size, height: size, fontSize: Math.max(10, size * 0.36) }
+  if (photo) {
+    return (
+      <img
+        src={photo}
+        alt={name}
+        style={style}
+        className={`shrink-0 rounded-full border border-fg/10 object-cover ${className}`}
+      />
+    )
+  }
+  const h = hueOf(name)
+  return (
+    <span
+      aria-hidden
+      style={{
+        ...style,
+        background: `linear-gradient(135deg, hsl(${h} 70% 42%), hsl(${(h + 50) % 360} 70% 30%))`,
+      }}
+      className={`inline-flex shrink-0 select-none items-center justify-center rounded-full border border-fg/10 font-semibold text-white/95 ${className}`}
+    >
+      {initials(name)}
+    </span>
+  )
+}

@@ -1,0 +1,72 @@
+import { useState, type FormEvent } from 'react'
+import { useStore } from '../../store/useStore'
+import { toast } from '../../store/useUi'
+import type { Swimmer } from '../../types'
+import { PhotoPicker } from '../PhotoPicker'
+import { Button } from '../ui/Button'
+import { Modal } from '../ui/Modal'
+import { Field } from '../ui/bits'
+
+interface Props {
+  /** Edit this swimmer; omit to create a new one. */
+  swimmer?: Swimmer
+  /** When creating, also enrol the new swimmer in this class. */
+  classId?: string
+  onClose: () => void
+  /** Called with the new swimmer's id after creating one. */
+  onCreated?: (id: string) => void
+}
+
+/** Mount to open, unmount (via onClose) to close. State initialises from props each time it mounts. */
+export function SwimmerDialog({ swimmer, classId, onClose, onCreated }: Props) {
+  const addSwimmer = useStore((s) => s.addSwimmer)
+  const updateSwimmer = useStore((s) => s.updateSwimmer)
+
+  const [name, setName] = useState(swimmer?.name ?? '')
+  const [notes, setNotes] = useState(swimmer?.notes ?? '')
+  const [photo, setPhoto] = useState(swimmer?.photo)
+
+  const valid = name.trim().length > 0
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!valid) return
+    if (swimmer) {
+      updateSwimmer(swimmer.id, { name: name.trim(), notes, photo })
+      toast('Swimmer updated')
+    } else {
+      const id = addSwimmer({ name, notes, photo }, classId)
+      toast(classId ? `${name.trim()} added to class` : 'Swimmer added')
+      if (onCreated) return onCreated(id)
+    }
+    onClose()
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={swimmer ? 'Edit swimmer' : 'New swimmer'}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit" form="swimmer-form" disabled={!valid}>
+            {swimmer ? 'Save changes' : classId ? 'Add to class' : 'Add swimmer'}
+          </Button>
+        </>
+      }
+    >
+      <form id="swimmer-form" onSubmit={submit} className="space-y-5">
+        <PhotoPicker name={name} photo={photo} onChange={setPhoto} />
+        <Field label="Full name">
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" autoFocus maxLength={120} />
+        </Field>
+        <Field label="Notes" hint="Private to you: allergies, goals, things to remember on deck.">
+          <textarea className="input min-h-24 resize-y" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={4000} />
+        </Field>
+      </form>
+    </Modal>
+  )
+}

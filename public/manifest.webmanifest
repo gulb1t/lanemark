@@ -1,0 +1,14 @@
+{
+  "name": "SwimTrack",
+  "short_name": "SwimTrack",
+  "description": "Attendance, lesson plans, skill check-offs and report cards for swim instructors.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#060709",
+  "theme_color": "#060709",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
