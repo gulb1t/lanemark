@@ -57,7 +57,8 @@ if (existsSync(join(config.staticDir, 'index.html'))) {
 const sweep = setInterval(() => repo.purgeExpiredSessions(Date.now()).catch(console.error), 60 * 60 * 1000)
 sweep.unref()
 
-const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
+// HOST=127.0.0.1 keeps the server off the network, e.g. when a tunnel on the same machine is the only way in.
+const server = serve({ fetch: app.fetch, port: config.port, hostname: process.env.HOST || undefined }, (info) => {
   console.log(`SwimTrack API on http://localhost:${info.port}  ·  storage: ${repo.kind}${config.production ? '  ·  production' : ''}`)
 })
 

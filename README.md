@@ -64,6 +64,14 @@ NODE_ENV=production APP_URL=https://swim.example.ca SECRET_KEY=$(openssl rand -b
 - With SQLite, give `DATA_DIR` a persistent volume. With Atlas, no disk is needed.
 - Behind a proxy, set `TRUST_PROXY=1` so rate limits see real client IPs.
 
+### Sharing it from your computer (phones, a quick demo)
+
+```bash
+npm run tunnel
+```
+
+Builds the app, opens a free Cloudflare quick tunnel (needs `cloudflared` installed) and starts the production server behind it, then prints a `https://….trycloudflare.com` address. Use this rather than tunnelling `npm run dev`: the dev server sends React's slow development build as hundreds of separate files, which stutters on phones. The address changes every run and is filled in as `APP_URL` for you. Accounts are the same as in development (same `data` folder), but you'll sign in again because production cookies are separate. `npm run tunnel -- --no-build` skips the build.
+
 ## Architecture
 
 ```
