@@ -226,10 +226,13 @@ export function Caustics({
     }
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Slow water looks the same at 30 fps, and on phones that halves the GPU and battery cost.
+    const halfRate = window.matchMedia('(pointer: coarse)').matches
     let frame = 0
+    let tick = 0
     let visible = true
     const loop = () => {
-      draw()
+      if (!halfRate || tick++ % 2 === 0) draw()
       frame = requestAnimationFrame(loop)
     }
     const run = () => {

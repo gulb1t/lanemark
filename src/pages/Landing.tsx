@@ -233,7 +233,8 @@ function SkillMarquee() {
   return (
     <section className="mask-fade-x mt-24 space-y-3 overflow-hidden" aria-label="Some of the skills SwimTrack tracks">
       {rows.map((row, r) => (
-        <div key={r} className={`flex w-max gap-3 [--marquee-duration:70s] [--marquee-gap:0.75rem] hover:[animation-play-state:paused] ${r ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
+        // The trailing padding matches the gap, so shifting by exactly half loops seamlessly.
+        <div key={r} className={`flex w-max gap-3 pr-3 [--marquee-duration:70s] hover:[animation-play-state:paused] ${r ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
           {[...row, ...row].map((s, i) => (
             <span key={i} className="whitespace-nowrap rounded-xl border border-line bg-panel/70 px-3.5 py-2 text-[13px] text-muted">
               {s}
@@ -369,6 +370,8 @@ function SessionStory() {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 70%', 'end 60%'] })
   const fill = useTransform(scrollYProgress, [0, 1], [0, 1])
+  // Filling the line as you scroll measures the page every frame; phones get the finished line instead.
+  const [linked] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches)
   return (
     <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-4 pt-36">
       <div className="grid grid-cols-[minmax(0,1fr)] gap-12 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -379,7 +382,11 @@ function SessionStory() {
         </div>
         <div ref={ref} className="relative">
           <div className="absolute bottom-6 left-[1.1rem] top-6 w-px bg-line" aria-hidden>
-            <motion.div style={{ scaleY: fill }} className="h-full w-full origin-top bg-gradient-to-b from-aqua to-blue" />
+            {linked ? (
+              <motion.div style={{ scaleY: fill }} className="h-full w-full origin-top bg-gradient-to-b from-aqua to-blue" />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-b from-aqua to-blue opacity-60" />
+            )}
           </div>
           <ol className="space-y-6">
             {STORY.map((s, i) => (
@@ -513,7 +520,7 @@ function BorderBeam() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] p-px [mask:linear-gradient(#000_0_0)_content-box_exclude,linear-gradient(#000_0_0)]" aria-hidden>
       <div className="absolute left-1/2 top-1/2 aspect-square w-[160%] -translate-x-1/2 -translate-y-1/2">
-        <div className="h-full w-full animate-spin-slow bg-[conic-gradient(from_0deg,transparent_0_70%,var(--color-aqua)_88%,var(--color-blue)_94%,transparent_100%)]" />
+        <div className="beam-spin h-full w-full animate-spin-slow bg-[conic-gradient(from_0deg,transparent_0_70%,var(--color-aqua)_88%,var(--color-blue)_94%,transparent_100%)]" />
       </div>
     </div>
   )

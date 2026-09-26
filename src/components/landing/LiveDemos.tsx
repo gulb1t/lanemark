@@ -64,14 +64,12 @@ function Row({ name, r, step }: { name: string; r: number; step: number }) {
         const incomplete = (r * 7 + c * 3) % 11 === 0
         return (
           <div key={c} className="flex items-center justify-center border-b border-line/60 py-1.5">
-            <motion.div
-              initial={false}
-              animate={on ? { scale: [0.6, 1.15, 1], opacity: 1 } : { scale: 1, opacity: 1 }}
-              transition={{ duration: 0.35 }}
-              className={`flex size-6 items-center justify-center rounded-md border ${on ? (incomplete ? 'border-bad/40 bg-bad/15 text-bad' : 'border-good/40 bg-good/15 text-good') : 'border-dashed border-line-2'}`}
+            {/* A CSS pop rather than a JS animation: this grid re-renders four times a second. */}
+            <div
+              className={`flex size-6 items-center justify-center rounded-md border ${on ? `pop ${incomplete ? 'border-bad/40 bg-bad/15 text-bad' : 'border-good/40 bg-good/15 text-good'}` : 'border-dashed border-line-2'}`}
             >
               {on && (incomplete ? <Minus size={12} strokeWidth={3} /> : <Check size={12} strokeWidth={3} />)}
-            </motion.div>
+            </div>
           </div>
         )
       })}
@@ -238,7 +236,8 @@ export function LiveTwoFactor() {
         </motion.div>
       </AnimatePresence>
       <div className="h-1 w-32 overflow-hidden rounded-full bg-fg/10">
-        <motion.div className="h-full bg-aqua" animate={{ width: `${(1 - progress) * 100}%` }} transition={{ duration: 0.9, ease: 'linear' }} />
+        {/* scaleX, not width: this bar never stops moving, and animating width re-lays out the page every frame. */}
+        <div className="h-full origin-left bg-aqua transition-transform duration-[900ms] ease-linear" style={{ transform: `scaleX(${1 - progress})` }} />
       </div>
     </div>
   )
@@ -285,18 +284,14 @@ export function LiveSearch() {
 export function LevelCloud() {
   return (
     <div className="flex flex-wrap gap-1.5">
-      {LEVELS.map((l, i) => (
-        <motion.span
+      {LEVELS.map((l) => (
+        <span
           key={l.id}
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.03, type: 'spring', stiffness: 300, damping: 20 }}
           className="rounded-lg border px-2 py-1 font-mono text-[11px]"
           style={{ color: PROGRAMS[l.program].hue, borderColor: `color-mix(in oklab, ${PROGRAMS[l.program].hue} 35%, transparent)` }}
         >
           {l.short}
-        </motion.span>
+        </span>
       ))}
     </div>
   )

@@ -56,8 +56,9 @@
   to { background-position: -200% 0; }
 }
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(-50% - var(--marquee-gap, 1rem) / 2)); }
+  from { transform: translate3d(0, 0, 0); }
+  /* No var() in here: that would keep the animation off the compositor. Rows pad their end by one gap instead. */
+  to { transform: translate3d(-50%, 0, 0); }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -79,6 +80,15 @@
   0% { transform: translate3d(0, 0, 0) rotate(0deg); }
   50% { transform: translate3d(1.5%, -4%, 0) rotate(5deg); }
   100% { transform: translate3d(-1.5%, 3%, 0) rotate(-4deg); }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 @keyframes shine {
   to { background-position: -200% 0; }
@@ -497,6 +507,13 @@ dialog::backdrop {
     animation: floaty 18s ease-in-out infinite alternate;
     will-change: transform;
   }
+  .pop {
+    animation: pop 0.35s ease-out;
+  }
+  .tab-fill {
+    animation: grow-x linear forwards;
+  }
+
   .floaties-paused .floaty {
     animation-play-state: paused;
   }
@@ -731,5 +748,17 @@ dialog::backdrop {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Phones: the accent shimmer and the border beam repaint every frame for as long as the page is open, which costs
+ * more than they add on a small screen. The gradient and the beam stay; they just hold still. Unlayered, so it
+ * outranks the animation utilities.
+ */
+@media (hover: none) {
+  .accent,
+  .beam-spin {
+    animation: none;
   }
 }

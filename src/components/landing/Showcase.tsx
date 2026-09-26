@@ -29,13 +29,15 @@ export function Showcase() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'center center'] })
   const rotateX = useTransform(scrollYProgress, [0, 1], [22, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [0.9, 1])
+  // The scroll-linked tilt re-renders a large 3D layer every frame, which phones can't keep up with.
+  const [tilt] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: fine) and (min-width: 768px)').matches)
   const tab = TABS[active]
   const next = () => setActive((i) => (i + 1) % TABS.length)
 
   return (
     <div ref={ref} className="[perspective:1400px]">
-      <motion.div style={{ rotateX, scale, transformOrigin: 'center top' }}>
-        <div className="rounded-[1.75rem] border border-line-2 bg-panel-2/80 p-2 shadow-[var(--shadow-lg)] backdrop-blur">
+      <motion.div style={tilt && !reduced ? { rotateX, scale, transformOrigin: 'center top', willChange: 'transform' } : undefined}>
+        <div className="rounded-[1.75rem] border border-line-2 bg-panel-2 p-2 shadow-[var(--shadow-lg)]">
           <div className="flex items-center gap-2 px-3 pb-2.5 pt-1.5">
             <span className="size-3 rounded-full bg-[#ff5f57]" />
             <span className="size-3 rounded-full bg-[#febc2e]" />
@@ -105,15 +107,8 @@ export function Showcase() {
             className={`relative flex h-10 shrink-0 items-center gap-2 overflow-hidden rounded-full px-4 text-[13.5px] font-medium transition-colors ${i === active ? 'btn-glass text-fg' : 'text-muted hover:text-fg'}`}
           >
             {i === active && inView && !reduced && (
-              <motion.span
-                key={active}
-                aria-hidden
-                className="absolute inset-0 origin-left bg-aqua/[0.12]"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: DWELL, ease: 'linear' }}
-                onAnimationComplete={next}
-              />
+              // A CSS animation, so the 7-second fill runs off the main thread.
+              <span key={active} aria-hidden className="tab-fill absolute inset-0 origin-left bg-aqua/[0.12]" style={{ animationDuration: `${DWELL}s` }} onAnimationEnd={next} />
             )}
             <t.icon size={15} className={`relative ${i === active ? 'text-aqua' : ''}`} />
             <span className="relative">{t.label}</span>
