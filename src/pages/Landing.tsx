@@ -467,7 +467,7 @@ function Security() {
     [ShieldCheck, 'Hardened sessions', 'HttpOnly, SameSite cookies, CSRF checks, rate limits and a strict CSP.'],
     [MonitorSmartphone, 'See every device', 'Review where you’re signed in and sign out anywhere, instantly.'],
     [ServerCog, 'Your data, your server', 'One server and one database you run, in the region you choose. SQLite or MongoDB.'],
-    [CloudOff, 'Private by default', 'Rosters are only visible to your account. No analytics, ads or third parties.'],
+    [CloudOff, 'Private by default', 'Rosters are only visible to your account. No analytics, ads or trackers.'],
   ] as const
   return (
     <section id="security" className="mx-auto max-w-6xl scroll-mt-24 px-4 pt-36">

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowLeft, Cookie, Database, Eye, HardDrive, KeyRound, Mail, ShieldCheck, Trash2 } from 'lucide-react'
+import { ArrowLeft, Cookie, Database, Eye, HardDrive, KeyRound, Mail, ShieldCheck, Sparkles, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo, Wordmark } from '../components/Logo'
@@ -51,7 +51,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
           when the connection returns. Signing out removes the copy from the device.
         </p>
         <p>
-          <b>Nowhere else.</b> Fonts and code are served by the same server. There are no analytics, ad networks, crash reporters or other third parties.
+          <b>Nowhere else.</b> Fonts and code are served by the same server. There are no analytics, ad networks or crash reporters. The only outside services are the email provider for account email and, if it’s turned on, the assistant (see below).
         </p>
       </>
     ),
@@ -94,6 +94,29 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         SwimTrack only sends account email: confirming an address, password reset links and security alerts. No newsletters or marketing. Messages go through the SMTP
         provider the server is configured with.
       </p>
+    ),
+  },
+  {
+    id: 'assistant',
+    title: 'The assistant',
+    icon: Sparkles,
+    body: (
+      <>
+        <p>
+          The optional “Ask” assistant is the one feature that uses an outside service: an AI model reached through the provider the server is configured with (VoidAI by
+          default). It’s only on when the server has a key for it.
+        </p>
+        <ul>
+          <li>
+            <b>What it sends:</b> the question you type, the page you’re on, and a summary of your classes: class names, levels, lesson and swimmer counts, how many report cards
+            are done.
+          </li>
+          <li>
+            <b>What it never sends:</b> swimmer names, photos, notes, attendance, skill marks or report card comments.
+          </li>
+          <li>Anything you type is sent as written, so leave swimmers’ personal details out of your questions.</li>
+        </ul>
+      </>
     ),
   },
   {

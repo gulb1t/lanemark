@@ -8,6 +8,7 @@ import { toggleTheme, useTheme } from '../lib/theme'
 import { signOut } from '../lib/signout'
 import { logout, useSession } from '../store/useSession'
 import { openDialog, setPaletteOpen, toast, useUi } from '../store/useUi'
+import { Assistant } from './Assistant'
 import { CommandPalette } from './CommandPalette'
 import { NewClassDialog } from './dialogs/NewClassDialog'
 import { SwimmerDialog } from './dialogs/SwimmerDialog'
@@ -176,6 +177,7 @@ export default function AppShell() {
       </nav>
 
       <CommandPalette />
+      <Assistant />
       {shortcuts && <ShortcutsDialog onClose={() => setShortcuts(false)} />}
       <AnimatePresence>{dialog === 'newClass' && <NewClassDialog onClose={closeDialog} />}</AnimatePresence>
       {dialog === 'newSwimmer' && (

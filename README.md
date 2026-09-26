@@ -46,6 +46,10 @@ Accounts use real email: a confirmation link on sign-up, "Forgot password?" rese
 - **Development:** with no `SMTP_URL`, nothing is sent. Messages appear at [localhost:5173/api/dev/outbox](http://localhost:5173/api/dev/outbox) and in the API log, so every flow can be clicked through.
 - **Real delivery:** set `SMTP_URL`, `MAIL_FROM` and `APP_URL` (see `.env.example`). Any SMTP provider works; with Gmail, turn on 2-Step Verification, create an app password and use `smtps://you%40gmail.com:app-password@smtp.gmail.com:465`.
 
+## Assistant
+
+The **Ask** button in the app opens an assistant that finds pages, explains features and looks up any level's skills and must-sees (it runs curriculum lookups on the server, so skill answers come from the real data). Set `VOIDAI_API_KEY` (or any OpenAI-compatible `AI_BASE_URL` + key) to turn it on; `AI_MODEL` defaults to `gpt-4.1-mini`, which answered fastest and most accurately in testing (2–3 s). It only ever receives class summaries, never swimmer names or records, and it's rate limited per account, per address and per hour overall. The dev scripts read `.env` automatically.
+
 ## Deploying
 
 It's one Node process that serves the API and the built site.
