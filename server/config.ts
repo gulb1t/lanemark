@@ -23,6 +23,8 @@ export interface Config {
   /** SMTP connection string. Without it, email goes to the in-memory dev outbox instead. */
   smtpUrl?: string
   mailFrom: string
+  /** OpenAI-compatible chat API for the in-app assistant (VoidAI by default). Unset key = assistant off. */
+  ai: { key?: string; model: string; baseUrl: string }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -46,6 +48,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     appUrl: appUrl(env.APP_URL, production),
     smtpUrl: env.SMTP_URL || undefined,
     mailFrom: env.MAIL_FROM ?? 'SwimTrack <no-reply@swimtrack.local>',
+    ai: {
+      key: env.VOIDAI_API_KEY || env.AI_API_KEY || undefined,
+      model: env.AI_MODEL || 'gpt-4.1-mini',
+      baseUrl: (env.AI_BASE_URL || 'https://api.voidai.app/v1').replace(/\/+$/, ''),
+    },
   }
 }
 

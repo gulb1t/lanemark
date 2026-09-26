@@ -19,17 +19,18 @@ export function testConfig(over: Partial<Config> = {}): Config {
     staticDir: '/nonexistent',
     appUrl: 'http://localhost:5173',
     mailFrom: 'SwimTrack <test@swimtrack.test>',
+    ai: { model: 'test-model', baseUrl: 'http://ai.test/v1' },
     ...over,
   }
 }
 
 /** App on a fresh in-memory SQLite database with a controllable clock. */
-export function setupApp(repo: Repo = openSqlite(':memory:')) {
+export function setupApp(repo: Repo = openSqlite(':memory:'), over: Partial<Config> = {}, aiFetch?: typeof fetch) {
   const clock = { t: Date.UTC(2026, 8, 1, 12, 0, 0) }
   const now = () => clock.t
   const limiter = new RateLimiter(now)
   const mailer = outboxMailer({ log: false })
-  const app = createApp({ config: testConfig(), repo, limiter, now, mailer })
+  const app = createApp({ config: testConfig(over), repo, limiter, now, mailer, aiFetch })
   return { app, repo, clock, limiter, mailer }
 }
 

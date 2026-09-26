@@ -37,6 +37,35 @@ export const ForgotBody = z.object({ email: Email })
 export const ResetBody = TokenBody.extend({ password: z.string().max(PASSWORD_MAX) })
 export const ChangeEmailBody = z.object({ email: Email, password: z.string().min(1).max(PASSWORD_MAX), code: z.string().trim().max(20).optional() })
 
+// ── Assistant ───────────────────────────────────────────────────────
+export const AssistantBody = z.object({
+  messages: z
+    .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1).max(2000) }))
+    .min(1)
+    .max(24),
+  context: z.object({
+    path: z.string().max(200),
+    today: z.string().max(10).optional(),
+    classes: z
+      .array(
+        z.object({
+          id: Id,
+          name: text(120),
+          levelId: text(40),
+          lessons: z.number().int().min(0).max(100),
+          taught: z.number().int().min(0).max(100),
+          swimmers: z.number().int().min(0).max(500),
+          reportsDone: z.number().int().min(0).max(500),
+          unassessed: z.number().int().min(0).max(20000),
+          todayLesson: z.number().int().nullable(),
+          nextLessonDate: z.string().max(10).nullable(),
+        }),
+      )
+      .max(60),
+    todos: z.array(text(200)).max(20).optional(),
+  }),
+})
+
 // ── Synced documents (mirror src/types.ts) ──────────────────────────
 const MustSees = z
   .object({ arms: text(1000), legs: text(1000), breathing: text(1000), body: text(1000), note: text(1000) })

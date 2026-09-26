@@ -10,12 +10,14 @@ import { fakeVerify, hashPassword, passwordProblem, verifyPassword } from './aut
 import { generateRecoveryCodes, generateSecret, normalizeRecoveryCode, otpauthUrl, verifyTotp } from './auth/totp.ts'
 import type { Config } from './config.ts'
 import { EmailTakenError, monotonicClock, type DocRecord, type Repo, type SessionRecord, type TokenPurpose, type UserRecord } from './db/types.ts'
+import { askAssistant, AssistantError } from './assistant.ts'
 import { emails } from './lib/emails.ts'
 import { outboxMailer, type Mail, type Mailer } from './lib/mailer.ts'
 import { decrypt, encrypt, randomToken, sha256 } from './lib/crypto.ts'
 import { keyedMutex, RateLimiter } from './lib/ratelimit.ts'
 import { describeUserAgent, maskIp } from './lib/useragent.ts'
 import {
+  AssistantBody,
   ChangeEmailBody,
   ChangePasswordBody,
   ClassDoc,
@@ -59,6 +61,8 @@ export interface AppDeps {
   now?: () => number
   /** Defaults to the in-memory outbox (development and tests). */
   mailer?: Mailer
+  /** fetch used for the AI provider; swapped out in tests. */
+  aiFetch?: typeof fetch
 }
 
 /** c•••@example.com: enough to recognise an address without spelling it out. */
@@ -81,7 +85,7 @@ export function publicUser(u: UserRecord) {
 }
 export type PublicUser = ReturnType<typeof publicUser>
 
-export function createApp({ config, repo, limiter = new RateLimiter(), now = Date.now, mailer = outboxMailer({ log: !config.production }) }: AppDeps) {
+export function createApp({ config, repo, limiter = new RateLimiter(), now = Date.now, mailer = outboxMailer({ log: !config.production }), aiFetch = fetch }: AppDeps) {
   const app = new Hono<Env>()
   const clock = monotonicClock()
   const lock = keyedMutex()
@@ -719,6 +723,30 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     const docs = await repo.listDocs(user.id, data.cursor)
     const cursor = docs.reduce((m, d) => Math.max(m, d.updatedAt), data.cursor)
     return c.json({ cursor, docs })
+  })
+
+  // ── assistant ─────────────────────────────────────────────────────
+  app.get('/api/assistant', (c) => c.json({ enabled: Boolean(config.ai.key) }))
+
+  // Works signed in or in the demo. Limits per account (or address) plus a server-wide hourly cap on the AI key.
+  app.post('/api/assistant', async (c) => {
+    if (!config.ai.key) return fail(c, 404, 'not_found', 'The assistant isn’t set up on this server.')
+    const data = await body(c, AssistantBody)
+    if (data instanceof Response) return data
+    const token = getCookie(c, SESSION_COOKIE)
+    const session = token ? await repo.getSessionByTokenHash(sha256(token)) : null
+    const who = session?.kind === 'session' && session.expiresAt > now() ? `user:${session.userId}` : `ip:${clientIp(c)}`
+    const wait = limiter.hit([
+      [`ai:${who}`, who.startsWith('user:') ? 40 : 15, 10 * MINUTE],
+      ['ai:all', 600, HOUR],
+    ])
+    if (wait) return tooMany(c, wait)
+    try {
+      return c.json(await askAssistant(config.ai, data.messages, data.context, aiFetch))
+    } catch (err) {
+      if (err instanceof AssistantError) return c.json({ error: { code: 'assistant_unavailable', message: err.message } }, 503)
+      throw err
+    }
   })
 
   // ── development outbox ────────────────────────────────────────────
