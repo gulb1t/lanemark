@@ -5,6 +5,8 @@ export interface Mail {
   subject: string
   text: string
   html: string
+  /** Where replies go, e.g. the person who filled in a pilot request. */
+  replyTo?: string
 }
 
 export interface Mailer {

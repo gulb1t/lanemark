@@ -84,6 +84,24 @@ export const emails = {
       footnote: 'If you didn’t ask for this, you can ignore this email. Your password stays the same.',
     }),
 
+  contact: (to: string, r: { name: string; email: string; organisation: string; plan: 'pool' | 'city'; pools?: number; message: string }) => {
+    const plan = r.plan === 'city' ? 'City' : 'Pool'
+    const mail = render({
+      to,
+      subject: `Pilot request (${plan}): ${r.organisation || r.name}`,
+      preview: `${r.name} asked about the ${plan} plan.`,
+      heading: `${plan} plan pilot request`,
+      paragraphs: [
+        `From: ${r.name} <${r.email}>`,
+        `Organisation: ${r.organisation || 'not given'}`,
+        ...(r.pools ? [`Pools: ${r.pools}`] : []),
+        r.message ? `Message: ${r.message}` : 'No message.',
+      ],
+      footnote: 'Sent from the pricing section on SwimTrack. Reply to this email to answer them directly.',
+    })
+    return { ...mail, replyTo: r.email }
+  },
+
   notice: (to: string, subject: string, heading: string, body: string, resetUrl: string) =>
     render({
       to,

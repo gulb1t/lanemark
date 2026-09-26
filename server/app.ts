@@ -22,6 +22,7 @@ import {
   ChangePasswordBody,
   ClassDoc,
   CodeBody,
+  ContactBody,
   firstIssue,
   SecurityPrefsBody,
   VerifyLoginBody,
@@ -747,6 +748,24 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       if (err instanceof AssistantError) return c.json({ error: { code: 'assistant_unavailable', message: err.message } }, 503)
       throw err
     }
+  })
+
+  // ── pilot requests (pricing section) ───────────────────────────────
+  app.get('/api/contact', (c) => c.json({ enabled: Boolean(config.contactEmail) }))
+
+  // Emailed to the team, never stored. Nothing is sent back to the address in the form, so it can't be used to
+  // spam someone else.
+  app.post('/api/contact', async (c) => {
+    if (!config.contactEmail) return fail(c, 404, 'not_found', 'Pilot requests aren’t set up on this server yet.')
+    const data = await body(c, ContactBody)
+    if (data instanceof Response) return data
+    const wait = limiter.hit([
+      [`contact:ip:${clientIp(c)}`, 5, HOUR],
+      ['contact:all', 100, HOUR],
+    ])
+    if (wait) return tooMany(c, wait)
+    if (!data.website) deliver(emails.contact(config.contactEmail, data))
+    return c.json({ ok: true })
   })
 
   // ── development outbox ────────────────────────────────────────────

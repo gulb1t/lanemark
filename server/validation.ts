@@ -32,6 +32,17 @@ export const ChangePasswordBody = z.object({
   code: z.string().trim().max(20).optional(),
 })
 export const ProfileBody = z.object({ name: z.string().trim().min(1).max(80) })
+const OneLine = (max: number) => z.string().trim().max(max).regex(/^[^\r\n]*$/, 'Use a single line.')
+export const ContactBody = z.object({
+  name: OneLine(80).min(1, 'Enter your name.'),
+  email: Email,
+  organisation: OneLine(120).default(''),
+  plan: z.enum(['pool', 'city']),
+  pools: z.number().int().min(1).max(99).optional(),
+  message: z.string().trim().max(2000).default(''),
+  /** Left empty by people; bots fill it in. */
+  website: z.string().max(200).optional(),
+})
 export const TokenBody = z.object({ token: z.string().trim().min(20).max(200) })
 export const ForgotBody = z.object({ email: Email })
 export const ResetBody = TokenBody.extend({ password: z.string().max(PASSWORD_MAX) })

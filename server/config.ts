@@ -23,6 +23,11 @@ export interface Config {
   /** SMTP connection string. Without it, email goes to the in-memory dev outbox instead. */
   smtpUrl?: string
   mailFrom: string
+  /**
+   * Inbox for pilot requests from the pricing section. In development without SMTP they go to the dev outbox;
+   * in production the form is switched off until this is set.
+   */
+  contactEmail?: string
   /** OpenAI-compatible chat API for the in-app assistant (VoidAI by default). Unset key = assistant off. */
   ai: { key?: string; model: string; baseUrl: string }
 }
@@ -48,6 +53,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     appUrl: appUrl(env.APP_URL, production),
     smtpUrl: env.SMTP_URL || undefined,
     mailFrom: env.MAIL_FROM ?? 'SwimTrack <no-reply@swimtrack.local>',
+    contactEmail: env.CONTACT_EMAIL || (production || env.SMTP_URL ? undefined : 'pilots@swimtrack.local'),
     ai: {
       key: env.VOIDAI_API_KEY || env.AI_API_KEY || undefined,
       model: env.AI_MODEL || 'gpt-4.1-mini',
