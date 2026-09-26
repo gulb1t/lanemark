@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowLeft, Cookie, Database, Eye, HardDrive, KeyRound, Mail, ShieldCheck, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Building2, Cookie, Database, Eye, HardDrive, KeyRound, Mail, ShieldCheck, Sparkles, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo, Wordmark } from '../components/Logo'
@@ -116,6 +116,19 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
           </li>
           <li>Anything you type is sent as written, so leave swimmers’ personal details out of your questions.</li>
         </ul>
+      </>
+    ),
+  },
+  {
+    id: 'pilots',
+    title: 'Pilot requests',
+    icon: Building2,
+    body: (
+      <>
+        <p>
+          The “Request a pilot” form in the pricing section sends your name, email, organisation, number of pools and message to the SwimTrack team’s inbox, so we can
+          reply. It isn’t saved in the app’s database, and nothing is emailed to the address you type in.
+        </p>
       </>
     ),
   },

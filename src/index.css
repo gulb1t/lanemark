@@ -301,6 +301,15 @@ dialog::backdrop {
     padding-bottom: 0.06em;
   }
 
+  /* The highlighted pricing plan: a card with an aqua-lit gradient border and glow. */
+  .plan-featured {
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--color-aqua) 7%, var(--color-panel)), var(--color-panel) 55%) padding-box,
+      linear-gradient(180deg, rgb(var(--accent-rgb) / 0.7), var(--color-line) 70%) border-box;
+    border: 1px solid transparent;
+    box-shadow: var(--card-shadow), 0 24px 60px -28px rgb(var(--accent-rgb) / 0.55);
+  }
+
   /* Rounded icon tile for section headers and feature cards. */
   .icon-tile {
     display: inline-flex;

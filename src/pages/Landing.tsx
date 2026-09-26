@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } fr
 import {
   AlertTriangle,
   ArrowRight,
+  ArrowUp,
   Building2,
   CalendarCheck,
   Check,
@@ -18,6 +19,7 @@ import {
   ServerCog,
   ShieldCheck,
   Sparkles,
+  Tag,
   Users,
   Waves,
 } from 'lucide-react'
@@ -27,6 +29,7 @@ import { Caustics } from '../components/fx/Caustics'
 import { LevelCloud, LiveLessons, LiveSync, LiveTwoFactor } from '../components/landing/LiveDemos'
 import { LandingNav } from '../components/landing/LandingNav'
 import { Floaties } from '../components/landing/Floaties'
+import { Pricing } from '../components/landing/Pricing'
 import { Showcase } from '../components/landing/Showcase'
 import { Logo, Wordmark } from '../components/Logo'
 import { ButtonLink } from '../components/ui/Button'
@@ -50,9 +53,17 @@ export default function Landing() {
       <Features />
       <SessionStory />
       <Security />
+      <Pricing
+        signedIn={signedIn}
+        heading={
+          <SectionTitle icon={<Tag size={22} />} title={<>Free for instructors. <Serif>Simple</Serif> for pools.</>}>
+            Instructors use every feature for free. Pools and cities add setup, support and their own server.
+          </SectionTitle>
+        }
+      />
       <Faq />
       <FinalCta signedIn={signedIn} />
-      <Footer />
+      <Footer signedIn={signedIn} />
     </div>
   )
 }
@@ -509,7 +520,7 @@ function BorderBeam() {
 }
 
 const FAQ = [
-  ['Is SwimTrack free?', 'Yes. Create an account and use every feature. You can also self-host it: it’s a single Node server with a built-in SQLite database.'],
+  ['Is SwimTrack free?', 'Yes, for instructors: create an account and use every feature. Pools and cities can add setup, class-list imports, priority support and their own server (see Pricing). You can also self-host it: it’s a single Node server with a built-in SQLite database.'],
   ['Does it work without Wi-Fi?', 'Yes. Once you’ve opened SwimTrack on a device, the app itself is kept on it, so it opens with no signal. Every edit saves on the device first and syncs when you’re back online. The sync pill in the top bar always shows where things stand.'],
   ['Where is swimmer data stored?', 'On the server and database whoever runs SwimTrack chooses (a city can host it itself, in Canada), plus an offline copy on the instructor’s own device. Swimmer records never go to a third party. The privacy page has the details.'],
   ['Does it follow the report card manual?', 'Comments are built from the manual’s passing and not-yet-passing templates and must-sees, incomplete items are highlighted like the paper card, and SwimTrack warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
@@ -584,33 +595,58 @@ function FinalCta({ signedIn }: { signedIn: boolean }) {
   )
 }
 
-function Footer() {
+const FOOTER: [string, [string, string][]][] = [
+  ['Product', [['Tour', '#tour'], ['How it works', '#how'], ['Features', '#features'], ['Pricing', '#pricing']]],
+  ['Trust', [['Security', '#security'], ['Privacy', '/privacy'], ['FAQ', '#faq']]],
+]
+
+function Footer({ signedIn }: { signedIn: boolean }) {
+  const account: [string, string][] = signedIn ? [['Open SwimTrack', '/app']] : [['Sign in', '/login'], ['Create an account', '/signup'], ['Try the demo', '/demo']]
+  const link = ([label, to]: [string, string]) => (
+    <li key={label}>
+      {to.startsWith('#') ? (
+        <a href={to} className="transition-colors hover:text-fg">
+          {label}
+        </a>
+      ) : (
+        <Link to={to} className="transition-colors hover:text-fg">
+          {label}
+        </Link>
+      )}
+    </li>
+  )
   return (
-    <footer className="mx-auto mt-28 max-w-6xl px-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line py-10 text-[13px] text-dim">
-        <div className="flex items-center gap-2.5">
-          <Logo size={24} />
-          <Wordmark size={14} />
+    <footer className="relative mx-auto mt-32 max-w-6xl px-4 pb-10">
+      <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-aqua/45 to-transparent" />
+      <div className="grid grid-cols-3 gap-x-4 gap-y-10 pt-14 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div className="col-span-3 md:col-span-1">
+          <Link to="/" className="inline-flex items-center gap-2.5" aria-label="SwimTrack home">
+            <Logo size={30} />
+            <Wordmark size={17} />
+          </Link>
+          <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-muted">Attendance, skills and report cards for swim instructors. Built for the pool deck, signal or not.</p>
         </div>
-        <nav className="flex gap-5">
-          <a href="#tour" className="hover:text-fg">Tour</a>
-          <a href="#features" className="hover:text-fg">Features</a>
-          <a href="#security" className="hover:text-fg">Security</a>
-          <Link to="/privacy" className="hover:text-fg">Privacy</Link>
-          <Link to="/demo" className="hover:text-fg">Demo</Link>
+        {FOOTER.map(([title, links]) => (
+          <nav key={title} aria-label={title}>
+            <h2 className="eyebrow mb-4">{title}</h2>
+            <ul className="space-y-2.5 text-[14px] text-muted">{links.map(link)}</ul>
+          </nav>
+        ))}
+        <nav aria-label="Account">
+          <h2 className="eyebrow mb-4">Account</h2>
+          <ul className="space-y-2.5 text-[14px] text-muted">{account.map(link)}</ul>
         </nav>
-        <p className="w-full max-w-xl">Curriculum based on the Lifesaving Society’s Swim for Life program. Not affiliated with the Lifesaving Society.</p>
       </div>
-      <motion.div
-        aria-hidden
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-        className="select-none pb-6 text-center font-display text-[clamp(4rem,18.5vw,15.5rem)] font-extrabold leading-[0.9] tracking-[-0.055em] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-fg)_16%,transparent),transparent_85%)] bg-clip-text text-transparent"
-      >
-        SwimTrack
-      </motion.div>
+      <div className="mt-14 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-line pt-6 text-[12.5px] text-dim">
+        <p className="max-w-xl">Curriculum based on the Lifesaving Society’s Swim for Life program. Not affiliated with the Lifesaving Society.</p>
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}
+          className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-fg"
+        >
+          Back to top <ArrowUp size={13} />
+        </button>
+      </div>
     </footer>
   )
 }
@@ -626,7 +662,7 @@ function SectionTitle({ icon, title, children, align = 'center' }: { icon: React
     >
       <span className="icon-tile mb-6 size-12">{icon}</span>
       <h2 className="text-gradient text-[clamp(2.1rem,4.8vw,3.5rem)] font-extrabold leading-[1.04] tracking-[-0.035em]">{title}</h2>
-      {children && <p className="mt-4 text-[16px] leading-relaxed text-muted">{children}</p>}
+      {children && <p className="mt-4 text-balance text-[16px] leading-relaxed text-muted">{children}</p>}
     </motion.div>
   )
 }

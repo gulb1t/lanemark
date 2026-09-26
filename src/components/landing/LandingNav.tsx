@@ -10,6 +10,7 @@ const LINKS = [
   ['Tour', 'tour'],
   ['How it works', 'how'],
   ['Security', 'security'],
+  ['Pricing', 'pricing'],
   ['FAQ', 'faq'],
 ] as const
 
