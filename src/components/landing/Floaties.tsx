@@ -1,97 +1,277 @@
 import { useInView, useReducedMotion } from 'motion/react'
-import { useRef, type CSSProperties, type ReactNode } from 'react'
+import { useId, useRef, useState, type CSSProperties } from 'react'
 
 /**
- * Out-of-focus pool floaties around the edges of the hero: big and soft when close to the "camera", small and
- * sharper further away, each with a shadow on the pool floor. The blur is baked into each SVG so the browser
- * rasterises it once; the gentle bob is a transform-only CSS animation that stops when the hero is offscreen.
+ * Pool toys drifting in the hero water, out of focus: a few big ones close to the "camera" peeking in from the
+ * edges, and smaller, hazier ones further down. They sit inside the water layer (under the same fog and vignette as
+ * the caustics) and are blended into it, so the light plays across them. The layout, toys and colours are shuffled
+ * on every load. Blur is baked into each SVG so it's rasterised once; the bob is a transform-only CSS animation that
+ * stops when the hero is offscreen.
  */
 
-interface Floaty {
-  art: (blur: number) => ReactNode
-  blur: number
-  style: CSSProperties
-  className?: string
+type Kind = 'ring' | 'ball' | 'dive'
+type Depth = 'near' | 'mid' | 'far'
+type Side = 'left' | 'right'
+
+interface Slot {
+  side: Side
+  /** Distance from that side, % of the hero width. */
+  x: number
+  /** % of the hero height. */
+  y: number
+}
+
+interface Toy {
+  kind: Kind
+  depth: Depth
+  slot: Slot
+  scale: number
+  rot: number
+  palette: number
   duration: number
   delay: number
 }
 
-const FLOATIES: Floaty[] = [
-  { art: (b) => <SwimRing colors={['#ff6fae', '#fff5f8']} blur={b} />, blur: 3.2, duration: 17, delay: -3, style: { left: '-4%', top: '60%', width: 'clamp(150px, 19vw, 280px)', opacity: 0.9 } },
-  { art: (b) => <BeachBall blur={b} />, blur: 2.4, duration: 21, delay: -9, style: { right: '-3%', top: '9%', width: 'clamp(110px, 13vw, 200px)', opacity: 0.85 } },
-  { art: (b) => <SwimRing colors={['#ffd23f', '#ffe98a']} blur={b} />, blur: 0.6, duration: 14, delay: -5, style: { left: '11%', top: '15%', width: 'clamp(54px, 6vw, 92px)', opacity: 0.7 }, className: 'max-md:hidden' },
-  { art: (b) => <BeachBall blur={b} />, blur: 0.7, duration: 19, delay: -12, style: { right: '13%', top: '72%', width: 'clamp(40px, 4.4vw, 66px)', opacity: 0.6 }, className: 'max-md:hidden' },
+/** Positions are for the padded box, so the toy itself starts about 5% further in; these tuck a third of it offscreen. */
+const NEAR: Slot[] = [
+  { side: 'left', x: -13, y: 52 },
+  { side: 'left', x: -12, y: 0 },
+  { side: 'right', x: -12, y: -2 },
+  { side: 'right', x: -14, y: 55 },
 ]
+const MID: Slot[] = [
+  { side: 'left', x: 9, y: 30 },
+  { side: 'right', x: 10, y: 36 },
+  { side: 'left', x: 15, y: 76 },
+  { side: 'right', x: 13, y: 78 },
+]
+const FAR: Slot[] = [
+  { side: 'left', x: 21, y: 13 },
+  { side: 'right', x: 20, y: 15 },
+  { side: 'left', x: 4, y: 42 },
+  { side: 'right', x: 4, y: 31 },
+  { side: 'right', x: 25, y: 70 },
+  { side: 'left', x: 26, y: 86 },
+]
+
+const SIZE: Record<Depth, string> = {
+  near: 'clamp(130px, 21vw, 320px)',
+  mid: 'clamp(84px, 9vw, 140px)',
+  far: 'clamp(40px, 4.4vw, 68px)',
+}
+const BLUR: Record<Depth, [number, number]> = { near: [3.4, 4.4], mid: [1.8, 2.4], far: [0.9, 1.3] }
+const OPACITY: Record<Depth, number> = { near: 0.72, mid: 0.62, far: 0.5 }
+
+/** Stripe colours; the other stripes use the theme's "white" (tinted by the pool light in dark mode). */
+const RINGS = ['#ff5277', '#ffc23d', '#1fc9bd', '#ff8a3d']
+const DIVE = ['#ff7a45', '#8bd94a', '#ff5fa2', '#ffd23f']
+const BALLS: string[][] = [
+  ['#ff4f6d', '#ffc53d', '#2f8cff'],
+  ['#ff7a45', '#1fc9bd', '#ffd23f'],
+  ['#2f8cff', '#ff5fa2', '#8bd94a'],
+]
+const pick = <T,>(xs: readonly T[]) => xs[Math.floor(Math.random() * xs.length)]
+const between = (a: number, b: number) => a + Math.random() * (b - a)
+const quadrant = (s: Slot) => `${s.side}-${s.y < 50 ? 'top' : 'bottom'}`
+const shuffle = <T,>(xs: T[]) => xs.map((x) => [Math.random(), x] as const).sort((a, b) => a[0] - b[0]).map(([, x]) => x)
+
+/**
+ * One close ring on each side (rings keep their shape when this far out of focus; a ball turns into a blob), one toy
+ * in the middle distance and two far away, never two in the same corner.
+ */
+function makeLayout(): Toy[] {
+  const near = [pick(NEAR.filter((s) => s.side === 'left')), pick(NEAR.filter((s) => s.side === 'right'))]
+  const taken = new Set(near.map(quadrant))
+  const mid = shuffle(MID.filter((s) => !taken.has(quadrant(s))))[0]
+  taken.add(quadrant(mid))
+  const far = shuffle(FAR.filter((s) => !taken.has(quadrant(s)))).slice(0, 2)
+
+  const palettes = shuffle([0, 1, 2, 3])
+  const toy = (kind: Kind, depth: Depth, slot: Slot, i: number): Toy => ({
+    kind,
+    depth,
+    slot,
+    scale: between(0.88, 1.1),
+    rot: between(0, 360),
+    palette: palettes[i % palettes.length],
+    duration: between(15, 23),
+    delay: -between(0, 20),
+  })
+  return [
+    toy('ring', 'near', near[0], 0),
+    toy('ring', 'near', near[1], 1),
+    toy(pick<Kind>(['ring', 'ball', 'dive']), 'mid', mid, 2),
+    ...far.map((s, i) => toy(pick<Kind>(['dive', 'dive', 'ball', 'ring']), 'far', s, 3 + i)),
+  ]
+}
 
 export function Floaties() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref)
   const reduced = useReducedMotion()
-  if (reduced) return null
+  const [toys] = useState(makeLayout)
   return (
-    <div ref={ref} aria-hidden className={`floaties pointer-events-none absolute inset-0 overflow-hidden ${inView ? '' : 'floaties-paused'}`}>
-      {FLOATIES.map((f, i) => (
-        <div key={i} className={`floaty absolute ${f.className ?? ''}`} style={{ ...f.style, animationDuration: `${f.duration}s`, animationDelay: `${f.delay}s` }}>
-          {f.art(f.blur)}
-        </div>
-      ))}
+    <div ref={ref} aria-hidden className={`floaties pointer-events-none absolute inset-0 ${inView && !reduced ? '' : 'floaties-paused'}`}>
+      {toys.map((t, i) => {
+        const style: CSSProperties = {
+          [t.slot.side]: `${t.slot.x}%`,
+          top: `${t.slot.y}%`,
+          width: `calc(${SIZE[t.depth]} * ${(t.scale * PAD_SCALE).toFixed(2)})`,
+          // --floaty-opacity scales everything per theme.
+          opacity: `calc(var(--floaty-opacity, 1) * ${OPACITY[t.depth]})`,
+          animationDuration: `${t.duration.toFixed(1)}s`,
+          animationDelay: `${t.delay.toFixed(1)}s`,
+        }
+        return (
+          <div key={i} className={`floaty absolute ${t.depth === 'near' ? '' : 'max-md:hidden'}`} style={style}>
+            <div style={{ transform: `rotate(${t.rot.toFixed(0)}deg)` }}>
+              <Art toy={t} />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
-/** Shared filter defs: object blur plus a wider, offset shadow cast on the pool floor. */
-function Defs({ id, blur }: { id: string; blur: number }) {
+function Art({ toy }: { toy: Toy }) {
+  const [lo, hi] = BLUR[toy.depth]
+  const [blur] = useState(() => between(lo, hi))
+  switch (toy.kind) {
+    case 'ring':
+      return <Ring blur={blur} tube={16} colors={[RINGS[toy.palette], WHITE]} />
+    case 'dive':
+      return <Ring blur={blur} tube={9} colors={[DIVE[toy.palette], DIVE[toy.palette]]} />
+    case 'ball':
+      return <BeachBall blur={blur} colors={BALLS[toy.palette % BALLS.length]} />
+  }
+}
+
+/** Object blur, plus a softer one for the shadow on the pool floor. */
+function Filters({ id, blur }: { id: string; blur: number }) {
   return (
-    <defs>
-      <filter id={`${id}-b`} x="-40%" y="-40%" width="180%" height="180%">
+    <>
+      <filter id={`${id}b`} x="-50%" y="-50%" width="200%" height="200%">
         <feGaussianBlur stdDeviation={blur} />
       </filter>
-      <filter id={`${id}-s`} x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation={blur + 3} />
+      <filter id={`${id}s`} x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation={blur + 2.5} />
       </filter>
-    </defs>
+    </>
   )
 }
 
-function SwimRing({ colors: [a, b], blur }: { colors: [string, string]; blur: number }) {
-  const id = `ring-${a.slice(1)}-${Math.round(blur * 10)}`
+const SHADOW = 'rgb(4 58 70 / 0.3)'
+const WHITE = 'var(--floaty-white)'
+/** Each toy is drawn in 0–120 with room around it for the blur, which Chrome would otherwise crop at the SVG edge. */
+const PAD = 30
+const VIEWBOX = `${-PAD} ${-PAD} ${120 + PAD * 2} ${120 + PAD * 2}`
+const PAD_SCALE = (120 + PAD * 2) / 120
+const xy = (r: number, deg: number) => [60 + r * Math.cos((deg * Math.PI) / 180), 60 + r * Math.sin((deg * Math.PI) / 180)] as const
+const polar = (r: number, deg: number) => xy(r, deg).map((v) => v.toFixed(2)).join(' ')
+
+/** An inflatable ring (or a small solid dive ring): a torus lit from the top left. */
+function Ring({ blur, tube, colors: [a, b] }: { blur: number; tube: number; colors: [string, string] }) {
+  const id = useId().replace(/:/g, '')
+  const R = 38
+  const inner = R - tube
+  const outer = R + tube
+  const C = 2 * Math.PI * R
+  const striped = a !== b
+  const band = { cx: 60, cy: 60, r: R, fill: 'none', strokeWidth: tube * 2 }
+  const at = (f: number) => (inner + tube * 2 * f) / outer
   return (
-    <svg viewBox="0 0 100 100" className="block h-auto w-full overflow-visible">
-      <Defs id={id} blur={blur} />
-      <ellipse cx="60" cy="68" rx="34" ry="30" fill="none" stroke="rgb(0 20 30 / 0.35)" strokeWidth="14" filter={`url(#${id}-s)`} />
-      <g filter={`url(#${id}-b)`}>
-        <circle cx="50" cy="50" r="30" fill="none" stroke={b} strokeWidth="18" />
-        <circle cx="50" cy="50" r="30" fill="none" stroke={a} strokeWidth="18" strokeDasharray="23.56 23.56" transform="rotate(20 50 50)" />
-        <circle cx="50" cy="50" r="38.5" fill="none" stroke="rgb(0 0 0 / 0.14)" strokeWidth="1.5" />
-        <circle cx="50" cy="50" r="21.5" fill="none" stroke="rgb(0 0 0 / 0.16)" strokeWidth="1.5" />
-        <path d="M27 33a30 30 0 0 1 20-13" fill="none" stroke="#fff" strokeOpacity=".75" strokeWidth="5" strokeLinecap="round" />
+    <svg viewBox={VIEWBOX} className="block h-auto w-full">
+      <defs>
+        <Filters id={id} blur={blur} />
+        {/* Across the tube: dark inner edge, a lit crown, dark outer edge. */}
+        <radialGradient id={`${id}t`} gradientUnits="userSpaceOnUse" cx="60" cy="60" r={outer}>
+          <stop offset={at(0)} stopColor="#000" stopOpacity=".42" />
+          <stop offset={at(0.28)} stopColor="#000" stopOpacity="0" />
+          <stop offset={at(0.55)} stopColor="#fff" stopOpacity=".28" />
+          <stop offset={at(0.8)} stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity=".38" />
+        </radialGradient>
+        {/* Key light from the top left. */}
+        <linearGradient id={`${id}l`} gradientUnits="userSpaceOnUse" x1={60 - outer} y1={60 - outer} x2={60 + outer} y2={60 + outer}>
+          <stop offset="0" stopColor="#fff" stopOpacity=".35" />
+          <stop offset=".5" stopColor="#fff" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity=".32" />
+        </linearGradient>
+      </defs>
+      <circle {...band} cx={68} cy={70} stroke={SHADOW} filter={`url(#${id}s)`} />
+      <g filter={`url(#${id}b)`}>
+        <circle {...band} style={{ stroke: b }} />
+        {striped && <circle {...band} stroke={a} strokeDasharray={`${C / 8} ${C / 8}`} />}
+        {striped &&
+          Array.from({ length: 8 }, (_, k) => {
+            const [x1, y1] = xy(inner, k * 45)
+            const [x2, y2] = xy(outer, k * 45)
+            return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#000" strokeOpacity=".1" strokeWidth=".8" />
+          })}
+        <circle {...band} stroke={`url(#${id}t)`} />
+        <circle {...band} stroke={`url(#${id}l)`} />
+        <path d={`M${polar(R + tube * 0.3, 196)}A${R + tube * 0.3} ${R + tube * 0.3} 0 0 1 ${polar(R + tube * 0.3, 252)}`} fill="none" stroke="#fff" strokeOpacity=".8" strokeWidth={tube * 0.32} strokeLinecap="round" />
+        <path d={`M${polar(R - tube * 0.35, 20)}A${R - tube * 0.35} ${R - tube * 0.35} 0 0 1 ${polar(R - tube * 0.35, 60)}`} fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth={tube * 0.18} strokeLinecap="round" />
       </g>
     </svg>
   )
 }
 
-function BeachBall({ blur }: { blur: number }) {
-  const id = `ball-${Math.round(blur * 10)}`
-  const p = (a: number) => `${50 + 36 * Math.cos(a)} ${50 + 36 * Math.sin(a)}`
+/**
+ * A beach ball with its pole tilted toward the viewer, so the panels curve like a real sphere instead of meeting in
+ * the middle like a pie. Panel outlines are meridians projected onto the screen, cut off at the silhouette.
+ */
+function ballPanels(tilt: number, phase: number, R = 42) {
+  const st = Math.sin(tilt)
+  const ct = Math.cos(tilt)
+  const P = (th: number, ph: number) => {
+    const x = Math.sin(th) * Math.cos(ph)
+    const y = Math.cos(th)
+    const z = Math.sin(th) * Math.sin(ph)
+    return `${(60 + R * x).toFixed(2)} ${(60 - R * (y * ct - z * st)).toFixed(2)}`
+  }
+  // Where a meridian disappears behind the ball.
+  const edge = (ph: number) => Math.atan2(-st, Math.sin(ph) * ct) + Math.PI
+  const n = 6
+  const panels = Array.from({ length: n }, (_, i) => {
+    const a = phase + (i / n) * Math.PI * 2
+    const b = phase + ((i + 1) / n) * Math.PI * 2
+    const pts: string[] = []
+    for (let k = 0; k <= 18; k++) pts.push(P((edge(a) * k) / 18, a))
+    for (let k = 1; k < 14; k++) {
+      const ph = a + ((b - a) * k) / 14
+      pts.push(P(edge(ph), ph))
+    }
+    for (let k = 18; k >= 0; k--) pts.push(P((edge(b) * k) / 18, b))
+    return `M${pts.join('L')}Z`
+  })
+  const cap = `M${Array.from({ length: 24 }, (_, k) => P(0.3, (k / 24) * Math.PI * 2)).join('L')}Z`
+  return { panels, cap }
+}
+
+function BeachBall({ blur, colors }: { blur: number; colors: string[] }) {
+  const id = useId().replace(/:/g, '')
+  const [{ panels, cap }] = useState(() => ballPanels(between(0.55, 0.85), between(0, Math.PI * 2)))
   return (
-    <svg viewBox="0 0 100 100" className="block h-auto w-full overflow-visible">
-      <Defs id={id} blur={blur} />
+    <svg viewBox={VIEWBOX} className="block h-auto w-full">
       <defs>
-        <radialGradient id={`${id}-shade`} cx=".35" cy=".3" r=".75">
+        <Filters id={id} blur={blur} />
+        <radialGradient id={`${id}g`} gradientUnits="userSpaceOnUse" cx="44" cy="40" r="64">
+          <stop offset="0" stopColor="#fff" stopOpacity=".45" />
+          <stop offset=".22" stopColor="#fff" stopOpacity=".08" />
           <stop offset=".5" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity=".28" />
+          <stop offset=".85" stopColor="#000" stopOpacity=".3" />
+          <stop offset="1" stopColor="#000" stopOpacity=".45" />
         </radialGradient>
       </defs>
-      <ellipse cx="60" cy="66" rx="34" ry="30" fill="rgb(0 20 30 / 0.3)" filter={`url(#${id}-s)`} />
-      <g filter={`url(#${id}-b)`}>
-        <circle cx="50" cy="50" r="36" fill="#fff" />
-        {['#ef4444', '#fbbf24', '#3b82f6', '#22c55e', '#f97316', '#06b6d4'].map((c, i) => {
-          const a0 = (i / 6) * Math.PI * 2
-          return <path key={c} d={`M50 50L${p(a0)}A36 36 0 0 1 ${p(a0 + Math.PI / 6)}Z`} fill={c} />
-        })}
-        <circle cx="50" cy="50" r="7" fill="#fff" />
-        <circle cx="50" cy="50" r="36" fill={`url(#${id}-shade)`} />
-        <ellipse cx="37" cy="31" rx="10" ry="6" fill="#fff" opacity=".6" transform="rotate(-35 37 31)" />
+      <circle cx="68" cy="70" r="40" fill={SHADOW} filter={`url(#${id}s)`} />
+      <g filter={`url(#${id}b)`}>
+        <circle cx="60" cy="60" r="42" style={{ fill: WHITE }} />
+        {panels.map((d, i) => (i % 2 === 0 ? <path key={i} d={d} fill={colors[(i / 2) % colors.length]} /> : null))}
+        <path d={cap} style={{ fill: WHITE }} />
+        <circle cx="60" cy="60" r="42" fill={`url(#${id}g)`} />
+        <ellipse cx="45" cy="38" rx="9" ry="5" fill="#fff" opacity=".75" transform="rotate(-35 45 38)" />
       </g>
     </svg>
   )

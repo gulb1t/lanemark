@@ -62,11 +62,11 @@ function Hero({ signedIn }: { signedIn: boolean }) {
     <section className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pb-24 pt-28 text-center">
       <div className="absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(180deg,#000_55%,transparent)]">
         <Caustics className="h-full w-full" soft={1} resolution={0.3} drops />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,color-mix(in_oklab,var(--color-ink)_55%,transparent),transparent_80%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-ink)_90%)]" />
+        {/* Toys float above the edge vignette but under the fog behind the headline. */}
+        <Floaties />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,color-mix(in_oklab,var(--color-ink)_55%,transparent),transparent_80%)]" />
       </div>
-
-      <Floaties />
 
       <motion.a
         href="#tour"
