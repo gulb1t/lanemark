@@ -110,8 +110,8 @@ export default function Dashboard() {
 
       {classes.length > 0 && (
         // Today and the to-do list on the left; the next class and the numbers alongside on wide screens.
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <section className="grid gap-4" aria-label="Today">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <section className="flex min-w-0 flex-col gap-4" aria-label="Today">
             {todays.map(({ c, lesson }, i) => (
               <motion.div key={c.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.5 }}>
                 <TodayCard cls={c} lessonIndex={lesson} swimmers={swimmers} />
@@ -119,7 +119,8 @@ export default function Dashboard() {
             ))}
             {actions.length > 0 ? <ActionsCard actions={actions} /> : <AllCaughtUp />}
           </section>
-          <aside className="grid gap-4" aria-label="At a glance">
+          {/* Both columns end level: the stat tiles (or the to-do card) stretch to match the taller side. */}
+          <aside className="flex min-w-0 flex-col gap-4" aria-label="At a glance">
             <StatsCard totals={totals} active={active.length} swimmers={swimmers.length} />
             {upcoming.length > 0 && <ComingUp items={upcoming} />}
           </aside>
@@ -247,7 +248,7 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
   const [all, setAll] = useState(false)
   const list = all ? actions : actions.slice(0, 4)
   return (
-    <section className="card overflow-hidden" aria-labelledby="todo-h">
+    <section className="card flex flex-1 flex-col overflow-hidden" aria-labelledby="todo-h">
       <div className="flex items-baseline justify-between px-5 pt-5">
         <h2 id="todo-h" className="text-[16px] font-bold">
           To do
@@ -276,7 +277,7 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
         })}
       </ul>
       {actions.length > 4 && (
-        <button type="button" onClick={() => setAll((v) => !v)} className="w-full border-t border-line px-5 py-3 text-left text-[13px] font-semibold text-muted hover:text-fg">
+        <button type="button" onClick={() => setAll((v) => !v)} className="mt-auto w-full border-t border-line px-5 py-3 text-left text-[13px] font-semibold text-muted hover:text-fg">
           {all ? 'Show less' : `Show ${actions.length - 4} more`}
         </button>
       )}
@@ -286,7 +287,7 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
 
 function AllCaughtUp() {
   return (
-    <section className="card flex items-center gap-4 p-5">
+    <section className="card flex flex-1 items-center gap-4 p-5">
       <span className="icon-tile size-11 shrink-0 !rounded-xl !shadow-none">
         <CheckCheck size={19} />
       </span>
@@ -341,7 +342,7 @@ function ComingUp({ items }: { items: ReturnType<typeof upcomingLessons> }) {
 
 function StatsCard({ totals, active, swimmers }: { totals: { attendance: number | null; passed: number; items: number; lessons: number; taught: number; enrolled: number }; active: number; swimmers: number }) {
   return (
-    <section className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-2" aria-label="Numbers">
+    <section className="grid flex-1 auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-2" aria-label="Numbers">
       <Stat label="Active classes" value={active} sub={`${totals.taught} of ${totals.lessons} lessons taught`} meter={totals.lessons ? totals.taught / totals.lessons : null} accent="var(--color-aqua)" icon={<Waves size={15} />} />
       <Stat label="Swimmers" value={swimmers} sub={`${totals.enrolled} in active classes`} meter={swimmers ? totals.enrolled / swimmers : null} accent="var(--color-blue)" icon={<Users size={15} />} />
       <Stat label="Attendance" value={totals.attendance === null ? null : totals.attendance * 100} format={(n) => `${Math.round(n)}%`} sub="average, marked lessons" meter={totals.attendance} accent="var(--color-good)" icon={<CalendarCheck size={15} />} />
