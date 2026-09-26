@@ -13,23 +13,23 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: React
     <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
       {/* Water panel */}
       <aside className="relative hidden overflow-hidden lg:block">
-        <Caustics className="absolute inset-0" palette="dark" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/30" />
-        <div className="relative flex h-full flex-col justify-between p-10 text-white">
+        <Caustics className="absolute inset-0" />
+        {/* Follows the theme: the scrim fades the water toward the page colour so the text stays readable. */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,color-mix(in_oklab,var(--color-ink)_78%,transparent),color-mix(in_oklab,var(--color-ink)_12%,transparent)_55%,color-mix(in_oklab,var(--color-ink)_35%,transparent))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_38%_at_28%_52%,color-mix(in_oklab,var(--color-ink)_50%,transparent),transparent)]" />
+        <div className="relative flex h-full flex-col justify-between p-10">
           <Link to="/" className="flex w-fit items-center gap-2.5">
             <Logo size={34} />
-            <span className="text-lg font-semibold tracking-tight">
-              Swim<span className="text-[#6ff0e2]">Track</span>
-            </span>
+            <Wordmark size={18} />
           </Link>
           <div>
             <motion.h2
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-md font-display text-5xl font-extrabold leading-[1.04] tracking-[-0.035em]"
+              className="text-gradient max-w-md font-display text-5xl font-extrabold leading-[1.04] tracking-[-0.035em]"
             >
-              Every length, <span className="accent accent-on-dark">logged.</span>
+              Every length, <span className="accent">logged.</span>
             </motion.h2>
             <ul className="mt-8 space-y-3">
               {POINTS.map((p, i) => (
@@ -38,9 +38,9 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: React
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.08, duration: 0.5 }}
-                  className="flex items-center gap-3 text-[15px] text-white/80"
+                  className="flex items-center gap-3 text-[15px] text-fg/80"
                 >
-                  <span className="flex size-6 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur">
+                  <span className="flex size-6 items-center justify-center rounded-full border border-fg/15 bg-panel/60 text-aqua backdrop-blur">
                     <Check size={13} strokeWidth={3} />
                   </span>
                   {p}
@@ -48,7 +48,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: React
               ))}
             </ul>
           </div>
-          <p className="text-xs text-white/50">Move your cursor over the water.</p>
+          <p className="text-xs text-dim">Move your cursor over the water.</p>
         </div>
       </aside>
 

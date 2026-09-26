@@ -28,9 +28,16 @@ export const useTheme = create<{ pref: ThemePref; resolved: Resolved }>(() => {
   return { pref, resolved: typeof window === 'undefined' ? 'dark' : resolve(pref) }
 })
 
-/** Keeps "system" in sync with the OS setting. Call once at startup. */
+/** Keeps "system" in sync with the OS setting, and every open tab in sync with each other. Call once at startup. */
 export function initTheme() {
   apply(useTheme.getState().resolved)
+  window.addEventListener('storage', (e) => {
+    if (e.key !== KEY && e.key !== null) return
+    const pref = readPref()
+    const resolved = resolve(pref)
+    useTheme.setState({ pref, resolved })
+    apply(resolved)
+  })
   media().addEventListener('change', () => {
     const { pref } = useTheme.getState()
     if (pref !== 'system') return
