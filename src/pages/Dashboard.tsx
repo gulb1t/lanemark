@@ -31,15 +31,33 @@ export default function Dashboard() {
   const todays = active
     .map((c) => ({ c, lesson: c.lessons.findIndex((l) => l.date === today) }))
     .filter((x) => x.lesson !== -1)
-  const upcoming = todays.length ? null : nextLesson(active, today)
+  const upcoming = upcomingLessons(active, today, 3)
   const actions = nextActions(active, today)
 
   const totals = (() => {
     const rows = active.flatMap((c) => c.enrollments.map((e) => ({ e, c })))
     const rates = rows.map(({ e, c }) => attendanceSummary(e, c.lessons).rate).filter((r): r is number => r !== null)
     let pass = 0
-    for (const { e, c } of rows) pass += skillProgress(e, c.skills).pass
-    return { attendance: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null, passed: pass }
+    let items = 0
+    for (const { e, c } of rows) {
+      const p = skillProgress(e, c.skills)
+      pass += p.pass
+      items += p.total
+    }
+    let lessons = 0
+    let taught = 0
+    for (const c of active) {
+      lessons += c.lessons.length
+      taught += c.lessons.filter((l) => c.enrollments.some((e) => e.attendance[l.id])).length
+    }
+    return {
+      attendance: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null,
+      passed: pass,
+      items,
+      lessons,
+      taught,
+      enrolled: new Set(rows.map(({ e }) => e.swimmerId)).size,
+    }
   })()
 
   // One-time offer to bring in data from the version before accounts existed.
@@ -91,18 +109,22 @@ export default function Dashboard() {
       </section>
 
       {classes.length > 0 && (
-        <section className="grid items-start gap-4 lg:grid-cols-2" aria-label="Today">
-          {todays.map(({ c, lesson }, i) => (
-            <motion.div key={c.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.5 }}>
-              <TodayCard cls={c} lessonIndex={lesson} swimmers={swimmers} />
-            </motion.div>
-          ))}
-          {!todays.length && upcoming && <NextUp {...upcoming} />}
-          {actions.length > 0 ? <ActionsCard actions={actions} /> : <AllCaughtUp />}
-        </section>
+        // Today and the to-do list on the left; the next class and the numbers alongside on wide screens.
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <section className="grid gap-4" aria-label="Today">
+            {todays.map(({ c, lesson }, i) => (
+              <motion.div key={c.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.5 }}>
+                <TodayCard cls={c} lessonIndex={lesson} swimmers={swimmers} />
+              </motion.div>
+            ))}
+            {actions.length > 0 ? <ActionsCard actions={actions} /> : <AllCaughtUp />}
+          </section>
+          <aside className="grid gap-4" aria-label="At a glance">
+            <StatsCard totals={totals} active={active.length} swimmers={swimmers.length} />
+            {upcoming.length > 0 && <ComingUp items={upcoming} />}
+          </aside>
+        </div>
       )}
-
-      {classes.length > 0 && <StatsCard totals={totals} active={active.length} swimmers={swimmers.length} />}
 
       {classes.length ? (
         <section>
@@ -276,44 +298,54 @@ function AllCaughtUp() {
   )
 }
 
-function nextLesson(classes: SwimClass[], today: string) {
-  let best: { cls: SwimClass; index: number } | null = null
-  for (const c of classes) {
-    const i = c.lessons.findIndex((l) => l.date > today)
-    if (i !== -1 && (!best || c.lessons[i].date < best.cls.lessons[best.index].date)) best = { cls: c, index: i }
-  }
-  return best
+/** The next few dated lessons after today, across every active class. */
+function upcomingLessons(classes: SwimClass[], today: string, n: number) {
+  return classes
+    .flatMap((cls) => cls.lessons.map((lesson, index) => ({ cls, lesson, index })).filter((x) => x.lesson.date > today))
+    .sort((a, b) => a.lesson.date.localeCompare(b.lesson.date))
+    .slice(0, n)
 }
 
-function NextUp({ cls, index }: { cls: SwimClass; index: number }) {
-  const lesson = cls.lessons[index]
+function ComingUp({ items }: { items: ReturnType<typeof upcomingLessons> }) {
   return (
-    <section className="card flex flex-col p-5">
-      <h2 className="text-[16px] font-bold">Next class</h2>
-      <p className="mt-3 font-display text-[1.6rem] font-bold leading-tight tracking-tight">{formatDate(lesson.date, { weekday: 'long' })}</p>
-      <p className="text-[13.5px] text-muted">{formatDate(lesson.date, { month: 'long', day: 'numeric' })}</p>
-      <div className="mt-4 flex items-center gap-2 text-[14px]">
-        <LevelChip level={getLevel(cls.levelId)} />
-        <span className="truncate font-medium">{cls.name}</span>
-      </div>
-      <p className="mt-1 text-[13px] text-dim">
-        Lesson {index + 1}
-        {lesson.topic ? ` · ${lesson.topic}` : ''}
-      </p>
-      <ButtonLink to={`/app/classes/${cls.id}?tab=lessons`} size="sm" className="mt-5 self-start">
-        Plan the lesson
-      </ButtonLink>
+    <section className="card overflow-hidden" aria-labelledby="soon-h">
+      <h2 id="soon-h" className="px-5 pt-5 text-[16px] font-bold">
+        Coming up
+      </h2>
+      <ul className="mt-2 divide-y divide-line">
+        {items.map(({ cls, lesson, index }) => (
+          <li key={lesson.id}>
+            <Link to={`/app/classes/${cls.id}?tab=lessons`} className="group flex items-center gap-3.5 px-5 py-3 transition-colors hover:bg-fg/[0.025]">
+              <span className="flex w-11 shrink-0 flex-col items-center rounded-xl border border-line bg-panel-2/60 py-1.5 leading-none">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-dim">{formatDate(lesson.date, { month: 'short' })}</span>
+                <span className="mt-1 font-display text-[17px] font-bold">{Number(lesson.date.slice(8))}</span>
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <LevelChip level={getLevel(cls.levelId)} />
+                  <span className="truncate text-[14px] font-medium">{cls.name}</span>
+                </span>
+                <span className="mt-0.5 block truncate text-[12.5px] text-dim">
+                  {formatDate(lesson.date, { weekday: 'long' })} · Lesson {index + 1}
+                  {lesson.topic ? ` · ${lesson.topic}` : ''}
+                </span>
+              </span>
+              <ArrowRight size={16} className="shrink-0 text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
 
-function StatsCard({ totals, active, swimmers }: { totals: { attendance: number | null; passed: number }; active: number; swimmers: number }) {
+function StatsCard({ totals, active, swimmers }: { totals: { attendance: number | null; passed: number; items: number; lessons: number; taught: number; enrolled: number }; active: number; swimmers: number }) {
   return (
-    <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <Stat label="Active classes" value={active} accent="var(--color-aqua)" icon={<Waves size={15} />} />
-      <Stat label="Swimmers" value={swimmers} accent="var(--color-blue)" icon={<Users size={15} />} />
-      <Stat label="Attendance" value={totals.attendance === null ? null : totals.attendance * 100} format={(n) => `${Math.round(n)}%`} sub="average, marked lessons" accent="var(--color-good)" icon={<CalendarCheck size={15} />} />
-      <Stat label="Skills passed" value={totals.passed} sub="across active rosters" accent="var(--p-patrol)" icon={<ListChecks size={15} />} />
+    <section className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-2" aria-label="Numbers">
+      <Stat label="Active classes" value={active} sub={`${totals.taught} of ${totals.lessons} lessons taught`} meter={totals.lessons ? totals.taught / totals.lessons : null} accent="var(--color-aqua)" icon={<Waves size={15} />} />
+      <Stat label="Swimmers" value={swimmers} sub={`${totals.enrolled} in active classes`} meter={swimmers ? totals.enrolled / swimmers : null} accent="var(--color-blue)" icon={<Users size={15} />} />
+      <Stat label="Attendance" value={totals.attendance === null ? null : totals.attendance * 100} format={(n) => `${Math.round(n)}%`} sub="average, marked lessons" meter={totals.attendance} accent="var(--color-good)" icon={<CalendarCheck size={15} />} />
+      <Stat label="Skills passed" value={totals.passed} sub={`of ${totals.items} on active rosters`} meter={totals.items ? totals.passed / totals.items : null} accent="var(--p-patrol)" icon={<ListChecks size={15} />} />
     </section>
   )
 }

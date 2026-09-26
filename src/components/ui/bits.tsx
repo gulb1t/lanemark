@@ -115,9 +115,26 @@ export function LevelChip({ level, program }: { level?: Pick<LevelDef, 'short' |
   )
 }
 
-export function Stat({ label, value, format, sub, accent, icon }: { label: string; value: number | null; format?: (n: number) => string; sub?: string; accent: string; icon?: ReactNode }) {
+export function Stat({
+  label,
+  value,
+  format,
+  sub,
+  accent,
+  icon,
+  meter,
+}: {
+  label: string
+  value: number | null
+  format?: (n: number) => string
+  sub?: string
+  accent: string
+  icon?: ReactNode
+  /** Optional 0–1 bar along the bottom of the tile. */
+  meter?: number | null
+}) {
   return (
-    <div className="card spotlight overflow-hidden px-4 py-4">
+    <div className="card spotlight relative flex flex-col overflow-hidden px-4 py-4">
       <div className="relative flex items-center justify-between">
         <span className="eyebrow">{label}</span>
         {icon && (
@@ -130,6 +147,19 @@ export function Stat({ label, value, format, sub, accent, icon }: { label: strin
         {value === null ? <span className="text-dim">—</span> : <NumberTicker value={value} format={format} />}
       </div>
       {sub && <div className="relative mt-1.5 text-xs text-dim">{sub}</div>}
+      {meter != null && (
+        <div className="relative mt-auto pt-3.5" aria-hidden>
+          <div className="h-1 overflow-hidden rounded-full bg-fg/[0.08]">
+            <motion.div
+              className="h-full origin-left rounded-full"
+              style={{ background: accent }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: Math.min(1, Math.max(0, meter)) }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
