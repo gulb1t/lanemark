@@ -6,6 +6,7 @@ import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
 import { EmptyState, LevelChip, Segmented } from '../components/ui/bits'
 import { getLevel } from '../data/curriculum'
+import { useIsMobile } from '../lib/hooks'
 import { useStore } from '../store/useStore'
 import { openDialog } from '../store/useUi'
 
@@ -13,6 +14,7 @@ export default function SwimmersPage() {
   const swimmers = useStore((s) => s.swimmers)
   const classes = useStore((s) => s.classes)
   const [q, setQ] = useState('')
+  const mobile = useIsMobile()
   const [sort, setSort] = useState<'name' | 'recent'>('name')
 
   const rows = useMemo(() => {
@@ -55,11 +57,11 @@ export default function SwimmersPage() {
             </div>
             <Segmented size="sm" label="Sort" value={sort} onChange={setSort} options={[{ value: 'name', label: 'A–Z' }, { value: 'recent', label: 'Newest' }]} />
           </div>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
             {rows.map(({ w, in: inClasses }, i) => (
               <motion.li key={w.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 12) * 0.025 }}>
-                <Link to={`/app/swimmers/${w.id}`} className="card spotlight flex h-full items-start gap-3.5 p-4 transition-transform active:scale-[0.99]">
-                  <Avatar name={w.name} photo={w.photo} size={52} />
+                <Link to={`/app/swimmers/${w.id}`} className="card spotlight flex h-full items-start gap-3.5 p-4 transition-transform active:scale-[0.99] max-sm:items-center max-sm:gap-3 max-sm:p-3">
+                  <Avatar name={w.name} photo={w.photo} size={mobile ? 42 : 52} />
                   <div className="relative min-w-0 flex-1">
                     <h3 className="truncate text-[15px] font-semibold">{w.name}</h3>
                     {w.notes && <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{w.notes}</p>}

@@ -69,20 +69,21 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(i, 12) * 0.025 }}
-              className={`card flex flex-wrap items-start gap-3 p-3 sm:flex-nowrap ${isToday ? 'border-aqua/40 shadow-[var(--glow)]' : ''}`}
+              // Phones: number, date and actions on one row, then topic and notes at full width.
+              className={`card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 p-3 sm:flex sm:items-start sm:gap-3 ${isToday ? 'border-aqua/40 shadow-[var(--glow)]' : ''}`}
             >
               <div
                 className={`relative z-10 flex size-10 shrink-0 flex-col items-center justify-center rounded-xl border font-mono text-sm ${isToday ? 'border-aqua/50 bg-aqua/15 text-aqua' : past ? 'border-line-2 bg-panel-2 text-dim' : 'border-line-2 bg-panel-2 text-muted'}`}
               >
                 {i + 1}
               </div>
-              <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[10rem_1fr]">
+              <div className="contents min-w-0 flex-1 gap-2 sm:grid sm:grid-cols-[10rem_1fr]">
                 <div className="relative">
                   <input type="date" className="input" aria-label={`Lesson ${i + 1} date`} value={l.date} onChange={(e) => updateLesson(cls.id, l.id, { date: e.target.value })} />
                   {isToday && <span className="absolute -top-2 right-2 rounded bg-aqua px-1.5 font-mono text-[9px] font-bold leading-4 text-aqua-fg">TODAY</span>}
                 </div>
                 <input
-                  className="input"
+                  className="input max-sm:col-span-3"
                   aria-label={`Lesson ${i + 1} topic`}
                   list="lesson-topic-suggestions"
                   placeholder="Topic, e.g. Front crawl breathing"
@@ -91,7 +92,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
                   onChange={(e) => updateLesson(cls.id, l.id, { topic: e.target.value })}
                 />
                 <textarea
-                  className="input min-h-10 resize-y sm:col-span-2"
+                  className="input min-h-10 resize-y max-sm:col-span-3 sm:col-span-2"
                   aria-label={`Lesson ${i + 1} notes`}
                   rows={1}
                   placeholder="Notes, equipment, games…"
@@ -100,7 +101,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
                   onChange={(e) => updateLesson(cls.id, l.id, { notes: e.target.value })}
                 />
               </div>
-              <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
+              <div className="col-start-3 row-start-1 flex items-center gap-1 sm:flex-col sm:items-end sm:gap-1">
                 <span className="font-mono text-xs tabular-nums text-dim" title="Present or late / marked">
                   {h.marked ? `${h.present + h.late}/${h.marked} in` : l.date ? formatDate(l.date, { weekday: 'short' }) : '—'}
                 </span>

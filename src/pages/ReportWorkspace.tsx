@@ -352,7 +352,7 @@ function SwimmerReport({ cls, row, level }: { cls: SwimClass; row: Row; level: L
       <section className="card flex flex-wrap items-center gap-4 p-5">
         <Avatar name={swimmer.name} photo={swimmer.photo} size={56} />
         <div className="min-w-0 flex-1">
-          <h1 className="page-title !text-[1.9rem]">{swimmer.name}</h1>
+          <h1 className="page-title !text-[1.9rem] max-sm:!text-[1.45rem]">{swimmer.name}</h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-muted">
             <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${passed ? 'border-good/35 bg-good/10 text-good' : 'border-warn/35 bg-warn/10 text-warn'}`}>
               {passed ? 'Passing' : 'Not yet passing'}

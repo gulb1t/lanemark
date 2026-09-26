@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight, ArrowUp, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { create } from 'zustand'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { nextActions } from '../lib/actions'
 import { isoDate } from '../lib/dates'
@@ -25,7 +26,10 @@ interface Message {
 const STORE_KEY = 'swimtrack:assistant'
 const SUGGESTIONS = ['What should I do today?', 'How do I write report cards?', 'What are the Swimmer 4 skills?', 'How do I turn on two-factor?']
 
-let enabledCache: boolean | null = null
+/** Open state lives here so the phone top bar can open the panel too. `enabled` is null until the server answers. */
+export const useAssistant = create<{ open: boolean; enabled: boolean | null }>(() => ({ open: false, enabled: null }))
+export const openAssistant = () => useAssistant.setState({ open: true })
+const setOpen = (open: boolean) => useAssistant.setState({ open })
 
 /** Class summaries for the assistant: names, levels and counts only. Never swimmer names or records. */
 function buildContext(path: string) {
@@ -58,8 +62,8 @@ function buildContext(path: string) {
 }
 
 export function Assistant() {
-  const [enabled, setEnabled] = useState<boolean | null>(enabledCache)
-  const [open, setOpen] = useState(false)
+  const enabled = useAssistant((s) => s.enabled)
+  const open = useAssistant((s) => s.open)
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       return JSON.parse(sessionStorage.getItem(STORE_KEY) ?? '[]') as Message[]
@@ -75,13 +79,10 @@ export function Assistant() {
   const { pathname, search } = useLocation()
 
   useEffect(() => {
-    if (enabledCache !== null) return
+    if (useAssistant.getState().enabled !== null) return
     api<{ enabled: boolean }>('/assistant')
-      .then((r) => {
-        enabledCache = r.enabled
-        setEnabled(r.enabled)
-      })
-      .catch(() => setEnabled(false))
+      .then((r) => useAssistant.setState({ enabled: r.enabled }))
+      .catch(() => useAssistant.setState({ enabled: false }))
   }, [])
 
   useEffect(() => {
@@ -158,11 +159,12 @@ export function Assistant() {
             whileTap={{ scale: 0.94 }}
             onClick={() => setOpen(true)}
             aria-label="Ask the SwimTrack assistant"
-            className="no-print btn-primary fixed bottom-[5.6rem] right-4 z-40 flex size-12 items-center justify-center gap-2 rounded-full md:bottom-6 md:right-6 md:h-11 md:w-auto md:px-4"
+            // Phones open it from the top bar instead, so nothing floats over lists and buttons.
+            className="no-print btn-primary fixed bottom-6 right-6 z-40 hidden h-11 items-center justify-center gap-2 rounded-full px-4 md:flex"
             style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
           >
             <Sparkles size={17} />
-            <span className="hidden text-[14px] md:inline">Ask</span>
+            <span className="text-[14px]">Ask</span>
           </motion.button>
         )}
       </AnimatePresence>

@@ -66,7 +66,8 @@ export default function SettingsPage() {
 
       {demo && (
         <div className="card flex flex-wrap items-center gap-4 border-aqua/30 p-5">
-          <div className="flex-1">
+          {/* basis-64 lets the button drop below the text on phones instead of squeezing it into a narrow column. */}
+          <div className="flex-1 basis-64">
             <div className="font-semibold">You’re using the demo</div>
             <p className="mt-0.5 text-sm text-muted">Create an account to sync across devices, turn on two-factor sign-in and keep your data safe.</p>
           </div>
@@ -903,15 +904,15 @@ function DataSection() {
         title="Sync"
         description={status === 'demo' ? 'The demo keeps everything in this browser.' : 'Edits save on this device instantly and sync to your account in the background.'}
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
           {[
             ['Classes', String(counts.classes)],
             ['Swimmers', String(counts.swimmers)],
             ['Last synced', status === 'demo' ? 'Local only' : sync.lastSyncedAt ? timeAgo(sync.lastSyncedAt, now) : sync.status === 'offline' ? 'Offline' : '—'],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-2xl border border-line bg-ink/40 p-4">
+            <div key={label} className="rounded-2xl border border-line bg-ink/40 p-3 last:max-sm:col-span-2 sm:p-4">
               <div className="eyebrow">{label}</div>
-              <div className="mt-1 font-mono text-xl font-semibold">{value}</div>
+              <div className="mt-1 font-mono text-lg font-semibold sm:text-xl">{value}</div>
             </div>
           ))}
         </div>

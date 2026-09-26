@@ -36,7 +36,7 @@ export function Showcase() {
 
   return (
     <div ref={ref} className="[perspective:1400px]">
-      <motion.div style={tilt && !reduced ? { rotateX, scale, transformOrigin: 'center top', willChange: 'transform' } : undefined}>
+      <motion.div style={tilt && !reduced ? { rotateX, scale, transformOrigin: 'center top' } : undefined}>
         <div className="rounded-[1.75rem] border border-line-2 bg-panel-2 p-2 shadow-[var(--shadow-lg)]">
           <div className="flex items-center gap-2 px-3 pb-2.5 pt-1.5">
             <span className="size-3 rounded-full bg-[#ff5f57]" />

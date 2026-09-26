@@ -9,6 +9,7 @@ import { LevelChip, ProgressBar, ProgressRing } from '../components/ui/bits'
 import { MenuItem, Popover } from '../components/ui/Popover'
 import { PROGRAMS, getLevel } from '../data/curriculum'
 import { attendanceSummary, passedLevel, pct, skillProgress } from '../lib/stats'
+import { useIsMobile } from '../lib/hooks'
 import { useStore } from '../store/useStore'
 import { confirm, toast, withUndo } from '../store/useUi'
 import NotFound from './NotFound'
@@ -19,6 +20,7 @@ export default function SwimmerProfile() {
   const classes = useStore((s) => s.classes)
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
+  const mobile = useIsMobile()
 
   if (!swimmer) return <NotFound what="swimmer" />
 
@@ -52,11 +54,12 @@ export default function SwimmerProfile() {
       </Link>
 
       <section className="card relative overflow-hidden p-6 sm:p-8">
-        <div className="relative flex flex-wrap items-center gap-6">
+        <div className="relative flex flex-wrap items-center gap-4 sm:gap-6">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
-            <Avatar name={swimmer.name} photo={swimmer.photo} size={96} className="shadow-[var(--glow)]" />
+            <Avatar name={swimmer.name} photo={swimmer.photo} size={mobile ? 64 : 96} className="shadow-[var(--glow)]" />
           </motion.div>
-          <div className="min-w-0 flex-1">
+          {/* basis-48: on phones the buttons wrap below instead of crushing the name into a sliver. */}
+          <div className="min-w-0 flex-1 basis-48">
             <h1 className="page-title">{swimmer.name}</h1>
             <p className="mt-2 max-w-xl whitespace-pre-wrap text-[14.5px] leading-relaxed text-muted">{swimmer.notes || 'No notes yet.'}</p>
           </div>

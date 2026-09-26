@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useInView } from 'motion/react'
 import { Check, Clock, Cloud, CloudOff, Loader2, Minus, Search, ShieldCheck, Smartphone, Wifi, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { LEVEL_BY_ID, LEVELS, PROGRAMS } from '../../data/curriculum'
+import { useIsMobile } from '../../lib/hooks'
 import { generateComment } from '../../lib/report'
 import { Avatar } from '../ui/Avatar'
 import { LevelChip } from '../ui/bits'
@@ -26,7 +27,9 @@ const SKILLS = LEVEL_BY_ID.sw3.skills.filter((s) => s.category === 'Movement & S
 
 export function LiveMatrix() {
   const { ref, n } = useTicker(260)
-  const total = SKILLS.length * KIDS.length
+  // Three swimmers on phones, so the skill names have room.
+  const kids = useIsMobile() ? KIDS.slice(0, 3) : KIDS
+  const total = SKILLS.length * kids.length
   // A deterministic "instructor" fills cells in a zig-zag, a few are marked incomplete, then it resets.
   const step = n % (total + 12)
   return (
@@ -38,28 +41,29 @@ export function LiveMatrix() {
         </div>
         <span className="font-mono text-[11px] text-dim">{Math.min(step, total)}/{total} checked</span>
       </div>
-      <div className="grid grid-cols-[minmax(0,1.7fr)_repeat(5,minmax(0,1fr))] text-[12px]">
+      <div className="grid text-[12px]" style={{ gridTemplateColumns: `minmax(0,${kids.length < 5 ? 2.4 : 1.7}fr) repeat(${kids.length},minmax(0,1fr))` }}>
         <div className="border-b border-line px-4 py-2 text-dim">Skill</div>
-        {KIDS.map((k) => (
+        {kids.map((k) => (
           <div key={k} className="flex flex-col items-center gap-1 border-b border-line py-2">
             <Avatar name={k} size={22} />
             <span className="hidden text-[10px] text-muted sm:block">{k.split(' ')[0]}</span>
           </div>
         ))}
         {SKILLS.map((s, r) => (
-          <Row key={s.id} name={s.name} r={r} step={step} />
+          <Row key={s.id} name={s.name} r={r} step={step} cols={kids.length} />
         ))}
       </div>
     </div>
   )
 }
 
-function Row({ name, r, step }: { name: string; r: number; step: number }) {
+function Row({ name, r, step, cols }: { name: string; r: number; step: number; cols: number }) {
   return (
     <>
-      <div className="truncate border-b border-line/60 px-4 py-2 text-muted">{name}</div>
-      {KIDS.map((_, c) => {
-        const idx = r * KIDS.length + (r % 2 ? KIDS.length - 1 - c : c)
+      {/* Distances are dropped here; "Tread water 30 sec." only needs to read as "Tread water". */}
+      <div className="truncate border-b border-line/60 px-4 py-2 text-muted">{name.replace(/[,\s]+\d.*$/, '')}</div>
+      {Array.from({ length: cols }, (_, c) => {
+        const idx = r * cols + (r % 2 ? cols - 1 - c : c)
         const on = step > idx
         const incomplete = (r * 7 + c * 3) % 11 === 0
         return (

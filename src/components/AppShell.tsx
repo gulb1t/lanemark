@@ -8,7 +8,7 @@ import { toggleTheme, useTheme } from '../lib/theme'
 import { signOut } from '../lib/signout'
 import { logout, useSession } from '../store/useSession'
 import { openDialog, setPaletteOpen, toast, useUi } from '../store/useUi'
-import { Assistant } from './Assistant'
+import { Assistant, openAssistant, useAssistant } from './Assistant'
 import { CommandPalette } from './CommandPalette'
 import { NewClassDialog } from './dialogs/NewClassDialog'
 import { SwimmerDialog } from './dialogs/SwimmerDialog'
@@ -254,6 +254,7 @@ function NewMenu() {
 
 function MobileBar() {
   const scrolled = useScrolled()
+  const assistant = useAssistant((s) => s.enabled)
   return (
     <header
       className={`no-print sticky top-0 z-30 border-b transition-[background-color,border-color,backdrop-filter] duration-300 md:hidden ${scrolled ? 'border-line bg-ink/75 backdrop-blur-xl' : 'border-transparent'}`}
@@ -265,6 +266,11 @@ function MobileBar() {
           <Wordmark />
         </Link>
         <div className="flex-1" />
+        {assistant && (
+          <button type="button" onClick={openAssistant} aria-label="Ask the SwimTrack assistant" className="inline-flex size-9 items-center justify-center rounded-full text-aqua transition-colors hover:bg-fg/[0.07]">
+            <Sparkles size={18} />
+          </button>
+        )}
         <SyncIndicator compact />
         <UserMenu />
       </div>

@@ -301,7 +301,7 @@ dialog::backdrop {
   .page-title {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(2rem, 4.6vw, 2.75rem);
+    font-size: clamp(1.75rem, 4.6vw, 2.75rem);
     line-height: 1.06;
     letter-spacing: -0.035em;
     background: linear-gradient(180deg, var(--color-fg) 40%, color-mix(in oklab, var(--color-fg) 62%, transparent));

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { Archive, CalendarCheck, ChevronLeft, ClipboardList, FileText, ListChecks, Settings, Users } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { LevelChip } from '../components/ui/bits'
 import { PROGRAMS, getLevel } from '../data/curriculum'
@@ -31,18 +31,28 @@ export default function ClassPage() {
   const swimmers = useStore((s) => s.swimmers)
   const [params, setParams] = useSearchParams()
   const swimmerMap = useMemo(() => new Map<string, Swimmer>(swimmers.map((w) => [w.id, w])), [swimmers])
+  const strip = useRef<HTMLDivElement>(null)
+  const requested = params.get('tab')
+
+  // On phones the tab strip scrolls sideways; keep the current tab in view instead of cut off at the edge.
+  useEffect(() => {
+    const el = strip.current
+    const on = el?.querySelector<HTMLElement>('[aria-selected="true"]')
+    if (!el || !on) return
+    const left = on.offsetLeft - el.offsetLeft
+    if (left < el.scrollLeft || left + on.offsetWidth > el.scrollLeft + el.clientWidth - 32) el.scrollTo({ left: left - 16, behavior: 'smooth' })
+  }, [requested])
 
   if (!cls) return <NotFound what="class" />
 
-  const requested = params.get('tab')
   const tab: TabId = TABS.some((t) => t.id === requested) ? (requested as TabId) : 'roster'
   const level = getLevel(cls.levelId)
   const hue = level ? PROGRAMS[level.program].hue : '#8b94a1'
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-5 sm:space-y-7">
       <div className="no-print relative">
-        <Link to="/app" className="relative mb-5 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-fg">
+        <Link to="/app" className="relative mb-3 inline-flex sm:mb-5 items-center gap-1 text-[13px] text-muted transition-colors hover:text-fg">
           <ChevronLeft size={15} /> All classes
         </Link>
         <div className="relative flex flex-wrap items-end justify-between gap-4">
@@ -50,6 +60,10 @@ export default function ClassPage() {
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <LevelChip level={level} />
               {cls.session && <span className="font-mono text-xs text-dim">{cls.session}</span>}
+              {/* Phones: the counts ride along on this line instead of taking a row of their own. */}
+              <span className="text-xs text-dim sm:hidden">
+                · {cls.enrollments.length} swimmers · {cls.lessons.length} lessons
+              </span>
               {cls.archived && (
                 <span className="inline-flex items-center gap-1 rounded-md border border-line-2 px-1.5 py-0.5 text-[11px] text-muted">
                   <Archive size={11} /> Archived
@@ -57,9 +71,9 @@ export default function ClassPage() {
               )}
             </div>
             <h1 className="page-title max-sm:!text-[1.7rem]">{cls.name}</h1>
-            {cls.schedule && <p className="mt-1.5 text-sm text-muted">{cls.schedule}</p>}
+            {cls.schedule && <p className="mt-1 text-sm text-muted sm:mt-1.5">{cls.schedule}</p>}
           </div>
-          <dl className="flex gap-6 font-mono text-sm tabular-nums text-muted">
+          <dl className="flex gap-6 font-mono text-sm tabular-nums text-muted max-sm:hidden">
             {[
               [cls.enrollments.length, 'swimmers'],
               [cls.lessons.length, 'lessons'],
@@ -75,7 +89,12 @@ export default function ClassPage() {
       </div>
 
       <div className="no-print sticky top-[4.5rem] z-20 -mx-4 bg-ink/70 px-4 backdrop-blur-xl sm:top-[5.25rem] sm:mx-0 sm:rounded-2xl sm:border sm:border-line sm:bg-panel/70 sm:px-1.5">
-        <div role="tablist" aria-label="Class sections" className="flex gap-0.5 overflow-x-auto py-1.5 no-scrollbar">
+        <div
+          ref={strip}
+          role="tablist"
+          aria-label="Class sections"
+          className="flex gap-0.5 overflow-x-auto py-1.5 no-scrollbar max-sm:pr-8 max-sm:[mask-image:linear-gradient(90deg,#000_calc(100%-2.5rem),transparent)]"
+        >
           {TABS.map(({ id, label, icon: Icon }) => {
             const active = id === tab
             return (
