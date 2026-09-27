@@ -22,10 +22,11 @@ export function Overlays() {
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => req?.resolve(false)}>
+            {/* For anything destructive, Enter lands on Cancel so a reflex keypress can't delete. */}
+            <Button variant="ghost" onClick={() => req?.resolve(false)} autoFocus={req?.danger}>
               Cancel
             </Button>
-            <Button variant={req?.danger ? 'danger' : 'primary'} onClick={() => req?.resolve(true)} autoFocus>
+            <Button variant={req?.danger ? 'danger' : 'primary'} onClick={() => req?.resolve(true)} autoFocus={!req?.danger}>
               {req?.confirmLabel ?? 'Confirm'}
             </Button>
           </>

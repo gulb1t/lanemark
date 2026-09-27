@@ -6,8 +6,8 @@ import { Popover } from '../../components/ui/Popover'
 import { addDays, formatDate, isoDate } from '../../lib/dates'
 import { lessonHeadcount } from '../../lib/stats'
 import { MAX_LESSONS, useStore } from '../../store/useStore'
-import { withUndo } from '../../store/useUi'
-import type { SwimClass } from '../../types'
+import { confirm, withUndo } from '../../store/useUi'
+import type { Lesson, SwimClass } from '../../types'
 
 export function LessonsTab({ cls }: { cls: SwimClass }) {
   const addLesson = useStore((s) => s.addLesson)
@@ -16,11 +16,35 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
   const setLessonCount = useStore((s) => s.setLessonCount)
   const today = isoDate()
 
-  function remove(lessonId: string, n: number) {
-    withUndo(`Lesson ${n} deleted`, () => removeLesson(cls.id, lessonId))
+  /** What deleting a lesson would lose, in words, or null when it's empty. */
+  function loses(l: Lesson) {
+    const marks = lessonHeadcount(cls, l.id).marked
+    const parts = [l.topic.trim() && 'its topic', l.notes.trim() && 'notes', marks && `attendance for ${marks} swimmer${marks === 1 ? '' : 's'}`].filter(Boolean)
+    return parts.length ? parts.join(', ').replace(/, ([^,]*)$/, ' and $1') : null
   }
 
-  function fillDates(start: string, everyDays: number) {
+  async function remove(lesson: Lesson, n: number) {
+    const lost = loses(lesson)
+    const ok = await confirm({
+      title: `Delete lesson ${n}?`,
+      body: lost ? `This also deletes ${lost}. Later lessons move up one.` : 'Later lessons move up one.',
+      confirmLabel: 'Delete lesson',
+      danger: true,
+    })
+    if (ok) withUndo(`Lesson ${n} deleted`, () => removeLesson(cls.id, lesson.id))
+  }
+
+  async function removeLast() {
+    const last = cls.lessons[cls.lessons.length - 1]
+    const lost = last && loses(last)
+    // An empty lesson at the end goes straight away; one with anything in it asks first.
+    if (lost && !(await confirm({ title: `Remove lesson ${cls.lessons.length}?`, body: `This also deletes ${lost}.`, confirmLabel: 'Remove lesson', danger: true }))) return
+    withUndo(`Lesson ${cls.lessons.length} removed`, () => setLessonCount(cls.id, cls.lessons.length - 1))
+  }
+
+  async function fillDates(start: string, everyDays: number) {
+    const dated = cls.lessons.filter((l) => l.date).length
+    if (dated && !(await confirm({ title: 'Replace the lesson dates?', body: `${dated} lesson${dated === 1 ? ' already has a date' : 's already have dates'}. They’ll all be set from ${formatDate(start)}.`, confirmLabel: 'Replace dates' }))) return
     withUndo('Lesson dates filled in', () => {
       cls.lessons.forEach((l, i) => updateLesson(cls.id, l.id, { date: addDays(start, i * everyDays) }))
     })
@@ -41,7 +65,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
           <div className="flex items-center rounded-xl border border-line-2 bg-panel">
             <IconButton
               label="Remove last lesson"
-              onClick={() => withUndo(`Lesson ${cls.lessons.length} removed`, () => setLessonCount(cls.id, cls.lessons.length - 1))}
+              onClick={removeLast}
               disabled={cls.lessons.length <= 1}
             >
               <Minus size={15} />
@@ -105,7 +129,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
                 <span className="font-mono text-xs tabular-nums text-dim" title="Present or late / marked">
                   {h.marked ? `${h.present + h.late}/${h.marked} in` : l.date ? formatDate(l.date, { weekday: 'short' }) : '—'}
                 </span>
-                <IconButton label={`Delete lesson ${i + 1}`} tone="danger" disabled={cls.lessons.length <= 1} onClick={() => remove(l.id, i + 1)}>
+                <IconButton label={`Delete lesson ${i + 1}`} tone="danger" disabled={cls.lessons.length <= 1} onClick={() => remove(l, i + 1)}>
                   <Trash2 size={15} />
                 </IconButton>
               </div>

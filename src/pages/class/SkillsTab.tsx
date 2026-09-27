@@ -76,7 +76,7 @@ export function SkillsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
       ) : !cls.skills.length ? (
         <EmptyState icon={<ListChecks size={22} />} title="This class has no skills" body="Add your own, or reset to the preset for this level." action={<Button variant="primary" onClick={() => setEditing(true)}>Edit skills</Button>} />
       ) : !cls.enrollments.length ? (
-        <EmptyState icon={<ListChecks size={22} />} title="Add swimmers to check off skills" body="Head to the Roster tab and add members first." />
+        <EmptyState icon={<ListChecks size={22} />} title="Add swimmers to check off skills" body="Head to the Swimmers tab and add members first." />
       ) : view === 'matrix' ? (
         <SkillMatrix cls={cls} swimmers={swimmers} />
       ) : (
@@ -116,10 +116,19 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
   const { mark, anchors } = useMark(cls, swimmers)
   const members = cls.enrollments.filter((e) => swimmers.has(e.swimmerId))
 
-  function passRow(skill: Skill) {
-    withUndo(`Everyone passed “${skill.name}”`, () => {
-      for (const e of members) if (e.skills[skill.id] !== 'pass') mark(e.swimmerId, skill.id, 'pass')
+  async function passRow(skill: Skill) {
+    const changing = members.filter((e) => e.skills[skill.id] !== 'pass')
+    if (!changing.length) return
+    const notYet = changing.filter((e) => e.skills[skill.id] === 'incomplete').length
+    const ok = await confirm({
+      title: `Pass everyone on “${skill.name}”?`,
+      body: `${changing.length} swimmer${changing.length === 1 ? '' : 's'} will be marked as passed${notYet ? `, including ${notYet} marked “not yet”` : ''}.`,
+      confirmLabel: 'Mark as passed',
     })
+    if (ok)
+      withUndo(`Everyone passed “${skill.name}”`, () => {
+        for (const e of changing) mark(e.swimmerId, skill.id, 'pass')
+      })
   }
 
   return (
@@ -303,8 +312,17 @@ function SkillEditor({ cls }: { cls: SwimClass }) {
     () => [...categories].sort((a, b) => cls.skills.filter((s) => s.category === b).length - cls.skills.filter((s) => s.category === a).length)[0] ?? 'Custom',
   )
 
-  function remove(skill: Skill) {
-    withUndo(`Removed “${skill.name}”`, () => removeSkill(cls.id, skill.id))
+  async function remove(skill: Skill) {
+    const marked = cls.enrollments.filter((e) => e.skills[skill.id]).length
+    const ok = await confirm({
+      title: `Remove “${skill.name}”?`,
+      body: marked
+        ? `It comes off this class’s checklist and report cards, along with the marks for ${marked} swimmer${marked === 1 ? '' : 's'}.`
+        : 'It comes off this class’s checklist and report cards.',
+      confirmLabel: 'Remove skill',
+      danger: true,
+    })
+    if (ok) withUndo(`Removed “${skill.name}”`, () => removeSkill(cls.id, skill.id))
   }
 
   async function reset() {

@@ -98,7 +98,7 @@ server/              Hono on Node
 2. **Landing (1 min):** the water reacts to the cursor, toys float by (tap one), and the depth gauge on the right tracks the scroll. Click through the product tour tabs, then show "How a session works" and the privacy page.
 3. **Try the live demo (3 min):** it opens on a class that is teaching *today*.
    - Dashboard: today's class first, and a to-do list (last week's missed attendance, report cards due, skills to assess).
-   - **Take attendance** → *Rest present* → tap one swimmer late: the lesson-done moment appears.
+   - **Take attendance** → *Mark the rest present* → tap one swimmer late: the lesson-done moment appears.
    - Class → **Report cards** → *Continue writing*: tap chips to build a comment, watch the rule warnings and the printed card update, flip swimmers with ← →, then **Print → Whole class**.
 4. **Supervisor angle (1 min):** open **Pool**. The demo coach supervises a sample pool of six instructors: the overview shows which classes need attention and why (click one to see its swimmers, marks and comments), **Rankings** orders classes and instructors by how caught up their records are (never swimmers), and **Team** has the invite code. Every card follows the manual's wording and rules, and the data stays on a server the city runs (`/privacy`).
 

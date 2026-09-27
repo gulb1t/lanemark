@@ -9,7 +9,7 @@ import { Button, ButtonLink, IconButton } from '../../components/ui/Button'
 import { EmptyState, ProgressBar, ProgressRing } from '../../components/ui/bits'
 import { attendanceSummary, passedLevel, pct, skillProgress } from '../../lib/stats'
 import { useStore } from '../../store/useStore'
-import { withUndo } from '../../store/useUi'
+import { confirm, withUndo } from '../../store/useUi'
 import type { Enrollment, Swimmer, SwimClass } from '../../types'
 
 type Dialog = { kind: 'add' } | { kind: 'new' } | { kind: 'edit'; swimmer: Swimmer } | null
@@ -21,8 +21,17 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
     .map((e) => ({ e, swimmer: swimmers.get(e.swimmerId) }))
     .filter((m): m is { e: Enrollment; swimmer: Swimmer } => Boolean(m.swimmer))
 
-  function remove(swimmer: Swimmer) {
-    withUndo(`${swimmer.name} removed from class`, () => useStore.getState().unenroll(cls.id, swimmer.id))
+  async function remove(swimmer: Swimmer, e: Enrollment) {
+    const records = Object.keys(e.attendance).length + Object.keys(e.skills).length + (e.comment.trim() ? 1 : 0)
+    const ok = await confirm({
+      title: `Remove ${swimmer.name} from this class?`,
+      body: records
+        ? `Their attendance, skill marks and report card for ${cls.name} are removed too. They stay in your Swimmers list.`
+        : `They stay in your Swimmers list, so you can add them back any time.`,
+      confirmLabel: 'Remove from class',
+      danger: true,
+    })
+    if (ok) withUndo(`${swimmer.name} removed from class`, () => useStore.getState().unenroll(cls.id, swimmer.id))
   }
 
   return (
@@ -58,7 +67,7 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
                     <IconButton label={`Edit ${swimmer.name}`} onClick={() => setDialog({ kind: 'edit', swimmer })}>
                       <Pencil size={15} />
                     </IconButton>
-                    <IconButton label={`Remove ${swimmer.name} from class`} tone="danger" onClick={() => remove(swimmer)}>
+                    <IconButton label={`Remove ${swimmer.name} from class`} tone="danger" onClick={() => remove(swimmer, e)}>
                       <UserMinus size={15} />
                     </IconButton>
                   </div>
@@ -102,7 +111,7 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
             <span className="flex size-10 items-center justify-center rounded-xl border border-current/20 transition-transform group-hover:rotate-90">
               <Plus size={18} />
             </span>
-            Add member
+            Add swimmers
           </button>
         </div>
       ) : (
@@ -112,7 +121,7 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
           body="Add swimmers to start taking attendance and checking off skills."
           action={
             <Button variant="primary" icon={<Plus size={16} />} onClick={() => setDialog({ kind: 'add' })}>
-              Add members
+              Add swimmers
             </Button>
           }
         />

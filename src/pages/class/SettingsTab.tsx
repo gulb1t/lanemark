@@ -73,7 +73,15 @@ export function SettingsTab({ cls }: { cls: SwimClass }) {
     }
   }
 
-  function toggleArchive() {
+  async function toggleArchive() {
+    if (!cls.archived) {
+      const ok = await confirm({
+        title: `Archive “${cls.name}”?`,
+        body: 'It moves out of your class list and off your to-do list. Everything is kept, and you can restore it any time from Archived.',
+        confirmLabel: 'Archive class',
+      })
+      if (!ok) return
+    }
     withUndo(cls.archived ? 'Class restored' : 'Class archived', () => archiveClass(cls.id, !cls.archived))
   }
 

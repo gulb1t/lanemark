@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useStore } from '../../store/useStore'
-import { toast } from '../../store/useUi'
+import { confirm, toast } from '../../store/useUi'
 import type { Swimmer } from '../../types'
 import { PhotoPicker } from '../PhotoPicker'
 import { Button } from '../ui/Button'
@@ -21,6 +21,7 @@ interface Props {
 export function SwimmerDialog({ swimmer, classId, onClose, onCreated }: Props) {
   const addSwimmer = useStore((s) => s.addSwimmer)
   const updateSwimmer = useStore((s) => s.updateSwimmer)
+  const swimmers = useStore((s) => s.swimmers)
 
   const [name, setName] = useState(swimmer?.name ?? '')
   const [notes, setNotes] = useState(swimmer?.notes ?? '')
@@ -28,9 +29,21 @@ export function SwimmerDialog({ swimmer, classId, onClose, onCreated }: Props) {
 
   const valid = name.trim().length > 0
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault()
     if (!valid) return
+    // The most common slip is adding someone who's already there (from last session, or a double tap).
+    const twin = swimmers.find((w) => w.id !== swimmer?.id && w.name.trim().toLowerCase() === name.trim().toLowerCase())
+    if (
+      twin &&
+      !swimmer &&
+      !(await confirm({
+        title: `You already have a ${twin.name}`,
+        body: classId ? 'Add a second swimmer with the same name? To put the existing one in this class, cancel and choose them from your swimmers instead.' : 'Add a second swimmer with the same name?',
+        confirmLabel: 'Add another',
+      }))
+    )
+      return
     if (swimmer) {
       updateSwimmer(swimmer.id, { name: name.trim(), notes, photo })
       toast('Swimmer updated')
@@ -63,7 +76,7 @@ export function SwimmerDialog({ swimmer, classId, onClose, onCreated }: Props) {
         <Field label="Full name">
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" autoFocus maxLength={120} />
         </Field>
-        <Field label="Notes" hint="Private to you: allergies, goals, things to remember on deck.">
+        <Field label="Notes" hint="Allergies, goals, things to remember on deck. Seen by you and, if you’re in a pool, its supervisors.">
           <textarea className="input min-h-24 resize-y" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={4000} />
         </Field>
       </form>

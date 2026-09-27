@@ -9,7 +9,7 @@ import { EmptyState, Kbd, Segmented } from '../../components/ui/bits'
 import { formatDate, isoDate } from '../../lib/dates'
 import { attendanceSummary, lessonHeadcount, pct } from '../../lib/stats'
 import { useStore } from '../../store/useStore'
-import { withUndo } from '../../store/useUi'
+import { confirm, withUndo } from '../../store/useUi'
 import type { AttendanceStatus, Swimmer, SwimClass } from '../../types'
 
 const LOOK: Record<AttendanceStatus, { cls: string; icon: typeof Check; label: string; key: string }> = {
@@ -41,7 +41,7 @@ export function AttendanceTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map
   }
 
   if (!cls.enrollments.length) {
-    return <EmptyState icon={<CalendarCheck size={22} />} title="Add swimmers to take attendance" body="Head to the Roster tab and add members first." />
+    return <EmptyState icon={<CalendarCheck size={22} />} title="Add swimmers to take attendance" body="Head to the Swimmers tab and add members first." />
   }
 
   return (
@@ -186,11 +186,18 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
                 size="sm"
                 variant="ghost"
                 icon={<Eraser size={14} />}
-                onClick={() =>
-                  withUndo(`Cleared lesson ${index + 1}`, () => {
-                    for (const m of members) setAttendance(cls.id, m.swimmerId, lesson.id, undefined)
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: `Clear lesson ${index + 1} attendance?`,
+                    body: `This removes the ${head.marked} mark${head.marked === 1 ? '' : 's'} you’ve made for this lesson.`,
+                    confirmLabel: 'Clear marks',
+                    danger: true,
                   })
-                }
+                  if (ok)
+                    withUndo(`Cleared lesson ${index + 1}`, () => {
+                      for (const m of members) setAttendance(cls.id, m.swimmerId, lesson.id, undefined)
+                    })
+                }}
               >
                 Clear
               </Button>
@@ -206,7 +213,7 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
               }
               disabled={!unmarked}
             >
-              Rest present
+              Mark the rest present
             </Button>
           </div>
         </div>
@@ -333,7 +340,18 @@ function GridMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
                 <div className="font-mono text-[10px] text-dim">{l.date ? formatDate(l.date, { month: 'numeric', day: 'numeric' }) : '·'}</div>
                 <button
                   type="button"
-                  onClick={() => withUndo(`Everyone present for lesson ${i + 1}`, () => markLesson(cls.id, l.id, 'present'))}
+                  onClick={async () => {
+                    // Only ask when it would overwrite someone marked late or absent.
+                    const changed = cls.enrollments.filter((e) => e.attendance[l.id] && e.attendance[l.id] !== 'present').length
+                    const ok =
+                      !changed ||
+                      (await confirm({
+                        title: `Mark everyone present for lesson ${i + 1}?`,
+                        body: `${changed} swimmer${changed === 1 ? ' is' : 's are'} marked late or absent. They’ll be changed to present.`,
+                        confirmLabel: 'Mark everyone present',
+                      }))
+                    if (ok) withUndo(`Everyone present for lesson ${i + 1}`, () => markLesson(cls.id, l.id, 'present'))
+                  }}
                   className="mt-1 rounded px-1 text-[10px] text-dim transition-colors hover:bg-good/10 hover:text-good"
                   title={`Mark everyone present for lesson ${i + 1}`}
                 >

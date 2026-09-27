@@ -16,7 +16,7 @@ import { SkillsTab } from './class/SkillsTab'
 import NotFound from './NotFound'
 
 const TABS = [
-  { id: 'roster', label: 'Roster', icon: Users },
+  { id: 'roster', label: 'Swimmers', icon: Users },
   { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
   { id: 'skills', label: 'Skills', icon: ListChecks },
   { id: 'lessons', label: 'Lessons', icon: ClipboardList },

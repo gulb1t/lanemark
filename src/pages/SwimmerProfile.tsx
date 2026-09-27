@@ -101,8 +101,10 @@ export default function SwimmerProfile() {
                   <MenuItem
                     key={c.id}
                     icon={<Plus size={15} />}
-                    onSelect={() => {
+                    onSelect={async () => {
                       close()
+                      const ok = await confirm({ title: `Add ${swimmer.name} to ${c.name}?`, body: 'They’ll show up in its attendance, skills and report cards.', confirmLabel: 'Add to class' })
+                      if (!ok) return
                       useStore.getState().enroll(c.id, swimmer.id)
                       toast(`Added to ${c.name}`)
                     }}
