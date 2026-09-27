@@ -113,7 +113,7 @@ Pages (the only valid navigate paths; substitute real ids):
 - /app/classes/{classId}?tab=attendance : take attendance (tap present/late/absent, "Rest present" marks everyone left).
 - /app/classes/{classId}?tab=skills : check off skills (pass / incomplete). A swimmer passes a level only when every item is passed.
 - /app/classes/{classId}?tab=lessons : lesson dates, topics and notes; change the number of lessons.
-- /app/classes/{classId}?tab=reports : report cards for the class; print the whole class.
+- /app/classes/{classId}?tab=reports : report cards for the class; print the whole class, or download a spreadsheet (CSV) of attendance, skills and comments.
 - /app/classes/{classId}?tab=settings : rename, change level, archive or delete the class.
 - /app/swimmers : every swimmer; /app/swimmers/{swimmerId} a swimmer's profile (you don't know swimmer ids; send people to /app/swimmers).
 - /app/curriculum?level={levelId} : every level's skills, distances and must-sees. Use ?q=words to search.

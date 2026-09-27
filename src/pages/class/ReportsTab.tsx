@@ -1,10 +1,11 @@
 import { motion } from 'motion/react'
-import { ArrowRight, CircleCheck, CircleDashed, FileText, PenLine, Printer, Wand2 } from 'lucide-react'
+import { ArrowRight, CircleCheck, CircleDashed, FileSpreadsheet, FileText, PenLine, Printer, Wand2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PrintReports } from '../../components/PrintReports'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button, ButtonLink } from '../../components/ui/Button'
 import { EmptyState, ProgressBar } from '../../components/ui/bits'
+import { classCsv, csvFileName } from '../../lib/csv'
 import { nextLevelLabel, printReports } from '../../lib/print'
 import { draftComment } from '../../lib/report'
 import { isReportDone } from '../../lib/reportRules'
@@ -37,6 +38,17 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
     })
   }
 
+  /** The whole class as a spreadsheet, for supervisors and front-desk records. */
+  function downloadCsv() {
+    const url = URL.createObjectURL(new Blob([classCsv(cls, swimmers)], { type: 'text/csv;charset=utf-8' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = csvFileName(cls)
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    toast(`Downloaded ${a.download}`)
+  }
+
   function print() {
     if (written < rows.length) toast(`${rows.length - written} report card${rows.length - written === 1 ? ' has' : 's have'} no comment yet`, 'error')
     printReports()
@@ -60,6 +72,9 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
           </Button>
           <Button icon={<Printer size={15} />} onClick={print}>
             Print all
+          </Button>
+          <Button icon={<FileSpreadsheet size={15} />} onClick={downloadCsv} title="Attendance, skills and comments for the whole class, as a CSV file">
+            Spreadsheet
           </Button>
           <ButtonLink variant="primary" to={workspace(nextUp.swimmer.id)} icon={<PenLine size={15} />}>
             {done === rows.length ? 'Review cards' : done ? 'Continue writing' : 'Start writing'}
