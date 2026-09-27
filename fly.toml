@@ -1,5 +1,5 @@
 # Fly.io, in Toronto so swimmer data stays in Canada. See docs/HOSTING.md.
-app = "swimtrack"            # must be unique on Fly: change it to something like "swimtrack-yourname"
+app = "swimtrack"            # live at https://swimtrack.fly.dev; a copy of this repo needs its own unique name
 primary_region = "yyz"       # Toronto
 
 [env]
