@@ -21,7 +21,7 @@ function serviceWorker(): Plugin {
       })
     },
     generateBundle(_options, bundle) {
-      const built = Object.keys(bundle).filter((f) => /\.(js|css|svg|png)$/.test(f) || /latin-(wght|400)/.test(f))
+      const built = Object.keys(bundle).filter((f) => /\.(js|css|svg|png)$/.test(f) || /latin-(wght|400).*\.woff2$/.test(f))
       const pub = readdirSync('public').filter((f) => f !== 'sw.js')
       const assets = [...built, ...pub].map((f) => `/${f}`)
       const version = createHash('sha256').update(assets.join()).digest('hex').slice(0, 12)

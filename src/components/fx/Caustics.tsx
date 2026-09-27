@@ -120,6 +120,7 @@ export function Caustics({
   soft = 0,
   drops = false,
   palette = 'auto',
+  bleedTop = 0,
 }: {
   className?: string
   resolution?: number
@@ -128,6 +129,8 @@ export function Caustics({
   drops?: boolean
   /** 'dark' keeps night-pool colours in light mode too (panels that always carry white text). */
   palette?: 'auto' | 'dark'
+  /** Share of the viewport height the canvas extends above its section, so drops land in the part people see. */
+  bleedTop?: number
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const theme = useTheme((s) => s.resolved)
@@ -194,7 +197,9 @@ export function Caustics({
       if (!drops || now < nextDrop) return
       const x = firstDrop ? 0.5 : 0.2 + Math.random() * 0.6
       const y = firstDrop ? 0.55 : 0.3 + Math.random() * 0.45
-      addRipple(canvas!.width * x, canvas!.height * y, now)
+      // y counts up from the bottom, so leaving out the bleed keeps drops in the visible part.
+      const visible = canvas!.height - window.innerHeight * bleedTop * resolution
+      addRipple(canvas!.width * x, Math.max(0, visible) * y, now)
       firstDrop = false
       nextDrop = now + 3.5 + Math.random() * 3.5
     }
@@ -282,7 +287,7 @@ export function Caustics({
       gl.deleteBuffer(buf)
       gl.deleteProgram(program)
     }
-  }, [resolution, interactive, soft, drops])
+  }, [resolution, interactive, soft, drops, bleedTop])
 
   return (
     <canvas

@@ -71,12 +71,21 @@ export default function Landing() {
 function Hero({ signedIn }: { signedIn: boolean }) {
   return (
     <section className="relative flex min-h-[100svh] flex-col items-center justify-center px-4 pb-24 pt-28 text-center">
-      <div className="absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(180deg,#000_55%,transparent)]">
-        <Caustics className="h-full w-full" soft={1} resolution={0.3} drops />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-ink)_90%)]" />
-        {/* Toys float above the edge vignette but under the fog behind the headline. */}
-        <Floaties />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,color-mix(in_oklab,var(--color-ink)_55%,transparent),transparent_80%)]" />
+      {/*
+        The water starts 40vh above the page, so pulling down past the top (the rubber-band bounce on phones and
+        trackpads) shows more pool instead of a black gap. The fog and toys stay pinned to the hero itself.
+      */}
+      <div className="absolute inset-x-0 bottom-0 top-[-40vh] -z-10 overflow-hidden [mask-image:linear-gradient(180deg,#000_calc(40vh+55svh),transparent)]">
+        <Caustics className="h-full w-full" soft={1} resolution={0.3} drops bleedTop={0.4} />
+        {/* The hero's edge fade, continued upward: same ellipse, centred on the hero, so there's no seam. */}
+        <div className="absolute inset-x-0 top-0 h-[40vh] bg-[radial-gradient(ellipse_70.71%_90svh_at_50%_calc(100%+50svh),transparent_30%,var(--color-ink)_90%)]" />
+        <div className="absolute inset-x-0 bottom-0 top-[40vh]">
+          {/* Edge fade. Taller than wide, so the water reaches the top of the screen instead of going dark there. */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70.71%_90svh_at_50%_50%,transparent_30%,var(--color-ink)_90%)]" />
+          {/* Toys float above the edge vignette but under the fog behind the headline. */}
+          <Floaties />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,color-mix(in_oklab,var(--color-ink)_55%,transparent),transparent_80%)]" />
+        </div>
       </div>
 
       <motion.a
