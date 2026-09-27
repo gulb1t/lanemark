@@ -6,7 +6,7 @@ import { Logo, Wordmark } from '../components/Logo'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 const GLANCE = [
-  { icon: Eye, title: 'Swimmers stay with their instructor', body: 'Rosters are tied to one instructor account. Pool supervisors see counts, never names. Nothing is sold.' },
+  { icon: Eye, title: 'Only your team sees your classes', body: 'Rosters belong to the instructor’s account. In a pool, its supervisors can view them. Nothing is public or sold.' },
   { icon: HardDrive, title: 'Stored where you host it', body: 'One server and one database that your organisation runs, in the region you choose.' },
   { icon: Cookie, title: 'No tracking', body: 'No analytics, ads or third-party scripts. Cookies are only used to keep you signed in.' },
   { icon: Trash2, title: 'Deleted when you say', body: 'Swimmers, classes or the whole account can be deleted at any time, straight away.' },
@@ -65,11 +65,11 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
       <>
         <p>Each instructor account only ever reads and writes its own classes and swimmers. There is no public page and no search.</p>
         <p>
-          <b>Pools.</b> An instructor can join their facility’s pool with an invite code from a supervisor. The pool’s supervisors then see counts for that instructor’s
-          current classes: class name and level, lessons taught, attendance rate, how many skills are assessed and passed, and how many report cards are done. The server
-          works these out and sends only the numbers, so supervisors never receive swimmers’ names, photos, notes, individual marks or attendance, or report card comments.
-          Supervisors also see members’ names and email addresses. If a supervisor turns on the leaderboard, instructors see each other’s names and caught-up scores.
-          Swimmers are never ranked. Leaving the pool, or being removed from it, stops the sharing straight away.
+          <b>Pools.</b> An instructor can join their facility’s pool with an invite code from a supervisor, and the join screen says what that shares. The pool’s
+          supervisors can then view that instructor’s classes: swimmers’ names, photos and notes, attendance, skill marks, report card comments and next levels, and
+          they can print the report cards or download a class as a spreadsheet. They can’t change anything. Supervisors also see members’ names and email addresses.
+          Other instructors in the pool never see each other’s classes; if a supervisor turns on the leaderboard, they see names and caught-up scores only. Swimmers are
+          never ranked. Leaving the pool, or being removed from it, ends a supervisor’s access straight away.
         </p>
         <p>
           People who administer the server and its database can technically access stored records, as with any system. Limit that access the way you would for any

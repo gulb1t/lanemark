@@ -131,7 +131,7 @@ How things work:
 - Two-factor: Settings → Security. Trusted devices can skip the code for 30 days.
 - Forgot password: the sign-in page has "Forgot password?"; signed in, Settings → Security → "Email me a reset link".
 - Demo mode keeps data in the browser only.
-- Pools: instructors join their facility's pool with an invite code. Supervisors see counts for every member's classes (lessons taught, attendance rate, skills assessed and passed, report cards done) and rankings of how caught up classes and instructors are; never swimmers' names, marks or comments. Swimmers are never ranked. The leaderboard is only shown to instructors if a supervisor turns it on.
+- Pools: instructors join their facility's pool with an invite code. Supervisors get an overview of every member's classes (lessons taught, attendance rate, skills assessed and passed, report cards done) and rankings of how caught up classes and instructors are, and can open any member's class view-only (swimmers, attendance, marks, comments) to print or export it. Only the instructor can edit. Swimmers are never ranked. The leaderboard is only shown to instructors if a supervisor turns it on.
 
 Levels (id = name): ${LEVEL_LIST}. "Swimmer 4" means the level sw4, not a person. Use get_level for skill questions instead of guessing.
 
