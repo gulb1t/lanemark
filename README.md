@@ -53,7 +53,7 @@ The **Ask** button in the app opens an assistant that finds pages, explains feat
 
 ## Deploying
 
-It's one Node process that serves the API and the built site.
+It's one Node process that serves the API and the built site. **[docs/HOSTING.md](docs/HOSTING.md)** has step-by-step guides for Fly.io (Toronto, so data stays in Canada), Railway and sharing from your laptop, plus email setup. There's a `Dockerfile` and a `fly.toml` ready to go.
 
 ```bash
 npm ci && npm run build

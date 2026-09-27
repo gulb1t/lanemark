@@ -1,0 +1,31 @@
+# Fly.io, in Toronto so swimmer data stays in Canada. See docs/HOSTING.md.
+app = "swimtrack"            # must be unique on Fly: change it to something like "swimtrack-yourname"
+primary_region = "yyz"       # Toronto
+
+[env]
+  NODE_ENV = "production"
+  DATA_DIR = "/data"
+  TRUST_PROXY = "1"
+
+# SQLite lives on this volume, so it survives deploys. One machine only: SQLite isn't shared between machines.
+[[mounts]]
+  source = "swimtrack_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"   # stays awake, so a demo never waits on a cold start
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
