@@ -1,17 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="bg" x1="8" y1="4" x2="58" y2="62" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#4ce8d4"/>
-      <stop offset="1" stop-color="#2f6bf2"/>
+    <linearGradient id="tile" x1="32" y1="0" x2="32" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#132034"/>
+      <stop offset="1" stop-color="#0a111c"/>
     </linearGradient>
-    <linearGradient id="shine" x1="32" y1="0" x2="32" y2="34" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    <linearGradient id="stroke" x1="11" y1="32" x2="53" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3ce0cf"/>
+      <stop offset="1" stop-color="#2f8cff"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="17" fill="url(#bg)"/>
-  <rect width="64" height="64" rx="17" fill="url(#shine)"/>
+  <rect width="64" height="64" rx="15" fill="url(#tile)"/>
+  <rect x=".5" y=".5" width="63" height="63" rx="14.5" fill="none" stroke="#fff" stroke-opacity=".12"/>
   <!-- a length of water that finishes as a check mark -->
-  <path d="M12 37.5c4.2-4.6 8.4-4.6 12.6 0s8.4 4.6 12.6 0L50.5 22" fill="none" stroke="#fff" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M12 48c4.2-4.6 8.4-4.6 12.6 0s8.4 4.6 12.6 0c4.2-4.6 8.4-4.6 12.6 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="4.2" stroke-linecap="round"/>
+  <path d="M11 35c3.6-6.4 8.8-6.4 12.8 0l6.4 8.4L53 18.5" fill="none" stroke="url(#stroke)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -18,6 +18,12 @@ interface Parts {
 }
 
 function render({ to, subject, preview, heading, paragraphs, action, footnote }: Parts): Mail {
+  // The app icon, from the same site the email links to. Mail clients don't show SVG, so it's the PNG; emails
+  // without a link get a plain tile in the logo's colours instead.
+  const logo = action
+    ? `<img src="${esc(new URL(action.url).origin)}/icon-192.png" width="26" height="26" alt="" style="display:inline-block;border-radius:7px;vertical-align:middle;margin-right:8px">`
+    : '<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background:#0f1a2b;vertical-align:middle;margin-right:8px"></span>'
+
   const button = action
     ? `<tr><td style="padding:8px 0 24px"><a href="${esc(action.url)}" style="display:inline-block;background:#0a1020;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 26px;border-radius:999px">${esc(action.label)}</a></td></tr>
        <tr><td style="font-size:13px;line-height:1.6;color:#667085;padding-bottom:24px">Or paste this link into your browser:<br><a href="${esc(action.url)}" style="color:#2657e0;word-break:break-all">${esc(action.url)}</a></td></tr>`
@@ -30,7 +36,7 @@ function render({ to, subject, preview, heading, paragraphs, action, footnote }:
 <tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
     <tr><td style="padding:0 4px 18px;font-size:17px;font-weight:700;letter-spacing:-0.01em">
-      <span style="display:inline-block;width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#4ce8d4,#2f6bf2);vertical-align:middle;margin-right:8px"></span>SwimTrack
+      ${logo}SwimTrack
     </td></tr>
     <tr><td style="background:#ffffff;border:1px solid #e4e8ee;border-radius:20px;padding:32px 32px 8px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
