@@ -29,7 +29,10 @@ function useMark(cls: SwimClass, swimmers: Map<string, Swimmer>) {
     const before = cls.enrollments.find((e) => e.swimmerId === swimmerId)
     const wasPassed = before ? passedLevel(before, cls.skills) : false
     useStore.getState().setSkillStatus(cls.id, swimmerId, skillId, status)
-    const after = useStore.getState().classes.find((c) => c.id === cls.id)?.enrollments.find((e) => e.swimmerId === swimmerId)
+    const after = useStore
+      .getState()
+      .classes.find((c) => c.id === cls.id)
+      ?.enrollments.find((e) => e.swimmerId === swimmerId)
     try {
       navigator.vibrate?.(!wasPassed && after && passedLevel(after, cls.skills) ? [12, 50, 12, 50, 24] : 8)
     } catch {
@@ -61,8 +64,22 @@ export function SkillsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
             value={view}
             onChange={setView}
             options={[
-              { value: 'matrix', label: <><LayoutGrid size={14} /> Everyone</> },
-              { value: 'swimmer', label: <><UserRound size={14} /> One swimmer</> },
+              {
+                value: 'matrix',
+                label: (
+                  <>
+                    <LayoutGrid size={14} /> Everyone
+                  </>
+                ),
+              },
+              {
+                value: 'swimmer',
+                label: (
+                  <>
+                    <UserRound size={14} /> One swimmer
+                  </>
+                ),
+              },
             ]}
           />
         )}
@@ -74,7 +91,16 @@ export function SkillsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
       {editing ? (
         <SkillEditor cls={cls} />
       ) : !cls.skills.length ? (
-        <EmptyState icon={<ListChecks size={22} />} title="This class has no skills" body="Add your own, or reset to the preset for this level." action={<Button variant="primary" onClick={() => setEditing(true)}>Edit skills</Button>} />
+        <EmptyState
+          icon={<ListChecks size={22} />}
+          title="This class has no skills"
+          body="Add your own, or reset to the preset for this level."
+          action={
+            <Button variant="primary" onClick={() => setEditing(true)}>
+              Edit skills
+            </Button>
+          }
+        />
       ) : !cls.enrollments.length ? (
         <EmptyState icon={<ListChecks size={22} />} title="Add swimmers to check off skills" body="Head to the Swimmers tab and add members first." />
       ) : view === 'matrix' ? (
@@ -94,7 +120,11 @@ function Cell({ value, onClick, label }: { value: SkillStatus | undefined; onCli
       onClick={onClick}
       aria-label={label}
       className={`inline-flex size-8 items-center justify-center rounded-lg border transition-colors ${
-        value === 'pass' ? 'border-good/45 bg-good/15 text-good' : value === 'incomplete' ? 'border-bad/45 bg-bad/15 text-bad' : 'border-dashed border-line-2 hover:border-dim'
+        value === 'pass'
+          ? 'border-good/45 bg-good/15 text-good'
+          : value === 'incomplete'
+            ? 'border-warn/50 bg-warn/15 text-warn'
+            : 'border-dashed border-line-2 hover:border-dim'
       }`}
     >
       {value === 'pass' && (
@@ -132,70 +162,93 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
   }
 
   return (
-    <div className="card overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-line">
-            <th className="sticky left-0 z-10 min-w-64 bg-panel px-4 py-3 text-left font-medium text-muted">Skill</th>
-            {members.map((e) => {
-              const swimmer = swimmers.get(e.swimmerId)!
-              const p = skillProgress(e, cls.skills)
-              const done = passedLevel(e, cls.skills)
-              return (
-                <th key={e.swimmerId} className="min-w-20 px-2 py-3 text-center font-normal">
-                  <div className="flex flex-col items-center gap-1" ref={(el) => void anchors.set(e.swimmerId, el)}>
-                    <ProgressRing value={p.ratio} size={38} stroke={2.5} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
-                      <Avatar name={swimmer.name} photo={swimmer.photo} size={30} />
-                    </ProgressRing>
-                    <span className="max-w-20 truncate text-xs font-medium text-fg">{firstName(swimmer.name)}</span>
-                    <span className={`font-mono text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
-                      {p.pass}/{p.total}
-                    </span>
-                  </div>
-                </th>
-              )
-            })}
-            <th className="w-10" />
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((cat) => (
-            <Fragment key={cat}>
-              <tr className="bg-fg/[0.025]">
-                <td colSpan={members.length + 2} className="sticky left-0 px-4 py-1.5">
-                  <span className="eyebrow">{cat}</span>
-                </td>
-              </tr>
-              {cls.skills
-                .filter((s) => s.category === cat)
-                .map((skill) => (
-                  <tr key={skill.id} className="group border-b border-line/50 hover:bg-fg/[0.02]">
-                    <th scope="row" className="sticky left-0 z-10 bg-panel px-4 py-2 text-left align-middle font-normal" title={mustSeeTitle(skill)}>
-                      <span className="flex items-start gap-1.5 leading-snug">
-                        {skill.name}
-                        {skill.mustSees && <Info size={12} className="mt-1 shrink-0 text-dim" aria-label="Has must-see comments" />}
+    <div className="space-y-2">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
+        <span>Tap a box to mark it:</span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-flex size-5 items-center justify-center rounded-md border border-good/45 bg-good/15 text-good">
+            <Check size={12} strokeWidth={3} />
+          </span>
+          once for passed
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-flex size-5 items-center justify-center rounded-md border border-warn/50 bg-warn/15 text-warn">
+            <Minus size={12} strokeWidth={3} />
+          </span>
+          twice for not yet
+        </span>
+        <span>three times to clear.</span>
+      </p>
+      <div className="card overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-line">
+              <th className="sticky left-0 z-10 min-w-64 bg-panel px-4 py-3 text-left font-medium text-muted">Skill</th>
+              {members.map((e) => {
+                const swimmer = swimmers.get(e.swimmerId)!
+                const p = skillProgress(e, cls.skills)
+                const done = passedLevel(e, cls.skills)
+                return (
+                  <th key={e.swimmerId} className="min-w-20 px-2 py-3 text-center font-normal">
+                    <div className="flex flex-col items-center gap-1" ref={(el) => void anchors.set(e.swimmerId, el)}>
+                      <ProgressRing value={p.ratio} size={38} stroke={2.5} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
+                        <Avatar name={swimmer.name} photo={swimmer.photo} size={30} />
+                      </ProgressRing>
+                      <span className="max-w-20 truncate text-xs font-medium text-fg">{firstName(swimmer.name)}</span>
+                      <span className={`font-mono text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
+                        {p.pass}/{p.total}
                       </span>
-                    </th>
-                    {members.map((e) => (
-                      <td key={e.swimmerId} className="p-1 text-center">
-                        <Cell
-                          value={e.skills[skill.id]}
-                          onClick={() => mark(e.swimmerId, skill.id, nextStatus(e.skills[skill.id]))}
-                          label={`${swimmers.get(e.swimmerId)?.name}, ${skill.name}: ${e.skills[skill.id] === 'pass' ? 'passed' : e.skills[skill.id] === 'incomplete' ? 'incomplete' : 'not assessed'}`}
-                        />
+                    </div>
+                  </th>
+                )
+              })}
+              <th className="w-10" />
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((cat) => (
+              <Fragment key={cat}>
+                <tr className="bg-fg/[0.025]">
+                  <td colSpan={members.length + 2} className="sticky left-0 px-4 py-1.5">
+                    <span className="eyebrow">{cat}</span>
+                  </td>
+                </tr>
+                {cls.skills
+                  .filter((s) => s.category === cat)
+                  .map((skill) => (
+                    <tr key={skill.id} className="group border-b border-line/50 hover:bg-fg/[0.02]">
+                      <th scope="row" className="sticky left-0 z-10 bg-panel px-4 py-2 text-left align-middle font-normal" title={mustSeeTitle(skill)}>
+                        <span className="flex items-start gap-1.5 leading-snug">
+                          {skill.name}
+                          {skill.mustSees && <Info size={12} className="mt-1 shrink-0 text-dim" aria-label="Has must-see comments" />}
+                        </span>
+                      </th>
+                      {members.map((e) => (
+                        <td key={e.swimmerId} className="p-1 text-center">
+                          <Cell
+                            value={e.skills[skill.id]}
+                            onClick={() => mark(e.swimmerId, skill.id, nextStatus(e.skills[skill.id]))}
+                            label={`${swimmers.get(e.swimmerId)?.name}, ${skill.name}: ${e.skills[skill.id] === 'pass' ? 'passed' : e.skills[skill.id] === 'incomplete' ? 'incomplete' : 'not assessed'}`}
+                          />
+                        </td>
+                      ))}
+                      <td className="pr-2">
+                        <IconButton
+                          label={`Pass “${skill.name}” for everyone`}
+                          size="sm"
+                          onClick={() => passRow(skill)}
+                          className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                        >
+                          <CheckCheck size={14} />
+                        </IconButton>
                       </td>
-                    ))}
-                    <td className="pr-2">
-                      <IconButton label={`Pass “${skill.name}” for everyone`} size="sm" onClick={() => passRow(skill)} className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100">
-                        <CheckCheck size={14} />
-                      </IconButton>
-                    </td>
-                  </tr>
-                ))}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
+                    </tr>
+                  ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -239,7 +292,9 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
           <Avatar name={swimmer.name} photo={swimmer.photo} size={40} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[15px] font-semibold">{swimmer.name}</div>
-            <div className={`font-mono text-xs ${done ? 'text-good' : 'text-muted'}`}>{done ? 'Every skill passed' : `${p.pass} passed · ${p.incomplete} incomplete · ${p.unmarked} to assess`}</div>
+            <div className={`font-mono text-xs ${done ? 'text-good' : 'text-muted'}`}>
+              {done ? 'Every skill passed' : `${p.pass} passed · ${p.incomplete} incomplete · ${p.unmarked} to assess`}
+            </div>
           </div>
           <ProgressRing value={p.ratio} size={44} stroke={4} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
             <span className="font-mono text-[10px] font-semibold">{Math.round(p.ratio * 100)}%</span>
@@ -259,7 +314,12 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
                   return (
                     <li key={skill.id} className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
-                        <button type="button" onClick={() => setOpenSkill(expanded ? null : skill.id)} className="flex min-w-0 flex-1 items-start gap-1.5 text-left text-[14px] leading-snug" disabled={!skill.mustSees}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenSkill(expanded ? null : skill.id)}
+                          className="flex min-w-0 flex-1 items-start gap-1.5 text-left text-[14px] leading-snug"
+                          disabled={!skill.mustSees}
+                        >
                           {skill.mustSees && <ChevronDown size={14} className={`mt-0.5 shrink-0 text-dim transition-transform ${expanded ? 'rotate-180' : ''}`} />}
                           <span>{skill.name}</span>
                         </button>
@@ -272,18 +332,28 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
                                 type="button"
                                 whileTap={{ scale: 0.88 }}
                                 aria-pressed={on}
-                                aria-label={`${skill.name}: ${s === 'pass' ? 'passed' : 'incomplete'}`}
+                                aria-label={`${skill.name}: ${s === 'pass' ? 'passed' : 'not yet'}`}
                                 onClick={() => mark(e.swimmerId, skill.id, on ? undefined : s)}
-                                className={`flex h-10 w-12 items-center justify-center rounded-xl border transition-colors ${on ? (s === 'pass' ? 'border-good/45 bg-good/15 text-good' : 'border-bad/45 bg-bad/15 text-bad') : 'border-line-2 text-dim hover:text-muted'}`}
+                                className={`inline-flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors ${on ? (s === 'pass' ? 'border-good bg-good text-ink' : 'border-warn bg-warn text-ink') : 'border-line-2 text-muted hover:text-fg'}`}
                               >
-                                {s === 'pass' ? <Check size={17} strokeWidth={2.75} /> : <Minus size={17} strokeWidth={2.75} />}
+                                {s === 'pass' ? (
+                                  <>
+                                    <Check size={15} strokeWidth={3} /> Passed
+                                  </>
+                                ) : (
+                                  'Not yet'
+                                )}
                               </motion.button>
                             )
                           })}
                         </div>
                       </div>
                       {expanded && skill.mustSees && (
-                        <motion.dl initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 space-y-1.5 overflow-hidden rounded-xl border border-line bg-ink/40 p-3 text-[13px]">
+                        <motion.dl
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="mt-2 space-y-1.5 overflow-hidden rounded-xl border border-line bg-ink/40 p-3 text-[13px]"
+                        >
                           {Object.entries(skill.mustSees).map(([el, text]) => (
                             <div key={el} className="grid gap-x-3 sm:grid-cols-[6.5rem_1fr]">
                               <dt className="eyebrow pt-0.5">{ELEMENT_LABEL[el]}</dt>
@@ -359,9 +429,26 @@ function SkillEditor({ cls }: { cls: SwimClass }) {
             <div className="border-b border-line bg-fg/[0.025] px-4 py-2">
               <span className="eyebrow">{cat}</span>
             </div>
-            <Reorder.Group axis="y" values={inCat} onReorder={(next) => reorderSkills(cls.id, cat, next.map((s) => s.id))} className="divide-y divide-line/60">
+            <Reorder.Group
+              axis="y"
+              values={inCat}
+              onReorder={(next) =>
+                reorderSkills(
+                  cls.id,
+                  cat,
+                  next.map((s) => s.id),
+                )
+              }
+              className="divide-y divide-line/60"
+            >
               {inCat.map((skill) => (
-                <EditorRow key={skill.id} skill={skill} onRename={(n) => updateSkill(cls.id, skill.id, { name: n })} onRecategorise={(c) => updateSkill(cls.id, skill.id, { category: c })} onRemove={() => remove(skill)} />
+                <EditorRow
+                  key={skill.id}
+                  skill={skill}
+                  onRename={(n) => updateSkill(cls.id, skill.id, { name: n })}
+                  onRecategorise={(c) => updateSkill(cls.id, skill.id, { category: c })}
+                  onRemove={() => remove(skill)}
+                />
               ))}
             </Reorder.Group>
           </section>
@@ -397,10 +484,26 @@ function SkillEditor({ cls }: { cls: SwimClass }) {
   )
 }
 
-function EditorRow({ skill, onRename, onRecategorise, onRemove }: { skill: Skill; onRename: (n: string) => void; onRecategorise: (c: string) => void; onRemove: () => void }) {
+function EditorRow({
+  skill,
+  onRename,
+  onRecategorise,
+  onRemove,
+}: {
+  skill: Skill
+  onRename: (n: string) => void
+  onRecategorise: (c: string) => void
+  onRemove: () => void
+}) {
   const controls = useDragControls()
   return (
-    <Reorder.Item value={skill} dragListener={false} dragControls={controls} className="relative flex flex-wrap items-center gap-2 bg-panel px-3 py-2 sm:flex-nowrap" whileDrag={{ scale: 1.015, boxShadow: '0 12px 30px -10px rgb(0 0 0 / 0.45)', zIndex: 10 }}>
+    <Reorder.Item
+      value={skill}
+      dragListener={false}
+      dragControls={controls}
+      className="relative flex flex-wrap items-center gap-2 bg-panel px-3 py-2 sm:flex-nowrap"
+      whileDrag={{ scale: 1.015, boxShadow: '0 12px 30px -10px rgb(0 0 0 / 0.45)', zIndex: 10 }}
+    >
       <button
         type="button"
         aria-label="Drag to reorder"

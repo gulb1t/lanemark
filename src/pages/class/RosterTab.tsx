@@ -94,7 +94,7 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
 
                 <div className="relative mt-4 flex items-center justify-between border-t border-line pt-3">
                   <span className="font-mono text-xs text-dim">
-                    {prog.incomplete ? <span className="text-bad">{prog.incomplete} incomplete</span> : passed ? <span className="text-good">Level passed</span> : `${prog.unmarked} to assess`}
+                    {prog.incomplete ? <span className="text-warn">{prog.incomplete} not yet</span> : passed ? <span className="text-good">Level passed</span> : `${prog.unmarked} to assess`}
                   </span>
                   <ButtonLink size="sm" icon={<FileText size={14} />} to={`/app/classes/${cls.id}/reports/${swimmer.id}`}>
                     Report card
