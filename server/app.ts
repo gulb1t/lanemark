@@ -107,7 +107,9 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   const clientIp = (c: Ctx) => {
     if (config.trustProxy) {
-      const fwd = c.req.header('x-forwarded-for')?.split(',')[0]?.trim()
+      // The proxy appends the address it saw, so the last entry is the real one. Earlier entries come from the
+      // client and can be anything, which would let someone dodge rate limits by sending a new one each time.
+      const fwd = c.req.header('x-forwarded-for')?.split(',').at(-1)?.trim()
       if (fwd) return fwd
     }
     return c.env?.incoming?.socket?.remoteAddress ?? 'unknown'

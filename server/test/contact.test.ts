@@ -49,3 +49,15 @@ describe('pilot requests', () => {
     expect((await c.post('/api/contact', REQUEST)).status).toBe(404)
   })
 })
+
+describe('client addresses behind a proxy', () => {
+  it('uses the address the proxy appended, so a made-up X-Forwarded-For cannot dodge rate limits', async () => {
+    const { app } = setupApp(undefined, { contactEmail: 'team@swimtrack.test', trustProxy: true })
+    const c = client(app)
+    // Same real client (last entry), a different fake first entry each time.
+    for (let i = 0; i < 5; i++) expect((await c.post('/api/contact', REQUEST, { 'x-forwarded-for': `10.0.0.${i}, 203.0.113.7` })).status).toBe(200)
+    expect((await c.post('/api/contact', REQUEST, { 'x-forwarded-for': '10.9.9.9, 203.0.113.7' })).status).toBe(429)
+    // A different real client still gets through.
+    expect((await c.post('/api/contact', REQUEST, { 'x-forwarded-for': '203.0.113.8' })).status).toBe(200)
+  })
+})
