@@ -614,7 +614,7 @@ function FinalCta({ signedIn }: { signedIn: boolean }) {
 
 const FOOTER: [string, [string, string][]][] = [
   ['Product', [['Tour', '#tour'], ['How it works', '#how'], ['Features', '#features'], ['Pricing', '#pricing']]],
-  ['Trust', [['Security', '#security'], ['Privacy', '/privacy'], ['FAQ', '#faq']]],
+  ['Help', [['How-to guides', '/help'], ['FAQ', '#faq'], ['Security', '#security'], ['Privacy', '/privacy']]],
 ]
 
 function Footer({ signedIn }: { signedIn: boolean }) {

@@ -18,6 +18,7 @@ export const load = {
   poolClass: () => import('./pages/PoolClassPage'),
   reports: () => import('./pages/ReportWorkspace'),
   privacy: () => import('./pages/Privacy'),
+  help: () => import('./pages/Help'),
   notFound: () => import('./pages/NotFound'),
 }
 

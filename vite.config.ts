@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { createHash } from 'node:crypto'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
@@ -22,7 +22,8 @@ function serviceWorker(): Plugin {
     },
     generateBundle(_options, bundle) {
       const built = Object.keys(bundle).filter((f) => /\.(js|css|svg|png)$/.test(f) || /latin-(wght|400).*\.woff2$/.test(f))
-      const pub = readdirSync('public').filter((f) => f !== 'sw.js')
+      // Files at the top of public/ only: guide screenshots in public/guide/ load when the Help page shows them.
+      const pub = readdirSync('public').filter((f) => f !== 'sw.js' && statSync(`public/${f}`).isFile())
       const assets = [...built, ...pub].map((f) => `/${f}`)
       const version = createHash('sha256').update(assets.join()).digest('hex').slice(0, 12)
       const source = readFileSync('scripts/sw.template.js', 'utf8').replace("'__VERSION__'", JSON.stringify(version)).replace('__ASSETS__', JSON.stringify(assets))

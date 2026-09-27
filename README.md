@@ -4,10 +4,30 @@
 
 - **Offline-first.** Every edit saves on the device instantly and syncs in the background, and a service worker keeps the app itself on the device, so it opens and works with no signal at all. Pool Wi-Fi drops, nothing is lost.
 - **Real accounts.** Email confirmation and password reset over SMTP, scrypt-hashed passwords, httpOnly session cookies, TOTP two-factor with recovery codes, device management and security alerts.
-- **Report card workspace.** Checklist, one-tap comment chips built from the manual's must-sees, live rule checks and a letter-size print preview, swimmer by swimmer.
+- **Report cards in three steps.** Check the skills, press *Write it for me* for a comment in the manual's own words, confirm the next level. Live rule checks, a print preview and letter-size cards, swimmer by swimmer.
 - **Pools and a supervisor view.** Instructors join their facility's pool with an invite code. Supervisors get an overview of every class (attendance, skills assessed, report cards done), which classes need attention and why, and rankings of how caught up classes and instructors are. They can open any class view-only, print its report cards or export it.
 - **Private by design.** No analytics or third parties. See the in-app privacy page at `/privacy`.
 - **Your database.** Built-in SQLite with zero setup, or your MongoDB Atlas cluster with one environment variable.
+- **Easy to learn.** A short guided tour on each main screen, confirmations before anything is removed, and a [how-to guide](docs/GUIDE.md) with pictures (also in the app at `/help`, where every guide has a *Try it* button).
+
+## Screenshots
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/guide/dashboard-dark.webp">
+  <img src="public/guide/dashboard-light.webp" alt="The home screen: today’s class, a to-do list and totals" width="860">
+</picture>
+
+| Taking attendance | Writing a report card |
+|---|---|
+| <picture>   <source media="(prefers-color-scheme: dark)" srcset="public/guide/attendance-dark.webp">   <img src="public/guide/attendance-light.webp" alt="Taking attendance" width="420"> </picture> | <picture>   <source media="(prefers-color-scheme: dark)" srcset="public/guide/report-card-dark.webp">   <img src="public/guide/report-card-light.webp" alt="Writing a report card" width="420"> </picture> |
+| **Supervisor overview** | **The printed card** |
+| <picture>   <source media="(prefers-color-scheme: dark)" srcset="public/guide/pool-dark.webp">   <img src="public/guide/pool-light.webp" alt="A pool supervisor’s overview" width="420"> </picture> | <picture>   <source media="(prefers-color-scheme: dark)" srcset="public/guide/preview-dark.webp">   <img src="public/guide/preview-light.webp" alt="A printed report card" width="420"> </picture> |
+
+Light and dark screenshots follow your GitHub theme. They're taken from the demo by `npm run guide:shots`.
+
+## How to use it
+
+Read the **[how-to guide](docs/GUIDE.md)**: making a class, adding swimmers, attendance, skills, report cards, printing, pools and staying safe, with pictures. The same guide is inside the app under **Help** (`/help`). To keep the two in step, edit `src/data/guide.ts` and run `npm run guide:md` (a test fails if you forget).
 
 ## Quick start
 
@@ -99,7 +119,8 @@ server/              Hono on Node
 3. **Try the live demo (3 min):** it opens on a class that is teaching *today*.
    - Dashboard: today's class first, and a to-do list (last week's missed attendance, report cards due, skills to assess).
    - **Take attendance** → *Mark the rest present* → tap one swimmer late: the lesson-done moment appears.
-   - Class → **Report cards** → *Continue writing*: tap chips to build a comment, watch the rule warnings and the printed card update, flip swimmers with ← →, then **Print → Whole class**.
+   - Class → **Report cards** → *Start writing*: tap **Passed** / **Not yet** on a skill, press **Write it for me**, show the "Follows the manual" check, open **Preview**, then **Next** and **Print → Whole class**.
+   - The first visit to each screen shows a short guided tour. Skip it, or replay it any time from **Help → Replay the tour**.
 4. **Supervisor angle (1 min):** open **Pool**. The demo coach supervises a sample pool of six instructors: the overview shows which classes need attention and why (click one to see its swimmers, marks and comments), **Rankings** orders classes and instructors by how caught up their records are (never swimmers), and **Team** has the invite code. Every card follows the manual's wording and rules, and the data stays on a server the city runs (`/privacy`).
 
 To start the demo over, use Settings → Data → Reset demo (or a private window).

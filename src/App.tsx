@@ -1,11 +1,13 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Splash } from './components/Splash'
 import { Overlays } from './components/ui/Overlays'
+import { guidePath, isGuideTarget } from './lib/guideLinks'
 import { useSpotlight } from './lib/hooks'
 import { load } from './routes'
 import { enterDemo, useSession } from './store/useSession'
+import { useStore } from './store/useStore'
 
 const Landing = lazy(load.landing)
 const AuthPages = {
@@ -27,6 +29,7 @@ const PoolPage = lazy(load.pool)
 const PoolClassPage = lazy(load.poolClass)
 const ReportWorkspace = lazy(load.reports)
 const Privacy = lazy(load.privacy)
+const Help = lazy(load.help)
 const NotFound = lazy(load.notFound)
 
 function RequireSession() {
@@ -47,12 +50,16 @@ function GuestOnly({ children }: { children: ReactNode }) {
 function DemoEntry() {
   const navigate = useNavigate()
   const status = useSession((s) => s.status)
+  const [params] = useSearchParams()
+  const go = params.get('go')
   useEffect(() => {
     if (status === 'loading') return
+    // `?go=` comes from the Help page's "Try it" buttons: open that screen in whatever classes are loaded.
+    const land = () => navigate(isGuideTarget(go) ? guidePath(go, useStore.getState().classes) : '/app', { replace: true })
     // Signed-in users go to their own classes instead of being swapped into the sandbox.
-    if (status === 'signedIn' || status === 'demo') navigate('/app', { replace: true })
-    else void enterDemo().then(() => navigate('/app', { replace: true }))
-  }, [navigate, status])
+    if (status === 'signedIn' || status === 'demo') land()
+    else void enterDemo().then(land)
+  }, [navigate, status, go])
   return <Splash />
 }
 
@@ -77,6 +84,7 @@ export default function App() {
           <Route path="/verify-email" element={<AuthPages.VerifyEmail />} />
           <Route path="/demo" element={<DemoEntry />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/help" element={<Help />} />
           <Route element={<RequireSession />}>
             <Route path="/app/classes/:classId/reports/:swimmerId" element={<ReportWorkspace />} />
             <Route path="/app" element={<AppShell />}>
