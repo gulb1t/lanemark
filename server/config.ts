@@ -12,7 +12,7 @@ export interface Config {
   mongoDb: string
   /** 32-byte key used to encrypt 2FA secrets at rest. */
   secretKey: Buffer
-  /** Extra origins allowed to make state-changing requests. Same-origin requests are always allowed. */
+  /** Extra origins allowed to make state-changing requests; `https://*.example.com` matches subdomains. Same-origin requests are always allowed. */
   origins: string[]
   /** Read the client IP from X-Forwarded-For (only behind a proxy you control). */
   trustProxy: boolean
@@ -36,7 +36,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const production = env.NODE_ENV === 'production'
   const dataDir = resolve(env.DATA_DIR ?? 'data')
   mkdirSync(dataDir, { recursive: true })
-  const devOrigins = 'http://localhost:5173,http://127.0.0.1:5173'
+  // Development also trusts Cloudflare quick tunnels (`cloudflared tunnel --url http://localhost:5173`), whose address
+  // changes every run. Production only ever trusts its own address and APP_ORIGINS.
+  const devOrigins = 'http://localhost:5173,http://127.0.0.1:5173,https://*.trycloudflare.com'
   return {
     port: Number(env.PORT ?? 8787),
     production,

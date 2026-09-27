@@ -61,3 +61,14 @@ describe('client addresses behind a proxy', () => {
     expect((await c.post('/api/contact', REQUEST, { 'x-forwarded-for': '203.0.113.8' })).status).toBe(200)
   })
 })
+
+describe('allowed origins', () => {
+  it('lets wildcard origins cover subdomains, and nothing else', async () => {
+    const { app } = setupApp(undefined, { contactEmail: 'team@swimtrack.test', origins: ['https://*.trycloudflare.com'] })
+    const post = (origin: string) => client(app).post('/api/contact', REQUEST, { origin })
+    expect((await post('https://cannon-seats.trycloudflare.com')).status).toBe(200)
+    expect((await post('http://cannon-seats.trycloudflare.com')).status).toBe(403)
+    expect((await post('https://trycloudflare.com.evil.test')).status).toBe(403)
+    expect((await post('https://evil-trycloudflare.com')).status).toBe(403)
+  })
+})

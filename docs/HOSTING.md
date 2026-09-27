@@ -71,9 +71,9 @@ npm run tunnel
 ```
 
 This builds the app, starts it in production mode and prints a `https://….trycloudflare.com` address. It only
-works while the laptop is on and awake, and the address changes every time. Don't tunnel `npm run dev`
-instead: it's slow on phones, and signing in through it is blocked because the dev server doesn't know the
-tunnel's address.
+works while the laptop is on and awake, and the address changes every time. Tunnelling `npm run dev` also works
+(sign-in through a trycloudflare.com address is allowed in development), but it serves the slow development
+build, which stutters on phones.
 
 ## Email
 

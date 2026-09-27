@@ -99,6 +99,20 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   const fail = (c: Ctx, status: 400 | 401 | 403 | 404 | 409 | 413 | 415 | 429, code: string, message: string) =>
     c.json({ error: { code, message } }, status)
 
+  /** Exact matches, or `https://*.host` for any subdomain of host (over the same scheme). */
+  const allowedOrigin = (origin: string) =>
+    config.origins.some((o) => {
+      if (o === origin) return true
+      const wild = o.match(/^(https?):\/\/\*\.(.+)$/)
+      if (!wild) return false
+      try {
+        const u = new URL(origin)
+        return u.protocol === `${wild[1]}:` && u.hostname.endsWith(`.${wild[2]}`) && !u.port
+      } catch {
+        return false
+      }
+    })
+
   const tooMany = (c: Ctx, seconds: number) => {
     c.header('Retry-After', String(seconds))
     const mins = Math.ceil(seconds / 60)
@@ -283,7 +297,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       } catch {
         /* malformed origin */
       }
-      if (!origin || !(sameOrigin || config.origins.includes(origin))) return fail(c, 403, 'bad_origin', 'Request blocked.')
+      if (!origin || !(sameOrigin || allowedOrigin(origin))) return fail(c, 403, 'bad_origin', 'Request blocked.')
       if (!c.req.header('content-type')?.startsWith('application/json')) return fail(c, 415, 'bad_type', 'Send JSON.')
     }
     await next()
