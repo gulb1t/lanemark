@@ -84,6 +84,9 @@ Any SMTP provider works. The quickest is a Gmail account:
 3. Set `SMTP_URL=smtps://you%40gmail.com:the-app-password@smtp.gmail.com:465` (the `@` in the address is
    written as `%40`) and `MAIL_FROM=SwimTrack <you@gmail.com>`.
 
+Your own domain's mailbox works the same way, e.g. `smtps://contact%40gulb.it:password@mail.gulb.it:465`.
+To check the settings, run `npm run mail:test -- you@example.com` (locally), or `fly ssh console -C "node server/mailtest.ts you@example.com"` on Fly.
+
 For a city deployment, use an address on your own domain through a provider like Resend or Postmark, so emails
 don't come from a personal Gmail.
 

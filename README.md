@@ -45,6 +45,7 @@ Accounts use real email: a confirmation link on sign-up, "Forgot password?" rese
 
 - **Development:** with no `SMTP_URL`, nothing is sent. Messages appear at [localhost:5173/api/dev/outbox](http://localhost:5173/api/dev/outbox) and in the API log, so every flow can be clicked through.
 - **Real delivery:** set `SMTP_URL`, `MAIL_FROM` and `APP_URL` (see `.env.example`). Any SMTP provider works; with Gmail, turn on 2-Step Verification, create an app password and use `smtps://you%40gmail.com:app-password@smtp.gmail.com:465`.
+- **Check it:** `npm run mail:test -- you@example.com` signs in with `SMTP_URL` and sends one test email, and says plainly what's wrong if it can't (the password is never printed).
 - **Pilot requests:** the “Request a pilot” form in the landing page's pricing section emails `CONTACT_EMAIL` (replies go straight to the requester). In development it lands in the outbox; in production the form stays off until `CONTACT_EMAIL` is set.
 
 ## Assistant
