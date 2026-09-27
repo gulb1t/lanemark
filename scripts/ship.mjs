@@ -207,9 +207,11 @@ ok('Types')
 if (!opts.quick) {
   run('npx', ['vitest', 'run', '--reporter=dot'], { hint: 'A test failed (see above). Fix it, then ship again.' })
   ok('Tests')
-  const lint = spawnSync('npx', ['oxlint'], { encoding: 'utf8', shell: windows })
-  if (lint.status !== 0 || /warning|error/i.test(lint.stdout)) {
-    console.log(lint.stdout)
+  // --deny-warnings makes warnings fail too; the exit code is the verdict (the summary line always says
+  // "0 warnings and 0 errors" on a clean run, so don't search the text for those words).
+  const lint = spawnSync('npx', ['oxlint', '--deny-warnings'], { encoding: 'utf8', shell: windows })
+  if (lint.status !== 0) {
+    console.log(lint.stdout + lint.stderr)
     fail('The linter found problems (above).', 'Fix them, then ship again.')
   }
   ok('Lint')
