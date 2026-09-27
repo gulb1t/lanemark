@@ -1,5 +1,5 @@
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite'
-import { EmailTakenError, type DocRecord, type Repo, type SessionRecord, type TokenRecord, type UserRecord } from './types.ts'
+import { EmailTakenError, type DocRecord, type MemberRecord, type PoolRecord, type Repo, type SessionRecord, type TokenRecord, type UserRecord } from './types.ts'
 
 /**
  * Zero-setup storage using Node's built-in SQLite. Users and sessions keep their indexed fields as columns and
@@ -49,6 +49,20 @@ export function openSqlite(file: string): Repo {
       data       TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS tokens_user ON tokens(user_id, purpose);
+
+    CREATE TABLE IF NOT EXISTS pools (
+      id          TEXT PRIMARY KEY,
+      invite_code TEXT NOT NULL UNIQUE,
+      data        TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS pool_members (
+      user_id   TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      pool_id   TEXT NOT NULL REFERENCES pools(id) ON DELETE CASCADE,
+      joined_at INTEGER NOT NULL,
+      data      TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS pool_members_pool ON pool_members(pool_id, joined_at);
   `)
 
   const q = {
@@ -73,12 +87,26 @@ export function openSqlite(file: string): Repo {
       ON CONFLICT (user_id, kind, id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, deleted = excluded.deleted
     `),
     countDocs: db.prepare('SELECT COUNT(*) AS n FROM docs WHERE user_id = ? AND deleted = 0'),
+    liveDocs: db.prepare('SELECT kind, id, data, updated_at FROM docs WHERE user_id = ? AND kind = ? AND deleted = 0 ORDER BY updated_at'),
 
     insertToken: db.prepare('INSERT INTO tokens (id, user_id, token_hash, purpose, expires_at, used_at, data) VALUES (?, ?, ?, ?, ?, NULL, ?)'),
     tokenByHash: db.prepare('SELECT data, used_at FROM tokens WHERE token_hash = ?'),
     consumeToken: db.prepare('UPDATE tokens SET used_at = ? WHERE id = ? AND used_at IS NULL'),
     deleteUserTokens: db.prepare('DELETE FROM tokens WHERE user_id = ? AND purpose = ? AND used_at IS NULL'),
     purgeTokens: db.prepare('DELETE FROM tokens WHERE expires_at < ?'),
+
+    insertPool: db.prepare('INSERT INTO pools (id, invite_code, data) VALUES (?, ?, ?)'),
+    poolById: db.prepare('SELECT data FROM pools WHERE id = ?'),
+    poolByCode: db.prepare('SELECT data FROM pools WHERE invite_code = ?'),
+    savePool: db.prepare('UPDATE pools SET invite_code = ?, data = ? WHERE id = ?'),
+    deletePool: db.prepare('DELETE FROM pools WHERE id = ?'),
+    memberOf: db.prepare('SELECT data FROM pool_members WHERE user_id = ?'),
+    listMembers: db.prepare('SELECT data FROM pool_members WHERE pool_id = ? ORDER BY joined_at, user_id'),
+    putMember: db.prepare(`
+      INSERT INTO pool_members (user_id, pool_id, joined_at, data) VALUES (?, ?, ?, ?)
+      ON CONFLICT (user_id) DO UPDATE SET pool_id = excluded.pool_id, joined_at = excluded.joined_at, data = excluded.data
+    `),
+    deleteMember: db.prepare('DELETE FROM pool_members WHERE user_id = ?'),
   }
 
   const parse = <T>(row: unknown): T | null => (row ? (JSON.parse((row as { data: string }).data) as T) : null)
@@ -165,6 +193,12 @@ export function openSqlite(file: string): Repo {
     async countDocs(userId) {
       return (q.countDocs.get(userId) as { n: number }).n
     },
+    async liveDocs(userId, kind) {
+      return q.liveDocs.all(userId, kind).map((r) => {
+        const row = r as { kind: DocRecord['kind']; id: string; data: string; updated_at: number }
+        return { kind: row.kind, id: row.id, data: JSON.parse(row.data), updatedAt: row.updated_at, deleted: false }
+      })
+    },
 
     async createToken(t) {
       q.insertToken.run(t.id, t.userId, t.tokenHash, t.purpose, t.expiresAt, JSON.stringify(t))
@@ -178,6 +212,37 @@ export function openSqlite(file: string): Repo {
     },
     async deleteUserTokens(userId, purpose) {
       q.deleteUserTokens.run(userId, purpose)
+    },
+
+    async createPool(p) {
+      q.insertPool.run(p.id, p.inviteCode, JSON.stringify(p))
+    },
+    async getPool(id) {
+      return parse<PoolRecord>(q.poolById.get(id))
+    },
+    async getPoolByCode(code) {
+      return parse<PoolRecord>(q.poolByCode.get(code))
+    },
+    async updatePool(id, patch) {
+      const current = parse<PoolRecord>(q.poolById.get(id))
+      if (!current) return
+      const next = { ...current, ...patch, id }
+      q.savePool.run(next.inviteCode, JSON.stringify(next), id)
+    },
+    async deletePool(id) {
+      q.deletePool.run(id)
+    },
+    async getMembership(userId) {
+      return parse<MemberRecord>(q.memberOf.get(userId))
+    },
+    async listMembers(poolId) {
+      return q.listMembers.all(poolId).map((r) => parse<MemberRecord>(r)!)
+    },
+    async putMember(m) {
+      q.putMember.run(m.userId, m.poolId, m.joinedAt, JSON.stringify(m))
+    },
+    async deleteMember(userId) {
+      q.deleteMember.run(userId)
     },
 
     async purgeExpiredSessions(now) {

@@ -43,6 +43,10 @@ export const ContactBody = z.object({
   /** Left empty by people; bots fill it in. */
   website: z.string().max(200).optional(),
 })
+export const PoolNameBody = z.object({ name: OneLine(80).min(2, 'Give the pool a name.') })
+export const PoolPatchBody = z.object({ name: OneLine(80).min(2, 'Give the pool a name.').optional(), shareLeaderboard: z.boolean().optional() })
+export const JoinPoolBody = z.object({ code: z.string().trim().min(4, 'Enter the code from your supervisor.').max(20) })
+export const MemberRoleBody = z.object({ role: z.enum(['supervisor', 'instructor']) })
 export const TokenBody = z.object({ token: z.string().trim().min(20).max(200) })
 export const ForgotBody = z.object({ email: Email })
 export const ResetBody = TokenBody.extend({ password: z.string().max(PASSWORD_MAX) })

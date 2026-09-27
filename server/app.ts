@@ -9,11 +9,13 @@ import type { z } from 'zod'
 import { fakeVerify, hashPassword, passwordProblem, verifyPassword } from './auth/password.ts'
 import { generateRecoveryCodes, generateSecret, normalizeRecoveryCode, otpauthUrl, verifyTotp } from './auth/totp.ts'
 import type { Config } from './config.ts'
-import { EmailTakenError, monotonicClock, type DocRecord, type Repo, type SessionRecord, type TokenPurpose, type UserRecord } from './db/types.ts'
+import { classProgress, summarize } from '../src/lib/overview.ts'
+import type { SwimClass } from '../src/types.ts'
+import { EmailTakenError, monotonicClock, type DocRecord, type MemberRecord, type PoolRecord, type Repo, type SessionRecord, type TokenPurpose, type UserRecord } from './db/types.ts'
 import { askAssistant, AssistantError } from './assistant.ts'
 import { emails } from './lib/emails.ts'
 import { outboxMailer, type Mail, type Mailer } from './lib/mailer.ts'
-import { decrypt, encrypt, randomToken, sha256 } from './lib/crypto.ts'
+import { decrypt, encrypt, inviteCode, normalizeInviteCode, randomToken, sha256 } from './lib/crypto.ts'
 import { keyedMutex, RateLimiter } from './lib/ratelimit.ts'
 import { describeUserAgent, maskIp } from './lib/useragent.ts'
 import {
@@ -24,6 +26,10 @@ import {
   CodeBody,
   ContactBody,
   firstIssue,
+  JoinPoolBody,
+  MemberRoleBody,
+  PoolNameBody,
+  PoolPatchBody,
   SecurityPrefsBody,
   VerifyLoginBody,
   ForgotBody,
@@ -582,6 +588,8 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     const user = c.get('user')
     const denied = await confirmIdentity(c, user, data.password, data.code)
     if (denied) return denied
+    // A pool this account alone supervised closes with it; instructors keep their own classes either way.
+    await leavePool(user.id, true)
     await repo.deleteUser(user.id)
     deleteCookie(c, SESSION_COOKIE, { path: '/', secure })
     return c.json({ ok: true })
@@ -740,6 +748,219 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     const docs = await repo.listDocs(user.id, data.cursor)
     const cursor = docs.reduce((m, d) => Math.max(m, d.updatedAt), data.cursor)
     return c.json({ cursor, docs })
+  })
+
+  // ── pools (supervisor overview) ───────────────────────────────────
+  app.use('/api/pool', requireUser)
+  app.use('/api/pool/*', requireUser)
+
+  async function poolOf(userId: string) {
+    const member = await repo.getMembership(userId)
+    const pool = member ? await repo.getPool(member.poolId) : null
+    return member && pool ? { member, pool } : null
+  }
+
+  /** Members with their accounts, oldest first. Skips any whose account is gone. */
+  async function membersOf(poolId: string) {
+    const members = await repo.listMembers(poolId)
+    const users = await Promise.all(members.map((m) => repo.getUserById(m.userId)))
+    return members.flatMap((m, i) => (users[i] ? [{ ...m, user: users[i] }] : []))
+  }
+
+  /**
+   * The pool as one member sees it. Supervisors get the invite code and everyone's name and email. Instructors get
+   * the supervisors' names (so they know who sees their numbers) and a head count.
+   */
+  async function poolView(pool: PoolRecord, me: MemberRecord) {
+    const supervisor = me.role === 'supervisor'
+    const members = await membersOf(pool.id)
+    return {
+      id: pool.id,
+      name: pool.name,
+      role: me.role,
+      shareLeaderboard: pool.shareLeaderboard,
+      createdAt: pool.createdAt,
+      inviteCode: supervisor ? pool.inviteCode : undefined,
+      memberCount: members.length,
+      members: members
+        .filter((m) => supervisor || m.role === 'supervisor' || m.userId === me.userId)
+        .map((m) => ({ id: m.userId, name: m.user.name, email: supervisor ? m.user.email : undefined, role: m.role, joinedAt: m.joinedAt, you: m.userId === me.userId })),
+    }
+  }
+
+  async function uniqueInviteCode() {
+    for (;;) {
+      const code = inviteCode()
+      if (!(await repo.getPoolByCode(code))) return code
+    }
+  }
+
+  /**
+   * Takes a user out of their pool. The last supervisor can't simply leave a pool that still has instructors (it
+   * would have no one to run it) unless `dissolve` is set, which closes the pool for everyone. A pool whose last
+   * member leaves is removed.
+   */
+  function leavePool(userId: string, dissolve = false): Promise<'left' | 'closed' | 'last_supervisor' | 'not_member'> {
+    return lock('pools', async () => {
+      const found = await poolOf(userId)
+      if (!found) return 'not_member'
+      const members = await repo.listMembers(found.pool.id)
+      const others = members.filter((m) => m.userId !== userId)
+      if (!others.length) {
+        await repo.deletePool(found.pool.id)
+        return 'closed'
+      }
+      if (found.member.role === 'supervisor' && !others.some((m) => m.role === 'supervisor')) {
+        if (!dissolve) return 'last_supervisor'
+        await repo.deletePool(found.pool.id)
+        return 'closed'
+      }
+      await repo.deleteMember(userId)
+      return 'left'
+    })
+  }
+
+  const notInPool = (c: Ctx) => fail(c, 404, 'not_member', 'You’re not in a pool.')
+  const supervisorsOnly = (c: Ctx) => fail(c, 403, 'not_supervisor', 'Only a supervisor can do that.')
+
+  app.get('/api/pool', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    return c.json({ pool: found ? await poolView(found.pool, found.member) : null })
+  })
+
+  app.post('/api/pool', async (c) => {
+    const data = await body(c, PoolNameBody)
+    if (data instanceof Response) return data
+    const user = c.get('user')
+    const wait = limiter.hit([[`pool-create:${user.id}`, 5, HOUR]])
+    if (wait) return tooMany(c, wait)
+    return lock('pools', async () => {
+      if (await repo.getMembership(user.id)) return fail(c, 409, 'in_pool', 'You’re already in a pool. Leave it first.')
+      const t = now()
+      const pool: PoolRecord = { id: randomUUID(), name: data.name, inviteCode: await uniqueInviteCode(), shareLeaderboard: false, createdBy: user.id, createdAt: t, updatedAt: t }
+      const member: MemberRecord = { userId: user.id, poolId: pool.id, role: 'supervisor', joinedAt: t }
+      await repo.createPool(pool)
+      await repo.putMember(member)
+      return c.json({ pool: await poolView(pool, member) }, 201)
+    })
+  })
+
+  app.patch('/api/pool', async (c) => {
+    const data = await body(c, PoolPatchBody)
+    if (data instanceof Response) return data
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    const patch = { ...(data.name ? { name: data.name } : {}), ...(data.shareLeaderboard !== undefined ? { shareLeaderboard: data.shareLeaderboard } : {}), updatedAt: now() }
+    await repo.updatePool(found.pool.id, patch)
+    return c.json({ pool: await poolView({ ...found.pool, ...patch }, found.member) })
+  })
+
+  // Closing a pool only removes the team: everyone keeps their own classes and swimmers.
+  app.delete('/api/pool', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    await lock('pools', () => repo.deletePool(found.pool.id))
+    return c.json({ ok: true })
+  })
+
+  app.post('/api/pool/join', async (c) => {
+    const data = await body(c, JoinPoolBody)
+    if (data instanceof Response) return data
+    const user = c.get('user')
+    // Codes are short enough to guess slowly, so tries are limited per account and per address.
+    const wait = limiter.hit([
+      [`pool-join:${user.id}`, 10, HOUR],
+      [`pool-join:ip:${clientIp(c)}`, 30, HOUR],
+    ])
+    if (wait) return tooMany(c, wait)
+    const pool = await repo.getPoolByCode(normalizeInviteCode(data.code))
+    if (!pool) return fail(c, 404, 'bad_code', 'No pool uses that code. Check it with your supervisor.')
+    return lock('pools', async () => {
+      const current = await repo.getMembership(user.id)
+      if (current && current.poolId !== pool.id) return fail(c, 409, 'in_pool', 'You’re already in another pool. Leave it first.')
+      const member: MemberRecord = current ?? { userId: user.id, poolId: pool.id, role: 'instructor', joinedAt: now() }
+      if (!current) await repo.putMember(member)
+      return c.json({ pool: await poolView(pool, member) })
+    })
+  })
+
+  app.post('/api/pool/leave', async (c) => {
+    const result = await leavePool(c.get('user').id)
+    if (result === 'not_member') return notInPool(c)
+    if (result === 'last_supervisor') return fail(c, 409, 'last_supervisor', 'You’re the only supervisor. Make someone else a supervisor first, or close the pool.')
+    return c.json({ ok: true, closed: result === 'closed' })
+  })
+
+  app.post('/api/pool/invite-code', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    const code = await uniqueInviteCode()
+    await repo.updatePool(found.pool.id, { inviteCode: code, updatedAt: now() })
+    return c.json({ inviteCode: code })
+  })
+
+  app.patch('/api/pool/members/:id', async (c) => {
+    const data = await body(c, MemberRoleBody)
+    if (data instanceof Response) return data
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    return lock('pools', async () => {
+      const members = await repo.listMembers(found.pool.id)
+      const target = members.find((m) => m.userId === c.req.param('id'))
+      if (!target) return fail(c, 404, 'not_found', 'That person isn’t in this pool.')
+      if (data.role === 'instructor' && target.role === 'supervisor' && members.filter((m) => m.role === 'supervisor').length === 1) {
+        return fail(c, 409, 'last_supervisor', 'A pool needs at least one supervisor.')
+      }
+      await repo.putMember({ ...target, role: data.role })
+      const me = target.userId === found.member.userId ? { ...found.member, role: data.role } : found.member
+      return c.json({ pool: await poolView(found.pool, me) })
+    })
+  })
+
+  app.delete('/api/pool/members/:id', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    const id = c.req.param('id')
+    if (id === found.member.userId) return fail(c, 400, 'use_leave', 'To leave the pool yourself, use Leave pool.')
+    const target = await repo.getMembership(id)
+    if (!target || target.poolId !== found.pool.id) return fail(c, 404, 'not_found', 'That person isn’t in this pool.')
+    await repo.deleteMember(id)
+    return c.json({ pool: await poolView(found.pool, found.member) })
+  })
+
+  /**
+   * Supervisors: progress counts for every member's current classes. Instructors: the leaderboard (names and
+   * caught-up scores) when the supervisor shares it. Worked out here so swimmer names, marks and comments never
+   * leave the instructor's account.
+   */
+  app.get('/api/pool/overview', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    const asked = c.req.query('today') ?? ''
+    // Lesson dates are local calendar dates, so the browser says what day it is.
+    const today = /^\d{4}-\d{2}-\d{2}$/.test(asked) ? asked : new Date(now()).toISOString().slice(0, 10)
+    const supervisor = found.member.role === 'supervisor'
+    if (!supervisor && !found.pool.shareLeaderboard) return fail(c, 403, 'not_shared', 'Your supervisor hasn’t shared the leaderboard.')
+    const members = await membersOf(found.pool.id)
+    const instructors = await Promise.all(
+      members.map(async (m) => {
+        const classes = (await repo.liveDocs(m.userId, 'class'))
+          .map((d) => d.data as SwimClass)
+          .filter((cls) => !cls.archived)
+          .map((cls) => classProgress(cls, today))
+        return { id: m.userId, name: m.user.name, role: m.role, you: m.userId === found.member.userId, classes }
+      }),
+    )
+    if (supervisor) return c.json({ today, instructors })
+    return c.json({
+      today,
+      leaderboard: instructors.map(({ id, name, you, classes }) => ({ id, name, you, classes: classes.length, caughtUp: summarize(classes).caughtUp })),
+    })
   })
 
   // ── assistant ─────────────────────────────────────────────────────

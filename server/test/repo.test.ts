@@ -150,6 +150,43 @@ describe.each(backends)('%s repository', (name, open) => {
     await expect(r().updateUser('u8', { email: 'f@example.com' })).rejects.toBeInstanceOf(EmailTakenError)
   })
 
+  test('pools: codes, members in join order, and removal with the pool or the user', async () => {
+    const pool = (id: string, inviteCode: string) => ({ id, name: 'Maple', inviteCode, shareLeaderboard: false, createdBy: 'p1', createdAt: 1, updatedAt: 1 })
+    for (const id of ['p1', 'p2', 'p3']) await r().createUser(user(id, `${id}@example.com`))
+    await r().createPool(pool('pool1', 'AAAA2222'))
+    await r().createPool(pool('pool2', 'BBBB3333'))
+    expect((await r().getPoolByCode('AAAA2222'))?.id).toBe('pool1')
+    await r().updatePool('pool1', { inviteCode: 'CCCC4444', shareLeaderboard: true })
+    expect(await r().getPoolByCode('AAAA2222')).toBeNull()
+    expect(await r().getPool('pool1')).toMatchObject({ inviteCode: 'CCCC4444', shareLeaderboard: true, name: 'Maple' })
+
+    await r().putMember({ userId: 'p2', poolId: 'pool1', role: 'instructor', joinedAt: 20 })
+    await r().putMember({ userId: 'p1', poolId: 'pool1', role: 'supervisor', joinedAt: 10 })
+    await r().putMember({ userId: 'p3', poolId: 'pool2', role: 'supervisor', joinedAt: 5 })
+    expect((await r().listMembers('pool1')).map((m) => m.userId)).toEqual(['p1', 'p2'])
+    await r().putMember({ userId: 'p2', poolId: 'pool1', role: 'supervisor', joinedAt: 20 })
+    expect((await r().getMembership('p2'))?.role).toBe('supervisor')
+
+    await r().deleteUser('p2')
+    expect(await r().getMembership('p2')).toBeNull()
+    await r().deletePool('pool1')
+    expect(await r().getPool('pool1')).toBeNull()
+    expect(await r().getMembership('p1')).toBeNull()
+    expect((await r().listMembers('pool2')).map((m) => m.userId)).toEqual(['p3'])
+    await r().deleteMember('p3')
+    expect(await r().listMembers('pool2')).toEqual([])
+  })
+
+  test('live documents of one kind skip tombstones', async () => {
+    await r().createUser(user('u9', 'h@example.com'))
+    await r().putDocs('u9', [
+      { kind: 'class', id: 'c1', data: { id: 'c1' }, updatedAt: 300, deleted: false },
+      { kind: 'class', id: 'c2', data: null, updatedAt: 301, deleted: true },
+      { kind: 'swimmer', id: 'w1', data: { id: 'w1' }, updatedAt: 302, deleted: false },
+    ])
+    expect(await r().liveDocs('u9', 'class')).toEqual([{ kind: 'class', id: 'c1', data: { id: 'c1' }, updatedAt: 300, deleted: false }])
+  })
+
   test(`full sign-up, 2FA-free login and sync round trip on ${name}`, async () => {
     const { app } = setupApp(await open() as Repo)
     const a = client(app)

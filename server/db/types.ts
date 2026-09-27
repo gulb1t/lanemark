@@ -68,6 +68,32 @@ export interface DocRecord {
   deleted: boolean
 }
 
+/**
+ * A facility's instructor team. Members keep their own classes; supervisors see progress counts for every
+ * member's classes (never swimmer names, marks or comments).
+ */
+export interface PoolRecord {
+  id: string
+  name: string
+  /** What instructors type to join. Unique; replacing it stops the old one working. */
+  inviteCode: string
+  /** Whether instructors see the leaderboard (names and caught-up scores only). */
+  shareLeaderboard: boolean
+  createdBy: string
+  createdAt: number
+  updatedAt: number
+}
+
+export type PoolRole = 'supervisor' | 'instructor'
+
+/** A user belongs to at most one pool, so the user id is the key. */
+export interface MemberRecord {
+  userId: string
+  poolId: string
+  role: PoolRole
+  joinedAt: number
+}
+
 export class EmailTakenError extends Error {
   constructor() {
     super('Email already registered')
@@ -83,7 +109,7 @@ export interface Repo {
   getUserByEmail(email: string): Promise<UserRecord | null>
   /** Throws EmailTakenError when changing the email to one another account uses. */
   updateUser(id: string, patch: Partial<Omit<UserRecord, 'id'>>): Promise<void>
-  /** Removes the user with all of their sessions and documents. */
+  /** Removes the user with all of their sessions, documents and pool membership. */
   deleteUser(id: string): Promise<void>
 
   createSession(session: SessionRecord): Promise<void>
@@ -97,6 +123,8 @@ export interface Repo {
   /** Documents (including tombstones) changed after `since`, oldest first. */
   listDocs(userId: string, since: number): Promise<DocRecord[]>
   putDocs(userId: string, docs: DocRecord[]): Promise<void>
+  /** A user's current documents of one kind, without tombstones. */
+  liveDocs(userId: string, kind: DocKind): Promise<DocRecord[]>
   countDocs(userId: string): Promise<number>
 
   createToken(token: TokenRecord): Promise<void>
@@ -105,6 +133,19 @@ export interface Repo {
   consumeToken(id: string, at: number): Promise<boolean>
   /** Deletes a user's unused tokens for one purpose (a new link replaces the old one). */
   deleteUserTokens(userId: string, purpose: TokenPurpose): Promise<void>
+
+  createPool(pool: PoolRecord): Promise<void>
+  getPool(id: string): Promise<PoolRecord | null>
+  getPoolByCode(inviteCode: string): Promise<PoolRecord | null>
+  updatePool(id: string, patch: Partial<Omit<PoolRecord, 'id'>>): Promise<void>
+  /** Removes the pool and every membership in it. Members' own classes are untouched. */
+  deletePool(id: string): Promise<void>
+  getMembership(userId: string): Promise<MemberRecord | null>
+  /** Oldest member first. */
+  listMembers(poolId: string): Promise<MemberRecord[]>
+  /** Adds or replaces the user's membership. */
+  putMember(member: MemberRecord): Promise<void>
+  deleteMember(userId: string): Promise<void>
 
   /** Removes expired sessions and emailed tokens. */
   purgeExpiredSessions(now: number): Promise<void>

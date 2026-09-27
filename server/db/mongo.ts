@@ -1,10 +1,12 @@
 import { MongoClient, MongoServerError, type Collection } from 'mongodb'
-import { EmailTakenError, type DocRecord, type Repo, type SessionRecord, type TokenRecord, type UserRecord } from './types.ts'
+import { EmailTakenError, type DocRecord, type MemberRecord, type PoolRecord, type Repo, type SessionRecord, type TokenRecord, type UserRecord } from './types.ts'
 
 type UserDoc = Omit<UserRecord, 'id'> & { _id: string }
 type SessionDoc = Omit<SessionRecord, 'id'> & { _id: string; expireAt: Date }
 type StoredDoc = DocRecord & { _id: string; userId: string }
 type TokenDoc = Omit<TokenRecord, 'id'> & { _id: string; expireAt: Date }
+type PoolDoc = Omit<PoolRecord, 'id'> & { _id: string }
+type MemberDoc = Omit<MemberRecord, 'userId'> & { _id: string }
 
 const docKey = (userId: string, kind: string, id: string) => `${userId}:${kind}:${id}`
 
@@ -17,6 +19,8 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
   const sessions: Collection<SessionDoc> = db.collection('sessions')
   const docs: Collection<StoredDoc> = db.collection('docs')
   const tokens: Collection<TokenDoc> = db.collection('tokens')
+  const pools: Collection<PoolDoc> = db.collection('pools')
+  const members: Collection<MemberDoc> = db.collection('pool_members')
 
   await Promise.all([
     users.createIndex({ email: 1 }, { unique: true }),
@@ -28,6 +32,8 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
     tokens.createIndex({ tokenHash: 1 }, { unique: true }),
     tokens.createIndex({ userId: 1, purpose: 1 }),
     tokens.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }),
+    pools.createIndex({ inviteCode: 1 }, { unique: true }),
+    members.createIndex({ poolId: 1, joinedAt: 1 }),
   ])
 
   const toUser = (d: UserDoc | null): UserRecord | null => {
@@ -39,6 +45,17 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
     if (!d) return null
     const { _id, expireAt: _drop, ...rest } = d
     return { id: _id, ...rest }
+  }
+
+  const toPool = (d: PoolDoc | null): PoolRecord | null => {
+    if (!d) return null
+    const { _id, ...rest } = d
+    return { id: _id, ...rest }
+  }
+  const toMember = (d: MemberDoc | null): MemberRecord | null => {
+    if (!d) return null
+    const { _id, ...rest } = d
+    return { userId: _id, ...rest }
   }
 
   return {
@@ -73,6 +90,7 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
         sessions.deleteMany({ userId: id }),
         docs.deleteMany({ userId: id }),
         tokens.deleteMany({ userId: id }),
+        members.deleteOne({ _id: id }),
       ])
     },
 
@@ -117,6 +135,10 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
     async countDocs(userId) {
       return docs.countDocuments({ userId, deleted: false })
     },
+    async liveDocs(userId, kind) {
+      const rows = await docs.find({ userId, kind, deleted: false }).sort({ updatedAt: 1 }).toArray()
+      return rows.map(({ id, data, updatedAt }) => ({ kind, id, data, updatedAt, deleted: false }))
+    },
 
     async createToken(t) {
       const { id, ...rest } = t
@@ -134,6 +156,37 @@ export async function openMongo(uri: string, dbName: string): Promise<Repo> {
     },
     async deleteUserTokens(userId, purpose) {
       await tokens.deleteMany({ userId, purpose, usedAt: null })
+    },
+
+    async createPool(p) {
+      const { id, ...rest } = p
+      await pools.insertOne({ _id: id, ...rest })
+    },
+    async getPool(id) {
+      return toPool(await pools.findOne({ _id: id }))
+    },
+    async getPoolByCode(inviteCode) {
+      return toPool(await pools.findOne({ inviteCode }))
+    },
+    async updatePool(id, patch) {
+      await pools.updateOne({ _id: id }, { $set: patch })
+    },
+    async deletePool(id) {
+      await Promise.all([pools.deleteOne({ _id: id }), members.deleteMany({ poolId: id })])
+    },
+    async getMembership(userId) {
+      return toMember(await members.findOne({ _id: userId }))
+    },
+    async listMembers(poolId) {
+      const rows = await members.find({ poolId }).sort({ joinedAt: 1, _id: 1 }).toArray()
+      return rows.map((r) => toMember(r)!)
+    },
+    async putMember(m) {
+      const { userId, ...rest } = m
+      await members.replaceOne({ _id: userId }, rest, { upsert: true })
+    },
+    async deleteMember(userId) {
+      await members.deleteOne({ _id: userId })
     },
 
     async purgeExpiredSessions(now) {

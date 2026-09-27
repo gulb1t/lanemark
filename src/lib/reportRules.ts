@@ -1,6 +1,6 @@
-import type { Enrollment, LevelDef, Skill } from '../types'
-import { plainSkillName, skillPhrase, skillWords } from './report'
-import { passedLevel, skillProgress } from './stats'
+import type { Enrollment, LevelDef, Skill } from '../types.ts'
+import { plainSkillName, skillPhrase, skillWords } from './report.ts'
+import { passedLevel, skillProgress } from './stats.ts'
 
 /**
  * Checks a report card against the report card guidelines:

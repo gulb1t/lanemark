@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto'
 
 /** URL-safe random token with `bytes` bytes of entropy. */
 export function randomToken(bytes = 32): string {
@@ -29,4 +29,17 @@ export function decrypt(key: Buffer, payload: string): string {
   const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'base64url'))
   decipher.setAuthTag(Buffer.from(tag, 'base64url'))
   return Buffer.concat([decipher.update(Buffer.from(ct, 'base64url')), decipher.final()]).toString('utf8')
+}
+
+/** No 0/O or 1/I/L, so a code read off a whiteboard or said aloud gets typed right. */
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+
+/** Pool invite code: 8 characters (about 40 bits), shown as ABCD-EFGH. */
+export function inviteCode(): string {
+  return Array.from({ length: 8 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
+}
+
+/** What people type: any case, with or without the dash or spaces. */
+export function normalizeInviteCode(input: string): string {
+  return input.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
