@@ -47,7 +47,7 @@ export default function Login() {
       footer={
         <>
           New here?{' '}
-          <Link to="/signup" className="font-semibold text-fg underline-offset-4 hover:underline">
+          <Link to={next === '/app' ? '/signup' : `/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-fg underline-offset-4 hover:underline">
             Create an account
           </Link>
         </>

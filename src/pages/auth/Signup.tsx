@@ -1,17 +1,20 @@
 import { ArrowRight } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { Field } from '../../components/ui/bits'
 import { PasswordInput, StrengthMeter } from '../../components/ui/PasswordInput'
 import { errorMessage } from '../../lib/api'
 import { passwordProblem } from '../../lib/passwordPolicy'
+import { safeNext } from '../../lib/redirect'
 import { register } from '../../store/useSession'
 import { toast } from '../../store/useUi'
 import { AuthLayout, FormError } from './AuthLayout'
 
 export default function Signup() {
   const navigate = useNavigate()
+  // Set when sign-up starts from somewhere in the app, like a pool invite link.
+  const next = useSearchParams()[0].get('next')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +35,7 @@ export default function Signup() {
     try {
       await register(name.trim(), email, password)
       toast(`Welcome to SwimTrack, ${name.trim().split(/\s+/)[0]}! Check ${email.trim()} for a link to confirm your email.`)
-      navigate('/app?welcome=1', { replace: true })
+      navigate(next ? safeNext(next) : '/app?welcome=1', { replace: true })
     } catch (err) {
       setError(errorMessage(err))
       setAttempt((a) => a + 1)
@@ -52,7 +55,7 @@ export default function Signup() {
       footer={
         <>
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-fg underline-offset-4 hover:underline">
+          <Link to={next ? `/login?next=${encodeURIComponent(next)}` : '/login'} className="font-semibold text-fg underline-offset-4 hover:underline">
             Sign in
           </Link>
         </>
