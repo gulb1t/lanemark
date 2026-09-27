@@ -97,6 +97,18 @@ export function initials(name: string): string {
   return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase()
 }
 
+/**
+ * The parts of a class's schedule its name doesn't already say. Unnamed classes are called "Swimmer 3 · Tue 5:30 PM",
+ * so repeating "Tue 5:30 PM" underneath is noise; "Tue 5:30 PM · Lane 2" becomes just "Lane 2".
+ */
+export function scheduleNote(cls: { name: string; schedule: string }): string {
+  const name = cls.name.toLowerCase()
+  return cls.schedule
+    .split(/\s*·\s*/)
+    .filter((part) => part && !name.includes(part.toLowerCase()))
+    .join(' · ')
+}
+
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || 'Swimmer'
 }

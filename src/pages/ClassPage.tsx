@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { LevelChip } from '../components/ui/bits'
 import { PROGRAMS, getLevel } from '../data/curriculum'
+import { scheduleNote } from '../lib/stats'
 import { useStore } from '../store/useStore'
 import type { Swimmer } from '../types'
 import { AttendanceTab } from './class/AttendanceTab'
@@ -61,7 +62,7 @@ export default function ClassPage() {
               <LevelChip level={level} />
               {cls.session && <span className="font-mono text-xs text-dim">{cls.session}</span>}
               {/* Phones: the counts ride along on this line instead of taking a row of their own. */}
-              <span className="text-xs text-dim sm:hidden">
+              <span className="font-mono text-xs text-dim sm:hidden">
                 · {cls.enrollments.length} swimmers · {cls.lessons.length} lessons
               </span>
               {cls.archived && (
@@ -71,7 +72,7 @@ export default function ClassPage() {
               )}
             </div>
             <h1 className="page-title max-sm:!text-[1.7rem]">{cls.name}</h1>
-            {cls.schedule && <p className="mt-1 text-sm text-muted sm:mt-1.5">{cls.schedule}</p>}
+            {scheduleNote(cls) && <p className="mt-1 text-sm text-muted sm:mt-1.5">{scheduleNote(cls)}</p>}
           </div>
           <dl className="flex gap-6 font-mono text-sm tabular-nums text-muted max-sm:hidden">
             {[

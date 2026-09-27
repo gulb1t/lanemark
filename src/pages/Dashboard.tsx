@@ -10,7 +10,7 @@ import { PROGRAMS, getLevel } from '../data/curriculum'
 import { nextActions, type NextAction } from '../lib/actions'
 import { formatDate, greeting, isoDate } from '../lib/dates'
 import { buildDemoData } from '../lib/demo'
-import { attendanceSummary, classSummary, lessonHeadcount, pct, skillProgress } from '../lib/stats'
+import { attendanceSummary, classSummary, lessonHeadcount, pct, scheduleNote, skillProgress } from '../lib/stats'
 import { forgetLegacyData, readLegacyData } from '../sync/engine'
 import { useSession } from '../store/useSession'
 import { useStore } from '../store/useStore'
@@ -405,10 +405,10 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
         <span className="font-mono text-[11px] text-dim">{cls.session}</span>
       </div>
       <h3 className="relative mt-3 line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight">{cls.name}</h3>
-      {cls.schedule && (
+      {scheduleNote(cls) && (
         <p className="relative mt-1 flex items-center gap-1.5 text-[13px] text-muted">
           <CalendarDays size={13} />
-          {cls.schedule}
+          {scheduleNote(cls)}
         </p>
       )}
       <div className="relative mt-5 flex items-center gap-4">
