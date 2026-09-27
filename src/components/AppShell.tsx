@@ -1,14 +1,16 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { BookOpen, LayoutGrid, LogOut, MailWarning, Moon, Plus, Search, Settings, Sparkles, Sun, UserPlus, Users, X } from 'lucide-react'
+import { BookOpen, Building2, LayoutGrid, LogOut, MailWarning, Moon, Plus, Search, Settings, Sparkles, Sun, UserPlus, Users, X } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom'
+import { buildDemoPool } from '../lib/demoPool'
 import { isMac } from '../lib/hooks'
 import { toggleTheme, useTheme } from '../lib/theme'
 import { signOut } from '../lib/signout'
 import { logout, useSession } from '../store/useSession'
 import { openDialog, setPaletteOpen, toast, useUi } from '../store/useUi'
 import { openAssistant, useAssistant } from '../store/useAssistant'
+import { loadPool, setPool, usePool } from '../store/usePool'
 import { Assistant } from './Assistant'
 import { CommandPalette } from './CommandPalette'
 import { NewClassDialog } from './dialogs/NewClassDialog'
@@ -27,6 +29,25 @@ const NAV = [
   { to: '/app/swimmers', label: 'Swimmers', icon: Users },
   { to: '/app/curriculum', label: 'Curriculum', icon: BookOpen },
 ]
+const POOL = { to: '/app/pool', label: 'Pool', icon: Building2, end: false }
+
+/** The Pool tab appears once the account is in a pool (and always in the demo, which has a sample pool). */
+function useNav() {
+  const inPool = usePool((s) => Boolean(s.pool))
+  return inPool ? [NAV[0], NAV[1], POOL, NAV[2]] : NAV
+}
+
+/** Loads the account's pool, or gives the demo its made-up one. */
+function usePoolSetup() {
+  const status = useSession((s) => s.status)
+  const userId = useSession((s) => s.user?.id)
+  const userName = useSession((s) => s.user?.name)
+  useEffect(() => {
+    if (!userId) return
+    if (status === 'demo') setPool(buildDemoPool({ id: userId, name: userName ?? 'Demo Coach' }))
+    else if (status === 'signedIn') void loadPool(userId).catch(() => usePool.setState({ status: 'ready' }))
+  }, [status, userId, userName])
+}
 
 export default function AppShell() {
   const { pathname } = useLocation()
@@ -37,6 +58,8 @@ export default function AppShell() {
   const theme = useTheme((s) => s.resolved)
   const [demoBanner, setDemoBanner] = useState(true)
   const [shortcuts, setShortcuts] = useState(false)
+  const nav = useNav()
+  usePoolSetup()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -102,7 +125,7 @@ export default function AppShell() {
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Main"
       >
-        {[...NAV, { to: '/app/settings', label: 'Settings', icon: Settings, end: false }].map(({ to, label, icon: Icon, end }) => (
+        {[...nav, { to: '/app/settings', label: 'Settings', icon: Settings, end: false }].map(({ to, label, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className="relative flex flex-1 flex-col items-center justify-center gap-1 text-[10.5px] font-medium">
             {({ isActive }) => (
               <>
@@ -158,6 +181,7 @@ function useScrolled(threshold = 8) {
  */
 function DesktopNav() {
   const scrolled = useScrolled()
+  const nav = useNav()
   const [hover, setHover] = useState<string | null>(null)
   return (
     <header className="no-print sticky top-3 z-30 mx-auto hidden w-[calc(100%-2rem)] max-w-6xl md:block">
@@ -172,7 +196,7 @@ function DesktopNav() {
         </Link>
         <span aria-hidden className="mx-3 h-5 w-px bg-line-2" />
         <nav className="flex items-center" aria-label="Main" onMouseLeave={() => setHover(null)}>
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {nav.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} onMouseEnter={() => setHover(to)} onFocus={() => setHover(to)} className="relative rounded-full px-3.5 py-2 text-[13.5px] font-medium">
               {({ isActive }) => (
                 <>

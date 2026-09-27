@@ -85,26 +85,36 @@ export function expectedReports(p: ClassProgress): number {
   return clamp((sessionProgress(p) - 0.6) / 0.4)
 }
 
-/** Report cards are on the instructor's to-do list from 60% of the way through the session (as on the dashboard). */
-export const reportsDue = (p: ClassProgress) => p.lessons > 0 && sessionProgress(p) >= 0.6
+/** A part of the record counts once at least this share of it is due. */
+const DUE = 0.15
 
 /**
- * 0–1: how caught up a class's paperwork is for where it is in the session. Equal parts: attendance taken for past
- * lessons, skills assessed as the lessons go by, and report cards finished over the last few weeks. Null for a class
- * with no swimmers, which has nothing to do yet.
+ * How each part of the record stands against what's due by now, 0–1, or null while that part isn't due yet:
+ * attendance for past lessons, skills assessed as the lessons go by, report cards over the last few weeks.
+ */
+export function pace(p: ClassProgress): { attendance: number | null; skills: number | null; reports: number | null } {
+  const wantSkills = expectedAssessed(p)
+  const wantReports = expectedReports(p)
+  return {
+    attendance: p.swimmers && p.past ? 1 - p.missedAttendance / p.past : null,
+    skills: wantSkills >= DUE && p.assessed !== null ? Math.min(1, p.assessed / wantSkills) : null,
+    reports: wantReports >= DUE && p.swimmers ? Math.min(1, p.reportsDone / p.swimmers / wantReports) : null,
+  }
+}
+
+/**
+ * 0–1: how much of what's due by now is done, averaged over the parts that are due. Null for a class with no
+ * swimmers or nothing due yet, which isn't ranked.
  */
 export function caughtUp(p: ClassProgress): number | null {
   if (!p.swimmers) return null
-  const attendance = p.past ? 1 - p.missedAttendance / p.past : 1
-  const wantSkills = expectedAssessed(p)
-  const skills = wantSkills && p.assessed !== null ? Math.min(1, p.assessed / wantSkills) : 1
-  const wantReports = expectedReports(p)
-  const reports = wantReports ? Math.min(1, p.reportsDone / p.swimmers / wantReports) : 1
-  return (attendance + skills + reports) / 3
+  const parts = Object.values(pace(p)).filter((v): v is number => v !== null)
+  return parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : null
 }
 
-/** Below this, a class shows up under "Needs attention". */
-export const BEHIND = 0.75
+/** Below these, a part is worth a supervisor's attention. Any missed attendance always is. */
+const SKILLS_LOW = 0.6
+const REPORTS_LOW = 0.5
 
 export type ClassStatus = 'empty' | 'upcoming' | 'on-track' | 'behind' | 'finished'
 
@@ -112,18 +122,20 @@ export function classStatus(p: ClassProgress): ClassStatus {
   if (!p.swimmers) return 'empty'
   if (p.lessons && Math.max(p.past, p.taught) >= p.lessons && p.reportsDone >= p.swimmers) return 'finished'
   if (!p.past && !p.taught) return 'upcoming'
-  return (caughtUp(p) ?? 1) < BEHIND || p.missedAttendance > 0 ? 'behind' : 'on-track'
+  const { skills, reports } = pace(p)
+  return p.missedAttendance > 0 || (skills ?? 1) < SKILLS_LOW || (reports ?? 1) < REPORTS_LOW ? 'behind' : 'on-track'
 }
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
-/** Short reasons a class is behind, most pressing first. */
+/** Short reasons a class needs attention, most pressing first. */
 export function attentionNotes(p: ClassProgress): string[] {
   if (!p.swimmers) return []
   const out: string[] = []
   if (p.missedAttendance) out.push(`No attendance for ${plural(p.missedAttendance, 'past lesson')}`)
-  if (p.assessed !== null && expectedAssessed(p) - p.assessed >= 0.2) out.push(`${Math.round(p.assessed * 100)}% of skills assessed`)
-  if (reportsDue(p) && p.reportsDone < p.swimmers) out.push(`${plural(p.swimmers - p.reportsDone, 'report card')} to finish`)
+  const { skills, reports } = pace(p)
+  if (p.assessed !== null && (skills ?? 1) < SKILLS_LOW) out.push(`${Math.round(p.assessed * 100)}% of skills assessed`)
+  if ((reports ?? 1) < REPORTS_LOW) out.push(`${plural(p.swimmers - p.reportsDone, 'report card')} to finish`)
   if (p.undated) out.push('No lesson dates')
   return out
 }
@@ -140,10 +152,7 @@ export interface GroupProgress {
   assessed: number | null
   passed: number
   reportsDone: number
-  /** Report cards in classes where they're on the to-do list. */
-  reportsDueOf: number
-  reportsDueDone: number
-  /** Average over classes that have swimmers. */
+  /** Average over classes with something due. */
   caughtUp: number | null
   behind: number
 }
@@ -160,8 +169,6 @@ export function summarize(list: ClassProgress[]): GroupProgress {
   let boxes = 0
   let passed = 0
   let reportsDone = 0
-  let dueOf = 0
-  let dueDone = 0
   let behind = 0
   const scores: number[] = []
   for (const p of list) {
@@ -179,10 +186,6 @@ export function summarize(list: ClassProgress[]): GroupProgress {
     }
     passed += p.passed
     reportsDone += p.reportsDone
-    if (reportsDue(p)) {
-      dueOf += p.swimmers
-      dueDone += p.reportsDone
-    }
     const score = caughtUp(p)
     if (score !== null) scores.push(score)
     if (classStatus(p) === 'behind') behind++
@@ -197,8 +200,6 @@ export function summarize(list: ClassProgress[]): GroupProgress {
     assessed: boxes ? filled / boxes : null,
     passed,
     reportsDone,
-    reportsDueOf: dueOf,
-    reportsDueDone: dueDone,
     caughtUp: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
     behind,
   }
@@ -212,7 +213,7 @@ export interface Ranked<T> {
 
 /**
  * Highest score first, with standard competition ranking ("1, 2, 2, 4") on whole percents so near-identical scores
- * share a place. Items without a score (no swimmers yet) are left out. Only ever used for classes and instructors.
+ * share a place. Items without a score (nothing due yet) are left out. Only ever used for classes and instructors.
  */
 export function rank<T>(items: T[], score: (t: T) => number | null, name: (t: T) => string): Ranked<T>[] {
   const scored = items

@@ -1,6 +1,6 @@
 import { Command } from 'cmdk'
 import { AnimatePresence, motion } from 'motion/react'
-import { BookOpen, CalendarCheck, CornerDownLeft, LayoutGrid, ListChecks, LogOut, Moon, Plus, Search, Settings, Sun, UserPlus, Users } from 'lucide-react'
+import { BookOpen, Building2, CalendarCheck, CornerDownLeft, LayoutGrid, ListChecks, LogOut, Moon, Plus, Search, Settings, Sun, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LEVELS, getLevel } from '../data/curriculum'
@@ -130,6 +130,9 @@ function PaletteBody() {
                   </Item>
                   <Item icon={<BookOpen size={16} />} onSelect={() => go('/app/curriculum')}>
                     Curriculum
+                  </Item>
+                  <Item icon={<Building2 size={16} />} onSelect={() => go('/app/pool')} keywords={['supervisor', 'team', 'join', 'invite', 'code', 'rankings', 'leaderboard']}>
+                    Pool
                   </Item>
                   <Item icon={<Settings size={16} />} onSelect={() => go('/app/settings')} keywords={['account', 'security', '2fa', 'password', 'export', 'backup']}>
                     Settings

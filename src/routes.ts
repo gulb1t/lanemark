@@ -14,6 +14,7 @@ export const load = {
   swimmer: () => import('./pages/SwimmerProfile'),
   curriculum: () => import('./pages/CurriculumPage'),
   settings: () => import('./pages/SettingsPage'),
+  pool: () => import('./pages/PoolPage'),
   reports: () => import('./pages/ReportWorkspace'),
   privacy: () => import('./pages/Privacy'),
   notFound: () => import('./pages/NotFound'),

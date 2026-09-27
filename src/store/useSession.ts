@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { api, ApiError, NetworkError, type User } from '../lib/api'
 import { buildDemoData } from '../lib/demo'
 import { clearCache, hasCache, pendingChanges, startSync, stopSync, syncNow } from '../sync/engine'
+import { resetPool } from './usePool'
 import { useStore } from './useStore'
 
 type Status = 'loading' | 'signedOut' | 'signedIn' | 'demo'
@@ -40,6 +41,7 @@ const storage = {
 /** The server ended this session (expired, or signed out everywhere). Unsynced edits stay cached for next sign-in. */
 export function expire() {
   stopSync()
+  resetPool()
   useStore.getState().hydrate({ swimmers: [], classes: [] })
   useSession.setState({ status: 'signedOut', user: null, offline: false })
 }
@@ -96,6 +98,7 @@ export async function register(name: string, email: string, password: string) {
 /** Signs out. Pushes unsynced edits first; returns how many would be lost if that fails and `force` is off. */
 export async function logout({ force = false } = {}): Promise<{ unsynced: number }> {
   const { status, user } = useSession.getState()
+  resetPool()
   if (status === 'demo') {
     stopSync()
     storage.set(DEMO_FLAG, null)
@@ -144,6 +147,7 @@ export function setUser(user: User) {
 export async function forgetAccount() {
   const { user } = useSession.getState()
   stopSync()
+  resetPool()
   if (user) await clearCache(user.id)
   storage.set(LAST_USER, null)
   useStore.getState().hydrate({ swimmers: [], classes: [] })

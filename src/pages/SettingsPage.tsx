@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   AlertTriangle,
   BadgeCheck,
+  Building2,
   Check,
   Copy,
   Database,
@@ -32,6 +33,7 @@ import { api, errorMessage, type User } from '../lib/api'
 import { timeAgo, useNow } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
+import { usePool } from '../store/usePool'
 import { forgetAccount, resetDemo, setUser, useSession } from '../store/useSession'
 import { parseBackup, useStore } from '../store/useStore'
 import { confirm, toast, withUndo } from '../store/useUi'
@@ -163,7 +165,12 @@ function AccountSection() {
           </div>
         </form>
       </Panel>
-      <Panel tone="danger" title="Delete account" description="Permanently deletes your account, every class, swimmer and record, and signs you out everywhere. This can’t be undone.">
+      <PoolPanel />
+      <Panel
+        tone="danger"
+        title="Delete account"
+        description="Permanently deletes your account, every class, swimmer and record, and signs you out everywhere. If you’re a pool’s only supervisor, the pool closes too. This can’t be undone."
+      >
         <Button variant="danger" icon={<Trash2 size={15} />} onClick={() => setDeleting(true)}>
           Delete my account
         </Button>
@@ -171,6 +178,25 @@ function AccountSection() {
       {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
       {changingEmail && <ChangeEmailDialog onClose={() => setChangingEmail(false)} />}
     </>
+  )
+}
+
+/** Where people who aren't in a pool yet find one; members get a shortcut to theirs. */
+function PoolPanel() {
+  const pool = usePool((s) => s.pool)
+  return (
+    <Panel
+      title="Pool"
+      description={
+        pool
+          ? `You’re ${pool.role === 'supervisor' ? 'a supervisor' : 'an instructor'} at ${pool.name}.`
+          : 'Join your pool’s team so a supervisor can see how your classes are going. Swimmers’ names, marks and comments stay private.'
+      }
+    >
+      <ButtonLink to="/app/pool" variant={pool ? 'secondary' : 'primary'} size="sm" icon={<Building2 size={14} />}>
+        {pool ? 'Open pool' : 'Join or start a pool'}
+      </ButtonLink>
+    </Panel>
   )
 }
 

@@ -5,7 +5,7 @@ import type { AttendanceStatus, Enrollment, PersistedData, SkillStatus, Swimmer,
 import { uid } from './stats.ts'
 
 /** Small deterministic PRNG so the sample data looks the same every time it is loaded. */
-function rng(seed: number) {
+export function rng(seed: number) {
   let a = seed
   return () => {
     a = (a + 0x6d2b79f5) | 0
@@ -162,7 +162,7 @@ export function buildDemoData(now = Date.now()): PersistedData {
   return { swimmers, classes }
 }
 
-function seasonOf(iso: string) {
+export function seasonOf(iso: string) {
   const [y, m] = iso.split('-').map(Number)
   const season = m <= 3 ? 'Winter' : m <= 6 ? 'Spring' : m <= 8 ? 'Summer' : 'Fall'
   return `${season} ${y}`

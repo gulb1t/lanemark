@@ -44,6 +44,13 @@ describe('class progress', () => {
     expect(attentionNotes(p)).toEqual([])
   })
 
+  it('doesn’t count report cards until they’re properly due', () => {
+    // Lesson 5 of 8: report cards have only just come up, so none written yet is fine.
+    const p = classProgress(makeClass(5, [kid(5, 2), kid(5, 2)]), TODAY)
+    expect(caughtUp(p)).toBe(1)
+    expect(classStatus(p)).toBe('on-track')
+  })
+
   it('missed attendance and unassessed skills pull the score down and explain why', () => {
     const p = classProgress(makeClass(6, [kid(3, 0), kid(3, 0)]), TODAY)
     expect(caughtUp(p)!).toBeLessThan(0.5)
