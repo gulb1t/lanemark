@@ -17,7 +17,9 @@ export class ApiError extends Error {
 /** The request never reached the server (offline, DNS, server down). */
 export class NetworkError extends Error {
   constructor() {
-    super('You’re offline. Changes are saved on this device and will sync when you’re back online.')
+    // Shown by forms (sign-in, sign-up, settings). Edits to classes and swimmers never see this: they save on the
+    // device and the sync pill reports being offline.
+    super('Can’t reach SwimTrack right now. Check your connection and try again.')
   }
 }
 
