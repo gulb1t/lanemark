@@ -3,6 +3,7 @@ import { Archive, ArrowRight, CalendarCheck, CalendarDays, CheckCheck, FileText,
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast as sonner } from 'sonner'
+import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button, ButtonLink } from '../components/ui/Button'
 import { LevelChip, ProgressRing, Segmented, Stat } from '../components/ui/bits'
@@ -17,6 +18,20 @@ import { useStore } from '../store/useStore'
 import { openDialog, toast } from '../store/useUi'
 import type { Swimmer, SwimClass } from '../types'
 
+const DASHBOARD_TOUR: TourStep[] = [
+  { title: 'Welcome to SwimTrack', body: 'Here’s a quick look around. It takes about 30 seconds, and you can replay it any time from Help.' },
+  { target: '[data-tour=onboarding]', title: 'Start here', body: 'Make your first class, or load two sample classes to try things out first.' },
+  { target: '[data-tour=today]', title: 'Today’s classes', body: 'A class you teach today shows up first. Tap Take attendance when the lesson starts.' },
+  {
+    target: '[data-tour=todo]',
+    title: 'Your to-do list',
+    body: 'What’s left: attendance you missed, skills to check and report cards that are due. Tap an item to go straight there.',
+  },
+  { target: '[data-tour=classes]', title: 'All your classes', body: 'Open a class for its swimmers, attendance, skills, lesson plans and report cards.' },
+  { target: '[data-tour=new]', title: 'Make something new', body: 'Create a class or add a swimmer from here.' },
+  { target: '[data-tour=account]', title: 'Help is always here', body: 'Your profile menu has Help, with step-by-step guides and pictures, plus Settings.' },
+]
+
 export default function Dashboard() {
   const classes = useStore((s) => s.classes)
   const swimmers = useStore((s) => s.swimmers)
@@ -28,9 +43,7 @@ export default function Dashboard() {
   const archived = classes.filter((c) => c.archived)
   const shown = view === 'active' ? active : archived
   const today = isoDate()
-  const todays = active
-    .map((c) => ({ c, lesson: c.lessons.findIndex((l) => l.date === today) }))
-    .filter((x) => x.lesson !== -1)
+  const todays = active.map((c) => ({ c, lesson: c.lessons.findIndex((l) => l.date === today) })).filter((x) => x.lesson !== -1)
   const upcoming = upcomingLessons(active, today, 3)
   const actions = nextActions(active, today)
 
@@ -83,12 +96,18 @@ export default function Dashboard() {
     if (params.get('welcome')) {
       setParams({}, { replace: true })
     }
+    // From Help: "Make a class → Try it" opens the new-class form straight away.
+    if (params.get('new') === 'class') {
+      setParams({}, { replace: true })
+      openDialog('newClass')
+    }
   }, [params, setParams])
 
   const first = user?.name.split(/\s+/)[0] ?? 'coach'
 
   return (
     <div className="space-y-10">
+      <Tour id="dashboard" steps={DASHBOARD_TOUR} />
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="eyebrow mb-2">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
@@ -103,7 +122,7 @@ export default function Dashboard() {
                 : 'Let’s set up your first class.'}
           </p>
         </div>
-        <Button variant="primary" icon={<Plus size={16} />} onClick={() => openDialog('newClass')} className="max-sm:hidden">
+        <Button variant="primary" icon={<Plus size={16} />} onClick={() => openDialog('newClass')} className="max-sm:hidden" data-tour="new">
           New class
         </Button>
       </section>
@@ -113,7 +132,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <section className="flex min-w-0 flex-col gap-4" aria-label="Today">
             {todays.map(({ c, lesson }, i) => (
-              <motion.div key={c.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.5 }}>
+              <motion.div
+                key={c.id}
+                data-tour={i === 0 ? 'today' : undefined}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
+              >
                 <TodayCard cls={c} lessonIndex={lesson} swimmers={swimmers} />
               </motion.div>
             ))}
@@ -140,18 +165,31 @@ export default function Dashboard() {
                   onChange={setView}
                   options={[
                     { value: 'active', label: `Active · ${active.length}` },
-                    { value: 'archived', label: <><Archive size={12} /> {archived.length}</> },
+                    {
+                      value: 'archived',
+                      label: (
+                        <>
+                          <Archive size={12} /> {archived.length}
+                        </>
+                      ),
+                    },
                   ]}
                 />
               )}
-              <Button size="sm" icon={<Plus size={14} />} onClick={() => openDialog('newClass')} className="sm:hidden">
+              <Button size="sm" icon={<Plus size={14} />} onClick={() => openDialog('newClass')} className="sm:hidden" data-tour="new">
                 New
               </Button>
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-tour="classes">
             {shown.map((c, i) => (
-              <motion.div key={c.id} layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.05, ease: [0.16, 1, 0.3, 1] }}>
+              <motion.div
+                key={c.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.05, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <ClassCard cls={c} swimmers={swimmers} />
               </motion.div>
             ))}
@@ -189,7 +227,11 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
   const base = `/app/classes/${cls.id}`
   return (
     <article className="card relative overflow-hidden p-5 sm:p-6">
-      <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ background: `radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, ${hue} 14%, transparent), transparent 55%)` }} />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-[inherit]"
+        style={{ background: `radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, ${hue} 14%, transparent), transparent 55%)` }}
+      />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[13px] text-muted">
@@ -200,7 +242,11 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
           <h3 className="mt-2 truncate font-display text-[1.35rem] font-bold leading-tight tracking-tight">{cls.name}</h3>
           <p className="mt-1 truncate text-[14px] text-muted">{lesson.topic || 'No topic planned'}</p>
         </div>
-        <Link to={base} aria-label={`Open ${cls.name}`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-dim transition-colors hover:bg-fg/[0.06] hover:text-fg">
+        <Link
+          to={base}
+          aria-label={`Open ${cls.name}`}
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-dim transition-colors hover:bg-fg/[0.06] hover:text-fg"
+        >
           <ArrowRight size={17} />
         </Link>
       </div>
@@ -209,7 +255,11 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
           {members.slice(0, 6).map((w) => (
             <Avatar key={w.id} name={w.name} photo={w.photo} size={30} className="ring-2 ring-panel" />
           ))}
-          {members.length > 6 && <span className="inline-flex size-[30px] items-center justify-center rounded-full bg-panel-2 text-[11px] text-muted ring-2 ring-panel">+{members.length - 6}</span>}
+          {members.length > 6 && (
+            <span className="inline-flex size-[30px] items-center justify-center rounded-full bg-panel-2 text-[11px] text-muted ring-2 ring-panel">
+              +{members.length - 6}
+            </span>
+          )}
         </div>
         <span className={`text-[13px] ${taken ? 'font-medium text-good' : 'text-muted'}`}>
           {taken ? (
@@ -233,7 +283,12 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
             Take attendance
           </ButtonLink>
         )}
-        <ButtonLink to={taken ? `${base}?tab=attendance&lesson=${lesson.id}` : `${base}?tab=skills`} variant="outline" size="lg" aria-label={taken ? 'Attendance' : 'Skills'}>
+        <ButtonLink
+          to={taken ? `${base}?tab=attendance&lesson=${lesson.id}` : `${base}?tab=skills`}
+          variant="outline"
+          size="lg"
+          aria-label={taken ? 'Attendance' : 'Skills'}
+        >
           {taken ? <CalendarCheck size={17} /> : <ListChecks size={17} />}
         </ButtonLink>
       </div>
@@ -248,12 +303,14 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
   const [all, setAll] = useState(false)
   const list = all ? actions : actions.slice(0, 4)
   return (
-    <section className="card flex flex-1 flex-col overflow-hidden" aria-labelledby="todo-h">
+    <section className="card flex flex-1 flex-col overflow-hidden" aria-labelledby="todo-h" data-tour="todo">
       <div className="flex items-baseline justify-between px-5 pt-5">
         <h2 id="todo-h" className="text-[16px] font-bold">
           To do
         </h2>
-        <span className="text-xs text-dim">{actions.length} item{actions.length === 1 ? '' : 's'}</span>
+        <span className="text-xs text-dim">
+          {actions.length} item{actions.length === 1 ? '' : 's'}
+        </span>
       </div>
       <ul className="mt-2 divide-y divide-line">
         {list.map((a) => {
@@ -277,7 +334,11 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
         })}
       </ul>
       {actions.length > 4 && (
-        <button type="button" onClick={() => setAll((v) => !v)} className="mt-auto w-full border-t border-line px-5 py-3 text-left text-[13px] font-semibold text-muted hover:text-fg">
+        <button
+          type="button"
+          onClick={() => setAll((v) => !v)}
+          className="mt-auto w-full border-t border-line px-5 py-3 text-left text-[13px] font-semibold text-muted hover:text-fg"
+        >
           {all ? 'Show less' : `Show ${actions.length - 4} more`}
         </button>
       )}
@@ -287,7 +348,7 @@ function ActionsCard({ actions }: { actions: NextAction[] }) {
 
 function AllCaughtUp() {
   return (
-    <section className="card flex flex-1 items-center gap-4 p-5">
+    <section className="card flex flex-1 items-center gap-4 p-5" data-tour="todo">
       <span className="icon-tile size-11 shrink-0 !rounded-xl !shadow-none">
         <CheckCheck size={19} />
       </span>
@@ -340,13 +401,50 @@ function ComingUp({ items }: { items: ReturnType<typeof upcomingLessons> }) {
   )
 }
 
-function StatsCard({ totals, active, swimmers }: { totals: { attendance: number | null; passed: number; items: number; lessons: number; taught: number; enrolled: number }; active: number; swimmers: number }) {
+function StatsCard({
+  totals,
+  active,
+  swimmers,
+}: {
+  totals: { attendance: number | null; passed: number; items: number; lessons: number; taught: number; enrolled: number }
+  active: number
+  swimmers: number
+}) {
   return (
     <section className="grid flex-1 auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-2" aria-label="Numbers">
-      <Stat label="Active classes" value={active} sub={`${totals.taught} of ${totals.lessons} lessons taught`} meter={totals.lessons ? totals.taught / totals.lessons : null} accent="var(--color-aqua)" icon={<Waves size={15} />} />
-      <Stat label="Swimmers" value={swimmers} sub={`${totals.enrolled} in active classes`} meter={swimmers ? totals.enrolled / swimmers : null} accent="var(--color-blue)" icon={<Users size={15} />} />
-      <Stat label="Attendance" value={totals.attendance === null ? null : totals.attendance * 100} format={(n) => `${Math.round(n)}%`} sub="average, marked lessons" meter={totals.attendance} accent="var(--color-good)" icon={<CalendarCheck size={15} />} />
-      <Stat label="Skills passed" value={totals.passed} sub={`of ${totals.items} on active rosters`} meter={totals.items ? totals.passed / totals.items : null} accent="var(--p-patrol)" icon={<ListChecks size={15} />} />
+      <Stat
+        label="Active classes"
+        value={active}
+        sub={`${totals.taught} of ${totals.lessons} lessons taught`}
+        meter={totals.lessons ? totals.taught / totals.lessons : null}
+        accent="var(--color-aqua)"
+        icon={<Waves size={15} />}
+      />
+      <Stat
+        label="Swimmers"
+        value={swimmers}
+        sub={`${totals.enrolled} in active classes`}
+        meter={swimmers ? totals.enrolled / swimmers : null}
+        accent="var(--color-blue)"
+        icon={<Users size={15} />}
+      />
+      <Stat
+        label="Attendance"
+        value={totals.attendance === null ? null : totals.attendance * 100}
+        format={(n) => `${Math.round(n)}%`}
+        sub="average, marked lessons"
+        meter={totals.attendance}
+        accent="var(--color-good)"
+        icon={<CalendarCheck size={15} />}
+      />
+      <Stat
+        label="Skills passed"
+        value={totals.passed}
+        sub={`of ${totals.items} on active rosters`}
+        meter={totals.items ? totals.passed / totals.items : null}
+        accent="var(--p-patrol)"
+        icon={<ListChecks size={15} />}
+      />
     </section>
   )
 }
@@ -354,15 +452,36 @@ function StatsCard({ totals, active, swimmers }: { totals: { attendance: number 
 function Onboarding() {
   const status = useSession((s) => s.status)
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-3" data-tour="onboarding">
       {[
-        { n: 1, icon: <Plus size={18} />, title: 'Create a class', body: 'Pick a Swim for Life level. Skills and distances come preloaded.', action: <Button variant="primary" size="sm" onClick={() => openDialog('newClass')}>New class</Button> },
-        { n: 2, icon: <Users size={18} />, title: 'Add your swimmers', body: 'Names, photos and notes. Swimmers can be in several classes.', action: <Button size="sm" onClick={() => openDialog('newSwimmer')}>New swimmer</Button> },
+        {
+          n: 1,
+          icon: <Plus size={18} />,
+          title: 'Create a class',
+          body: 'Pick a Swim for Life level. Skills and distances come preloaded.',
+          action: (
+            <Button variant="primary" size="sm" onClick={() => openDialog('newClass')}>
+              New class
+            </Button>
+          ),
+        },
+        {
+          n: 2,
+          icon: <Users size={18} />,
+          title: 'Add your swimmers',
+          body: 'Names, photos and notes. Swimmers can be in several classes.',
+          action: (
+            <Button size="sm" onClick={() => openDialog('newSwimmer')}>
+              New swimmer
+            </Button>
+          ),
+        },
         {
           n: 3,
           icon: <Sparkles size={18} />,
           title: 'Or look around first',
-          body: status === 'demo' ? 'Load two sample classes with swimmers, attendance and progress.' : 'Load two sample classes into your account. Delete them any time.',
+          body:
+            status === 'demo' ? 'Load two sample classes with swimmers, attendance and progress.' : 'Load two sample classes into your account. Delete them any time.',
           action: (
             <Button
               size="sm"
@@ -376,7 +495,13 @@ function Onboarding() {
           ),
         },
       ].map((s, i) => (
-        <motion.div key={s.n} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="card spotlight flex flex-col p-6">
+        <motion.div
+          key={s.n}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.08 }}
+          className="card spotlight flex flex-col p-6"
+        >
           <div className="flex items-center justify-between">
             <span className="icon-tile size-10 !rounded-xl">{s.icon}</span>
             <span className="font-mono text-xs text-dim">0{s.n}</span>
@@ -398,8 +523,15 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
   const members = cls.enrollments.map((e) => swimmers.find((w) => w.id === e.swimmerId)).filter((w): w is Swimmer => Boolean(w))
 
   return (
-    <Link to={`/app/classes/${cls.id}`} className="card spotlight group block h-full overflow-hidden p-5 transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.99]">
-      <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ background: `linear-gradient(180deg, color-mix(in oklab, ${hue} 10%, transparent), transparent 42%)` }} />
+    <Link
+      to={`/app/classes/${cls.id}`}
+      className="card spotlight group block h-full overflow-hidden p-5 transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.99]"
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-[inherit]"
+        style={{ background: `linear-gradient(180deg, color-mix(in oklab, ${hue} 10%, transparent), transparent 42%)` }}
+      />
       <div className="relative flex items-start justify-between gap-3">
         <LevelChip level={level} />
         <span className="font-mono text-[11px] text-dim">{cls.session}</span>
@@ -434,7 +566,9 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
             <Avatar key={w.id} name={w.name} photo={w.photo} size={28} className="ring-2 ring-panel" />
           ))}
           {members.length > 5 && (
-            <span className="inline-flex size-7 items-center justify-center rounded-full bg-panel-2 font-mono text-[10px] text-muted ring-2 ring-panel">+{members.length - 5}</span>
+            <span className="inline-flex size-7 items-center justify-center rounded-full bg-panel-2 font-mono text-[10px] text-muted ring-2 ring-panel">
+              +{members.length - 5}
+            </span>
           )}
           {!members.length && <span className="text-[13px] text-dim">No swimmers yet</span>}
         </div>

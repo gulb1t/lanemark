@@ -21,6 +21,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { flushSync } from 'react-dom'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { PrintReports, ReportSheet } from '../components/PrintReports'
+import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
 import { LevelChip } from '../components/ui/bits'
@@ -43,6 +44,13 @@ const MAX_FOCUS = 3
 const SHEET_W = 816 // 8.5in at 96 dpi
 
 type Row = { e: Enrollment; swimmer: Swimmer }
+
+const REPORT_TOUR: TourStep[] = [
+  { target: '[data-tour=report-skills]', title: 'Step 1: their skills', body: 'Tap Passed or Not yet for each skill. The comment is written from these.' },
+  { target: '[data-tour=report-comment]', title: 'Step 2: the comment', body: 'Press Write it for me, then read it over and change anything you like.' },
+  { target: '[data-tour=report-preview]', title: 'See the printed card', body: 'Preview shows exactly what prints, on letter paper.' },
+  { target: '[data-tour=report-next]', title: 'On to the next swimmer', body: 'Everything saves as you go. Tap Next when this card is done.' },
+]
 
 /**
  * Writing report cards, one swimmer at a time, in three steps: check the skills, write the comment (SwimTrack can
@@ -113,6 +121,7 @@ export default function ReportWorkspace() {
 
   return (
     <div className="relative min-h-dvh">
+      <Tour id="report" steps={REPORT_TOUR} />
       <div className="ambient" aria-hidden />
       <header className="no-print sticky top-0 z-30 border-b border-line bg-ink/80 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-3 sm:px-5">
@@ -305,8 +314,8 @@ function PaperPreview({ children }: { children: ReactNode }) {
 
 function Step({ n, title, hint, done, children, tour }: { n: number; title: string; hint: ReactNode; done: boolean; children: ReactNode; tour?: string }) {
   return (
-    <section className="card p-5 sm:p-6" data-tour={tour}>
-      <div className="flex items-start gap-3.5">
+    <section className="card p-5 sm:p-6">
+      <div className="flex items-start gap-3.5" data-tour={tour}>
         <span
           className={`flex size-8 shrink-0 items-center justify-center rounded-full font-display text-[15px] font-bold transition-colors ${done ? 'bg-good text-ink' : 'bg-fg/[0.08] text-fg'}`}
           aria-hidden

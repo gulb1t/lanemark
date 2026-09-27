@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { Archive, CalendarCheck, ChevronLeft, ClipboardList, FileText, ListChecks, Settings, Users } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Tour, type TourStep } from '../components/Tour'
 import { LevelChip } from '../components/ui/bits'
 import { PROGRAMS, getLevel } from '../data/curriculum'
 import { scheduleNote } from '../lib/stats'
@@ -25,6 +26,21 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+const CLASS_TOUR: TourStep[] = [
+  {
+    target: '[role=tablist][aria-label="Class sections"]',
+    title: 'Everything for this class',
+    body: 'Its swimmers, attendance, skills, lesson plans and report cards each have a tab.',
+  },
+  {
+    target: '[data-tour=tab-attendance]',
+    title: 'Attendance',
+    body: 'Open this when a lesson starts. Tap Present, Late or Absent for each swimmer, or Mark the rest present.',
+  },
+  { target: '[data-tour=tab-skills]', title: 'Skills', body: 'Check off skills for the whole class in one grid, or one swimmer at a time.' },
+  { target: '[data-tour=tab-reports]', title: 'Report cards', body: 'At the end of the session, write and print the cards here, one swimmer at a time.' },
+]
 
 export default function ClassPage() {
   const { classId } = useParams()
@@ -52,6 +68,7 @@ export default function ClassPage() {
 
   return (
     <div className="space-y-5 sm:space-y-7">
+      <Tour id="class" steps={CLASS_TOUR} />
       <div className="no-print relative">
         <Link to="/app" className="relative mb-3 inline-flex sm:mb-5 items-center gap-1 text-[13px] text-muted transition-colors hover:text-fg">
           <ChevronLeft size={15} /> All classes
@@ -101,6 +118,7 @@ export default function ClassPage() {
             return (
               <button
                 key={id}
+                data-tour={`tab-${id}`}
                 role="tab"
                 aria-selected={active}
                 onClick={() => setParams(id === 'roster' ? {} : { tab: id }, { replace: true })}

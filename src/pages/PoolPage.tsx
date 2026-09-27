@@ -1,6 +1,7 @@
 import { Building2, Check, Link2, LogOut, RefreshCw, Trophy, Users } from 'lucide-react'
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
 import { Field, Segmented, Spinner } from '../components/ui/bits'
@@ -15,6 +16,21 @@ import { RankingsTab } from './pool/RankingsTab'
 import { TeamTab } from './pool/TeamTab'
 
 type Tab = 'overview' | 'rankings' | 'team'
+
+const POOL_TOUR: TourStep[] = [
+  { target: '[data-tour=pool-totals]', title: 'Your pool at a glance', body: 'How caught up every class is, the attendance rate, skills checked and report cards done.' },
+  {
+    target: '[data-tour=pool-attention]',
+    title: 'Classes that need a hand',
+    body: 'Anything that’s behind, and why. Tap a class to see it in full (you can look, not edit).',
+  },
+  {
+    target: '[data-tour=pool-tabs]',
+    title: 'Rankings and your team',
+    body: 'Rankings shows which classes and instructors are most caught up. Team is where you manage people.',
+  },
+  { target: '[data-tour=pool-invite]', title: 'Invite your instructors', body: 'Tap to copy the invite link and send it to your staff. They join in one step.' },
+]
 
 export default function PoolPage() {
   const pool = usePool((s) => s.pool)
@@ -86,7 +102,8 @@ function NoPool() {
         <div className="eyebrow mb-2">Pool</div>
         <h1 className="page-title">{invited ? 'You’re invited to a pool' : 'Work as a team'}</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-muted">
-          In a pool, supervisors can see every class (attendance, skills and report cards) without anyone sending a spreadsheet. They can look, print and export, but only you can change your classes.
+          In a pool, supervisors can see every class (attendance, skills and report cards) without anyone sending a spreadsheet. They can look, print and export, but only
+          you can change your classes.
         </p>
       </section>
 
@@ -154,7 +171,7 @@ function InstructorView({ pool }: { pool: Pool }) {
   async function leave() {
     const ok = await confirm({
       title: `Leave ${pool.name}?`,
-      body: 'Supervisors stop seeing your classes’ numbers. Your classes and swimmers stay exactly as they are.',
+      body: 'Supervisors stop seeing your classes straight away. Your classes and swimmers stay exactly as they are.',
       confirmLabel: 'Leave pool',
       danger: true,
     })
@@ -245,17 +262,20 @@ function SupervisorView({ pool }: { pool: Pool }) {
         actions={<InviteButton pool={pool} />}
       />
 
+      <Tour id="pool" steps={POOL_TOUR} when={tab === 'overview' && Boolean(overview.data)} />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Segmented
-          label="Section"
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'overview', label: 'Overview' },
-            { value: 'rankings', label: 'Rankings' },
-            { value: 'team', label: <>Team · {pool.memberCount}</> },
-          ]}
-        />
+        <div data-tour="pool-tabs">
+          <Segmented
+            label="Section"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'overview', label: 'Overview' },
+              { value: 'rankings', label: 'Rankings' },
+              { value: 'team', label: <>Team · {pool.memberCount}</> },
+            ]}
+          />
+        </div>
         {tab !== 'team' && (
           <div className="flex items-center gap-2 text-[12.5px] text-dim">
             {sessions.length > 1 && (
@@ -313,6 +333,7 @@ function InviteButton({ pool }: { pool: Pool }) {
       onClick={copy}
       className="group flex items-center gap-3 rounded-2xl border border-line bg-panel/70 py-2 pl-3.5 pr-2 text-left transition-colors hover:border-line-2"
       aria-label={`Copy invite link. Code ${formatCode(pool.inviteCode)}`}
+      data-tour="pool-invite"
     >
       <span>
         <span className="block text-[11px] font-semibold uppercase tracking-wider text-dim">Invite code</span>

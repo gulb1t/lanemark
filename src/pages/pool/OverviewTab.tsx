@@ -44,7 +44,7 @@ export function OverviewTab({ instructors, onRankings }: { instructors: Instruct
 
   return (
     <div className="space-y-4">
-      <section className="grid auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4" aria-label="Pool totals">
+      <section className="grid auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4" aria-label="Pool totals" data-tour="pool-totals">
         <Stat
           label="Caught up"
           value={totals.caughtUp === null ? null : totals.caughtUp * 100}
@@ -119,7 +119,7 @@ function NeedsAttention({ rows }: { rows: Row[] }) {
   const shown = all ? rows : rows.slice(0, 4)
   if (!rows.length)
     return (
-      <section className="card flex items-center gap-4 p-5">
+      <section className="card flex items-center gap-4 p-5" data-tour="pool-attention">
         <span className="icon-tile size-11 shrink-0 !rounded-xl !shadow-none">
           <Check size={19} />
         </span>
@@ -130,7 +130,7 @@ function NeedsAttention({ rows }: { rows: Row[] }) {
       </section>
     )
   return (
-    <section className="card flex flex-col overflow-hidden" aria-labelledby="attn-h">
+    <section className="card flex flex-col overflow-hidden" aria-labelledby="attn-h" data-tour="pool-attention">
       <div className="flex items-baseline justify-between px-5 pt-5">
         <h2 id="attn-h" className="text-[16px] font-bold">
           Needs attention

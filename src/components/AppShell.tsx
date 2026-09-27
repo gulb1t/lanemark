@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { BookOpen, Building2, LayoutGrid, LogOut, MailWarning, Moon, Plus, Search, Settings, Sparkles, Sun, UserPlus, Users, X } from 'lucide-react'
+import { BookOpen, Building2, LayoutGrid, LifeBuoy, LogOut, MailWarning, Moon, Plus, Search, Settings, Sparkles, Sun, UserPlus, Users, X } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom'
@@ -384,7 +384,7 @@ function UserMenu() {
     <Popover
       label="Account"
       trigger={({ toggle, open }) => (
-        <button type="button" onClick={toggle} aria-expanded={open} aria-label="Account menu" className="ml-1 rounded-full ring-2 ring-transparent transition hover:ring-line-2">
+        <button type="button" onClick={toggle} aria-expanded={open} aria-label="Account menu" data-tour="account" className="ml-1 rounded-full ring-2 ring-transparent transition hover:ring-line-2">
           <Avatar name={user.name} size={32} />
         </button>
       )}
@@ -396,6 +396,9 @@ function UserMenu() {
             <div className="truncate text-xs text-muted">{status === 'demo' ? 'Demo mode · this browser only' : user.email}</div>
           </div>
           <div className="my-1 h-px bg-line" />
+          <MenuItem icon={<LifeBuoy size={15} />} onSelect={() => (close(), navigate('/help'))}>
+            Help and guides
+          </MenuItem>
           <MenuItem icon={<Settings size={15} />} onSelect={() => (close(), navigate('/app/settings'))}>
             Settings
           </MenuItem>
