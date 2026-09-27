@@ -46,7 +46,10 @@ aren't delivered; they're only written to the server log, so set up email before
    fly deploy
    ```
 
-3. Open `https://my-swimtrack.fly.dev`. `fly logs` shows the server log; `fly deploy` again ships updates.
+3. Open `https://my-swimtrack.fly.dev`. `fly logs` shows the server log.
+
+**Updating it later:** run `./ship.sh` (Windows: `ship`) from the `SwimTrack` folder. It pulls, checks, commits,
+pushes, deploys and checks the live site in one go. See "Updating the live site" in the README for its options.
 
 **Backups:** `fly ssh sftp get /data/swimtrack.db` downloads the whole database. Each instructor can also
 download their own data from Settings → Data → Backup.
