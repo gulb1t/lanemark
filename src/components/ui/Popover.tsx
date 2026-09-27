@@ -1,7 +1,12 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
-/** Minimal anchored menu: click to toggle, closes on outside click, Esc or selection. */
+/**
+ * Minimal anchored menu: click to toggle, closes on outside click, Esc or selection. The menu is rendered on the
+ * page body and pinned to its button, so a card with overflow hidden can't cut it off, and it opens upward when
+ * there isn't room below.
+ */
 export function Popover({
   trigger,
   children,
@@ -17,38 +22,84 @@ export function Popover({
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const menu = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
-    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false)
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node
+      if (!ref.current?.contains(target) && !menu.current?.contains(target)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setOpen(false)
+      ref.current?.querySelector<HTMLElement>('button, a')?.focus()
+    }
+    // The menu lives at the end of the page, so tabbing out of it (or past the button) closes it.
+    const onFocus = (e: FocusEvent) => {
+      const target = e.target as Node
+      if (!ref.current?.contains(target) && !menu.current?.contains(target)) setOpen(false)
+    }
     document.addEventListener('pointerdown', onDown)
     document.addEventListener('keydown', onKey)
+    document.addEventListener('focusin', onFocus)
+    // Focus the first item so the keyboard goes straight into the menu, as it did when it sat next to the button.
+    menu.current?.querySelector<HTMLElement>('[role=menuitem], a, button')?.focus({ preventScroll: true })
     return () => {
       document.removeEventListener('pointerdown', onDown)
       document.removeEventListener('keydown', onKey)
+      document.removeEventListener('focusin', onFocus)
     }
   }, [open])
+
+  // Placed before paint, and again whenever anything scrolls or the window resizes, so it stays with its button.
+  useLayoutEffect(() => {
+    if (!open) return
+    const place = () => {
+      const anchor = ref.current?.getBoundingClientRect()
+      const el = menu.current
+      if (!anchor || !el) return
+      const gap = 8
+      const below = window.innerHeight - anchor.bottom
+      const fitsBelow = below >= el.offsetHeight + gap * 2
+      const up = side === 'top' ? anchor.top >= el.offsetHeight + gap * 2 || anchor.top > below : !fitsBelow && anchor.top > below
+      el.style.top = up ? '' : `${anchor.bottom + gap}px`
+      el.style.bottom = up ? `${window.innerHeight - anchor.top + gap}px` : ''
+      el.style.left = align === 'start' ? `${Math.max(gap, anchor.left)}px` : ''
+      el.style.right = align === 'end' ? `${Math.max(gap, document.documentElement.clientWidth - anchor.right)}px` : ''
+      el.style.transformOrigin = `${up ? 'bottom' : 'top'} ${align === 'end' ? 'right' : 'left'}`
+    }
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+    }
+  }, [open, side, align])
 
   return (
     <div ref={ref} className="relative">
       {trigger({ open, toggle: () => setOpen((o) => !o) })}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            role="menu"
-            aria-label={label}
-            initial={{ opacity: 0, y: side === 'bottom' ? -6 : 6, scale: 0.96, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: side === 'bottom' ? -4 : 4, scale: 0.97 }}
-            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            style={{ transformOrigin: `${side === 'bottom' ? 'top' : 'bottom'} ${align === 'end' ? 'right' : 'left'}` }}
-            className={`absolute z-50 min-w-56 rounded-2xl border border-line-2 bg-panel/95 p-1.5 shadow-[var(--shadow-lg)] backdrop-blur-xl ${align === 'end' ? 'right-0' : 'left-0'} ${side === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
-          >
-            {children(() => setOpen(false))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              ref={menu}
+              role="menu"
+              aria-label={label}
+              initial={{ opacity: 0, scale: 0.96, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed z-50 min-w-56 rounded-2xl border border-line-2 bg-panel/95 p-1.5 shadow-[var(--shadow-lg)] backdrop-blur-xl"
+            >
+              {children(() => setOpen(false))}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </div>
   )
 }
