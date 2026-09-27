@@ -3,18 +3,19 @@ import {
   AlertTriangle,
   ArrowLeft,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
   CloudOff,
   Copy,
-  Info,
+  Eye,
   Loader2,
-  Minus,
+  PenLine,
   Printer,
-  RotateCcw,
   Sparkles,
   Users,
+  X,
 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
@@ -22,9 +23,10 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { PrintReports, ReportSheet } from '../components/PrintReports'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
-import { Kbd, LevelChip, Segmented } from '../components/ui/bits'
+import { LevelChip } from '../components/ui/bits'
+import { Modal } from '../components/ui/Modal'
 import { MenuItem, Popover } from '../components/ui/Popover'
-import { categoriesOf, getLevel, LEVELS } from '../data/curriculum'
+import { categoriesOf, getLevel, LEVEL_BY_ID, LEVELS } from '../data/curriculum'
 import { ELEMENT_LABEL } from '../data/mustSees'
 import { printReports } from '../lib/print'
 import { availableElements, generateComment, plainSkillName, suggestReport, type FocusPick } from '../lib/report'
@@ -32,7 +34,7 @@ import { isReportDone, reportWarnings } from '../lib/reportRules'
 import { firstName, passedLevel, skillProgress } from '../lib/stats'
 import { useSession } from '../store/useSession'
 import { useStore } from '../store/useStore'
-import { toast, withUndo } from '../store/useUi'
+import { confirm, toast, withUndo } from '../store/useUi'
 import { useSync } from '../sync/engine'
 import type { Element, Enrollment, LevelDef, Skill, SkillStatus, Swimmer, SwimClass } from '../types'
 import NotFound from './NotFound'
@@ -42,14 +44,17 @@ const SHEET_W = 816 // 8.5in at 96 dpi
 
 type Row = { e: Enrollment; swimmer: Swimmer }
 
-/** Full-screen report card writing: checklist and comment builder on the left, the printed card on the right. */
+/**
+ * Writing report cards, one swimmer at a time, in three steps: check the skills, write the comment (SwimTrack can
+ * write it), confirm the next level. The printed card is one tap away under Preview.
+ */
 export default function ReportWorkspace() {
   const { classId = '', swimmerId = '' } = useParams()
   const navigate = useNavigate()
   const cls = useStore((s) => s.classes.find((c) => c.id === classId))
   const swimmers = useStore((s) => s.swimmers)
   const user = useSession((s) => s.user)
-  const [view, setView] = useState<'edit' | 'preview'>('edit')
+  const [preview, setPreview] = useState(false)
   const [printScope, setPrintScope] = useState<'one' | 'all'>('all')
   const [dir, setDir] = useState(1)
 
@@ -67,6 +72,7 @@ export default function ReportWorkspace() {
     const target = rows[(index + step + rows.length) % rows.length]
     setDir(step)
     navigate(`/app/classes/${classId}/reports/${target.swimmer.id}`, { replace: true })
+    window.scrollTo({ top: 0 })
   }
   const goRef = useRef(go)
   useLayoutEffect(() => {
@@ -77,9 +83,10 @@ export default function ReportWorkspace() {
     const onKey = (ev: KeyboardEvent) => {
       const t = ev.target as HTMLElement
       if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || ev.metaKey || ev.ctrlKey || ev.altKey) return
+      if (document.querySelector('dialog[open], [role=dialog]')) return
       if (ev.key === 'ArrowLeft' || ev.key === 'k') goRef.current(-1)
       else if (ev.key === 'ArrowRight' || ev.key === 'j') goRef.current(1)
-      else if (ev.key === 'Escape' && !document.querySelector('dialog[open], [role=dialog]')) navigate(back)
+      else if (ev.key === 'Escape') navigate(back)
       else return
       ev.preventDefault()
     }
@@ -94,6 +101,8 @@ export default function ReportWorkspace() {
   const level = getLevel(cls.levelId)
   const done = rows.filter((r) => isReportDone(r.e, cls.skills)).length
   const instructor = user ? firstName(user.name) : ''
+  const next = rows[(index + 1) % rows.length]
+  const prev = rows[(index - 1 + rows.length) % rows.length]
 
   function print(scope: 'one' | 'all') {
     const missing = scope === 'all' ? rows.filter((r) => !r.e.comment.trim()).length : current.e.comment.trim() ? 0 : 1
@@ -106,8 +115,12 @@ export default function ReportWorkspace() {
     <div className="relative min-h-dvh">
       <div className="ambient" aria-hidden />
       <header className="no-print sticky top-0 z-30 border-b border-line bg-ink/80 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-3 px-3 sm:px-5">
-          <Link to={back} aria-label="Back to the class" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-fg/[0.07] hover:text-fg">
+        <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-3 sm:px-5">
+          <Link
+            to={back}
+            aria-label="Back to the class"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-fg/[0.07] hover:text-fg"
+          >
             <ArrowLeft size={18} />
           </Link>
           <div className="min-w-0">
@@ -122,19 +135,14 @@ export default function ReportWorkspace() {
 
           <div className="ml-auto flex items-center gap-1.5">
             <SaveState />
-            <div className="hidden items-center gap-1 sm:flex">
-              <Button size="sm" variant="ghost" onClick={() => go(-1)} disabled={rows.length < 2} aria-label="Previous swimmer" aria-keyshortcuts="ArrowLeft K">
-                <ChevronLeft size={16} />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => go(1)} disabled={rows.length < 2} aria-label="Next swimmer" aria-keyshortcuts="ArrowRight J">
-                <ChevronRight size={16} />
-              </Button>
-            </div>
+            <Button size="sm" variant="ghost" icon={<Eye size={15} />} onClick={() => setPreview(true)} data-tour="report-preview">
+              <span className="max-sm:hidden">Preview</span>
+            </Button>
             <Popover
               label="Print"
               trigger={({ toggle, open }) => (
                 <Button size="sm" variant="primary" icon={<Printer size={14} />} onClick={toggle} aria-expanded={open}>
-                  <span className="hidden sm:inline">Print</span>
+                  <span className="max-sm:hidden">Print</span>
                 </Button>
               )}
             >
@@ -151,60 +159,72 @@ export default function ReportWorkspace() {
             </Popover>
           </div>
         </div>
-        <div className="px-3 pb-2.5 lg:hidden">
-          <Segmented
-            label="View"
-            value={view}
-            onChange={setView}
-            options={[
-              { value: 'edit', label: 'Write' },
-              { value: 'preview', label: 'Printed card' },
-            ]}
-          />
-        </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-8 px-4 pb-32 pt-6 sm:px-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)] lg:pb-16">
-        <div className={view === 'edit' ? '' : 'hidden lg:block'}>
-          <AnimatePresence mode="popLayout" initial={false} custom={dir}>
-            <motion.div
-              key={current.swimmer.id}
-              custom={dir}
-              initial={{ opacity: 0, x: dir * 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: dir * -24 }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <SwimmerReport cls={cls} row={current} level={level} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <aside className={view === 'preview' ? '' : 'hidden lg:block'} aria-label="Printed card preview">
-          <div className="lg:sticky lg:top-24">
-            <div className="mb-3 flex items-center justify-between text-[13px] text-dim">
-              <span>Printed card · letter</span>
-              <span className="hidden lg:inline">
-                <Kbd>←</Kbd> <Kbd>→</Kbd> to switch swimmers
-              </span>
+      <main className="relative z-10 mx-auto max-w-3xl px-4 pb-36 pt-6 sm:px-6">
+        <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+          <motion.div
+            key={current.swimmer.id}
+            custom={dir}
+            initial={{ opacity: 0, x: dir * 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: dir * -24 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <SwimmerReport cls={cls} row={current} level={level} position={index + 1} total={rows.length} />
+          </motion.div>
+        </AnimatePresence>
+
+        {done === rows.length && rows.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card mt-5 flex flex-wrap items-center gap-4 border-good/30 p-5">
+            <span className="flex size-10 items-center justify-center rounded-full bg-good text-ink">
+              <Check size={20} strokeWidth={3} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold">All {rows.length} report cards are done</div>
+              <div className="text-[13.5px] text-muted">Print them on letter paper, one card per page.</div>
             </div>
-            <PaperPreview>
-              <ReportSheet cls={cls} e={current.e} swimmer={current.swimmer} instructor={instructor} />
-            </PaperPreview>
-          </div>
-        </aside>
+            <Button variant="primary" icon={<Printer size={15} />} onClick={() => print('all')}>
+              Print all
+            </Button>
+          </motion.div>
+        )}
       </main>
 
-      {/* Phones: thumb-reach navigation */}
-      <nav className="no-print fixed inset-x-3 bottom-3 z-30 flex h-14 items-center justify-between rounded-2xl px-1.5 pill-nav sm:hidden" style={{ marginBottom: 'env(safe-area-inset-bottom)' }} aria-label="Swimmers">
-        <Button variant="ghost" onClick={() => go(-1)} disabled={rows.length < 2} aria-label="Previous swimmer" icon={<ChevronLeft size={18} />} />
-        <div className="text-center text-[13px]">
-          <div className="font-semibold">{firstName(current.swimmer.name)}</div>
+      {/* Moving between swimmers, always at thumb reach. */}
+      <nav
+        className="no-print fixed inset-x-3 bottom-3 z-30 mx-auto flex h-16 max-w-3xl items-center gap-2 rounded-2xl px-2 pill-nav"
+        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+        aria-label="Swimmers"
+      >
+        <Button variant="ghost" onClick={() => go(-1)} disabled={rows.length < 2} icon={<ChevronLeft size={18} />} aria-label={`Previous: ${prev.swimmer.name}`}>
+          <span className="max-sm:hidden">{firstName(prev.swimmer.name)}</span>
+        </Button>
+        <div className="min-w-0 flex-1 text-center text-[13px]">
+          <div className="truncate font-semibold">{current.swimmer.name}</div>
           <div className="text-[11.5px] text-dim">
             {done} of {rows.length} done
           </div>
         </div>
-        <Button variant="ghost" onClick={() => go(1)} disabled={rows.length < 2} aria-label="Next swimmer" icon={<ChevronRight size={18} />} />
+        <Button variant="primary" onClick={() => go(1)} disabled={rows.length < 2} data-tour="report-next">
+          <span>
+            Next<span className="max-sm:hidden">: {firstName(next.swimmer.name)}</span>
+          </span>
+          <ChevronRight size={17} />
+        </Button>
       </nav>
+
+      <Modal
+        open={preview}
+        onClose={() => setPreview(false)}
+        title={`${current.swimmer.name}’s printed card`}
+        description="This is exactly what prints, on letter paper."
+        size="xl"
+      >
+        <PaperPreview>
+          <ReportSheet cls={cls} e={current.e} swimmer={current.swimmer} instructor={instructor} />
+        </PaperPreview>
+      </Modal>
 
       <PrintReports cls={cls} rows={printScope === 'one' ? [current] : rows} instructor={instructor} />
     </div>
@@ -249,14 +269,14 @@ function SaveState() {
           ? ['Not synced yet', <AlertTriangle key="e" size={13} />]
           : [status === 'local' ? 'Saved in this browser' : 'Saved', <Check key="c" size={13} strokeWidth={3} />]
   return (
-    <span className={`mr-1 hidden items-center gap-1.5 text-[12.5px] md:inline-flex ${status === 'error' ? 'text-warn' : 'text-dim'}`} role="status" aria-live="polite">
+    <span className={`mr-1 hidden items-center gap-1.5 text-[12.5px] lg:inline-flex ${status === 'error' ? 'text-warn' : 'text-dim'}`} role="status" aria-live="polite">
       {icon}
       {label}
     </span>
   )
 }
 
-/** Scales a letter-size sheet to the column width. */
+/** Scales a letter-size sheet to the width available. */
 function PaperPreview({ children }: { children: ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
   const sheet = useRef<HTMLDivElement>(null)
@@ -273,7 +293,7 @@ function PaperPreview({ children }: { children: ReactNode }) {
     return () => ro.disconnect()
   }, [])
   return (
-    <div ref={box} className="min-w-0 overflow-hidden" style={{ height: size.height * size.scale }}>
+    <div ref={box} className="min-w-0 overflow-hidden rounded-lg border border-line" style={{ height: size.height * size.scale }}>
       <div ref={sheet} className="paper" style={{ transform: `scale(${size.scale})` }}>
         {children}
       </div>
@@ -282,20 +302,47 @@ function PaperPreview({ children }: { children: ReactNode }) {
 }
 
 // ── One swimmer ─────────────────────────────────────────────────────
-function SwimmerReport({ cls, row, level }: { cls: SwimClass; row: Row; level: LevelDef | undefined }) {
+
+function Step({ n, title, hint, done, children, tour }: { n: number; title: string; hint: ReactNode; done: boolean; children: ReactNode; tour?: string }) {
+  return (
+    <section className="card p-5 sm:p-6" data-tour={tour}>
+      <div className="flex items-start gap-3.5">
+        <span
+          className={`flex size-8 shrink-0 items-center justify-center rounded-full font-display text-[15px] font-bold transition-colors ${done ? 'bg-good text-ink' : 'bg-fg/[0.08] text-fg'}`}
+          aria-hidden
+        >
+          {done ? <Check size={16} strokeWidth={3} /> : n}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-[17px] font-bold leading-tight">
+            <span className="sr-only">Step {n}: </span>
+            {title}
+          </h2>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-muted">{hint}</p>
+        </div>
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  )
+}
+
+function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; row: Row; level: LevelDef | undefined; position: number; total: number }) {
   const { e, swimmer } = row
   const setComment = useStore((s) => s.setComment)
-  const setNextLevel = useStore((s) => s.setNextLevel)
   const passed = passedLevel(e, cls.skills)
   const progress = skillProgress(e, cls.skills)
   const [picks, setPicks] = useState(() => suggestReport(cls.skills, e.skills, passed))
   const [lastWritten, setLastWritten] = useState(() => generateComment({ name: swimmer.name, passed, skills: cls.skills, ...picks }))
+  const [writingOwn, setWritingOwn] = useState(false)
+  const [customizing, setCustomizing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const box = useRef<HTMLTextAreaElement>(null)
+  const first = firstName(swimmer.name)
 
-  const draft = generateComment({ name: swimmer.name, passed, skills: cls.skills, ...picks })
-  // empty: nothing written yet · live: the text is exactly what the chips produced · manual: typed by hand.
+  // empty: nothing written yet · live: the text is exactly what SwimTrack wrote · manual: edited by hand.
   const mode = !e.comment.trim() ? 'empty' : e.comment === lastWritten ? 'live' : 'manual'
   const warnings = reportWarnings(e, cls.skills, level)
+  const commentIssues = warnings.filter((w) => ['items', 'conduct', 'template', 'length'].includes(w.id))
   const done = isReportDone(e, cls.skills)
 
   function write(text: string) {
@@ -303,34 +350,53 @@ function SwimmerReport({ cls, row, level }: { cls: SwimClass; row: Row; level: L
     setComment(cls.id, swimmer.id, text)
   }
 
-  function applyPicks(next: typeof picks, isPassed = passed) {
+  const draftFor = (next: typeof picks, isPassed = passed) => generateComment({ name: swimmer.name, passed: isPassed, skills: cls.skills, ...next })
+
+  /** New chip picks rewrite the comment, after asking if that would throw away the instructor's own edits. */
+  async function applyPicks(next: typeof picks) {
+    if (mode === 'manual') {
+      const ok = await confirm({
+        title: 'Rewrite the comment?',
+        body: 'You’ve edited the comment by hand. Changing these picks writes a new one in its place.',
+        confirmLabel: 'Rewrite it',
+      })
+      if (!ok) return
+      setPicks(next)
+      withUndo('Comment rewritten', () => write(draftFor(next)))
+      return
+    }
     setPicks(next)
-    if (mode !== 'manual') write(generateComment({ name: swimmer.name, passed: isPassed, skills: cls.skills, ...next }))
+    write(draftFor(next))
   }
 
   function onSkillChange(skillId: string, status: SkillStatus | undefined) {
     useStore.getState().setSkillStatus(cls.id, swimmer.id, skillId, status)
     if (mode !== 'live') return
-    const fresh = useStore.getState().classes.find((c) => c.id === cls.id)?.enrollments.find((x) => x.swimmerId === swimmer.id)
-    if (fresh) write(generateComment({ name: swimmer.name, passed: passedLevel(fresh, cls.skills), skills: cls.skills, ...picks }))
+    // A comment SwimTrack wrote follows the skills; one the instructor edited is left alone.
+    const fresh = useStore
+      .getState()
+      .classes.find((c) => c.id === cls.id)
+      ?.enrollments.find((x) => x.swimmerId === swimmer.id)
+    if (fresh) write(draftFor(picks, passedLevel(fresh, cls.skills)))
   }
 
-  function togglePraise(skillId: string) {
-    applyPicks({ ...picks, praiseSkillId: picks.praiseSkillId === skillId ? undefined : skillId })
+  async function passRemaining() {
+    const left = cls.skills.filter((s) => !e.skills[s.id])
+    const ok = await confirm({
+      title: `Mark ${left.length} skill${left.length === 1 ? '' : 's'} as passed?`,
+      body: `Every skill you haven’t checked for ${first} will be marked Passed. Skills marked Not yet stay as they are.`,
+      confirmLabel: 'Mark as passed',
+    })
+    if (!ok) return
+    withUndo(`${left.length} skill${left.length === 1 ? '' : 's'} passed`, () => {
+      for (const s of left) onSkillChange(s.id, 'pass')
+    })
   }
 
-  function toggleFocus(skillId: string, element: Element) {
-    const has = picks.focus.some((f) => f.skillId === skillId && f.element === element)
-    let focus: FocusPick[] = has ? picks.focus.filter((f) => !(f.skillId === skillId && f.element === element)) : [...picks.focus, { skillId, element }]
-    if (focus.length > MAX_FOCUS) {
-      focus = focus.slice(-MAX_FOCUS)
-      toast(`Up to ${MAX_FOCUS} “work on” items. Swapped out the oldest.`)
-    }
-    applyPicks({ ...picks, focus })
-  }
-
-  function rebuild() {
-    withUndo('Comment rebuilt from your picks', () => write(draft))
+  function writeForMe() {
+    const fresh = suggestReport(cls.skills, e.skills, passed)
+    setPicks(fresh)
+    write(draftFor(fresh))
   }
 
   async function copy() {
@@ -343,138 +409,274 @@ function SwimmerReport({ cls, row, level }: { cls: SwimClass; row: Row; level: L
     }
   }
 
-  const suggestedNext = passed ? (level?.next ?? '') : cls.levelId
-  const nextLevelId = e.nextLevelId || suggestedNext || 'none'
-
   return (
-    <div className="space-y-5">
-      {/* Swimmer */}
-      <section className="card flex flex-wrap items-center gap-4 p-5">
+    <div className="space-y-4">
+      <section className="flex items-center gap-4 px-1">
         <Avatar name={swimmer.name} photo={swimmer.photo} size={56} />
         <div className="min-w-0 flex-1">
-          <h1 className="page-title !text-[1.9rem] max-sm:!text-[1.45rem]">{swimmer.name}</h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-muted">
-            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${passed ? 'border-good/35 bg-good/10 text-good' : 'border-warn/35 bg-warn/10 text-warn'}`}>
-              {passed ? 'Passing' : 'Not yet passing'}
-            </span>
-            <span>
-              {progress.pass}/{progress.total} passed
-              {progress.incomplete > 0 && <> · <b className="font-semibold text-warn">{progress.incomplete} to work on</b></>}
-              {progress.unmarked > 0 && <> · {progress.unmarked} not assessed</>}
-            </span>
+          <div className="text-[12.5px] font-medium text-dim">
+            Card {position} of {total}
           </div>
+          <h1 className="page-title truncate !text-[1.9rem] max-sm:!text-[1.5rem]">{swimmer.name}</h1>
         </div>
-        {done && (
-          <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="inline-flex items-center gap-1.5 rounded-full bg-good/12 px-3 py-1 text-[13px] font-semibold text-good">
+        {done ? (
+          <motion.span
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-good/12 px-3 py-1 text-[13px] font-semibold text-good"
+          >
             <CircleCheck size={15} /> Done
           </motion.span>
+        ) : (
+          <span className="shrink-0 rounded-full bg-fg/[0.06] px-3 py-1 text-[13px] font-medium text-muted">Not done</span>
         )}
       </section>
 
-      {/* Comment builder */}
-      <section className="card p-5">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-[16px] font-bold">Comment</h2>
-          <span className="text-xs text-dim">{passed ? 'Passing template' : 'Not-yet-passing template'}</span>
-        </div>
-
-        <ChipGroup label={passed ? 'Great job on…' : 'Great job with… (something they passed)'}>
-          <PraiseChips cls={cls} e={e} selected={picks.praiseSkillId} onToggle={togglePraise} />
-        </ChipGroup>
-
-        <ChipGroup label={passed ? 'Keep working on… (for the next level)' : 'Work on… (from the manual’s must-sees)'} hint={`${picks.focus.length}/${MAX_FOCUS}`}>
-          <FocusChips cls={cls} e={e} picks={picks.focus} onToggle={toggleFocus} />
-        </ChipGroup>
-
-        <div className="mt-5">
-          <textarea
-            className="input min-h-44 resize-y text-[14.5px] leading-relaxed"
-            value={e.comment}
-            onChange={(ev) => setComment(cls.id, swimmer.id, ev.target.value)}
-            placeholder="Tap the chips above to build the comment, or write your own. It saves as you type."
-            aria-label={`Report card comment for ${swimmer.name}`}
-          />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {mode === 'empty' && (
-              <Button size="sm" variant="primary" icon={<Sparkles size={14} />} onClick={() => write(draft)}>
-                Use suggested draft
-              </Button>
-            )}
-            {mode === 'manual' && (
-              <Button size="sm" icon={<RotateCcw size={14} />} onClick={rebuild}>
-                Rebuild from chips
-              </Button>
-            )}
-            {mode === 'live' && <span className="text-xs text-dim">Updates as you pick chips. Edit the text any time.</span>}
-            <span className="ml-auto flex items-center gap-2">
-              <span className={`text-xs tabular-nums ${e.comment.length > 700 ? 'text-warn' : 'text-dim'}`}>{e.comment.length} chars</span>
-              <Button size="sm" variant="ghost" icon={copied ? <Check size={14} /> : <Copy size={14} />} onClick={copy} disabled={!e.comment}>
-                {copied ? 'Copied' : 'Copy'}
-              </Button>
-            </span>
-          </div>
-          {mode === 'empty' && (
-            <p className="mt-3 rounded-xl border border-dashed border-line-2 px-3.5 py-3 text-[13.5px] leading-relaxed text-dim">
-              <span className="font-semibold text-muted">Suggested: </span>
-              {draft}
-            </p>
+      <Step
+        n={1}
+        title="Check their skills"
+        tour="report-skills"
+        done={progress.unmarked === 0}
+        hint={
+          <>
+            Tap <b className="font-semibold text-fg">Passed</b> or <b className="font-semibold text-fg">Not yet</b> for each skill. Tap again to undo.
+          </>
+        }
+      >
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+          <span className="font-semibold text-good">{progress.pass} passed</span>
+          {progress.incomplete > 0 && <span className="font-semibold text-warn">{progress.incomplete} not yet</span>}
+          {progress.unmarked > 0 && <span className="text-muted">{progress.unmarked} to check</span>}
+          {progress.unmarked > 0 && (
+            <button type="button" onClick={passRemaining} className="ml-auto text-[13px] font-semibold text-aqua hover:underline">
+              Pass the rest
+            </button>
           )}
         </div>
+        <Checklist cls={cls} e={e} onChange={onSkillChange} />
+      </Step>
 
-        <ul className="mt-4 space-y-2" aria-live="polite">
-          <AnimatePresence initial={false}>
-            {warnings.map((w) => (
-              <motion.li
-                key={w.id}
-                layout
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                className={`flex items-start gap-2.5 rounded-xl border px-3 py-2 text-[13px] leading-snug ${w.level === 'warn' ? 'border-warn/30 bg-warn/[0.08] text-fg' : 'border-line bg-fg/[0.03] text-muted'}`}
-              >
-                {w.level === 'warn' ? <AlertTriangle size={15} className="mt-px shrink-0 text-warn" /> : <Info size={15} className="mt-px shrink-0 text-dim" />}
-                {w.text}
-              </motion.li>
-            ))}
-          </AnimatePresence>
-        </ul>
-      </section>
-
-      <Checklist cls={cls} e={e} onChange={onSkillChange} />
-
-      <section className="card p-5">
-        <h2 className="text-[16px] font-bold">Next level to register in</h2>
-        {level?.ageBased ? (
-          <p className="mt-2 text-sm text-muted">Registration for this program is based on age.</p>
+      <Step
+        n={2}
+        title="Write the comment"
+        tour="report-comment"
+        done={Boolean(e.comment.trim()) && !commentIssues.some((w) => w.level === 'warn')}
+        hint={
+          mode === 'empty' ? 'SwimTrack can write it from the skills above, in the report card manual’s own words.' : 'Edit it as much as you like. It saves as you type.'
+        }
+      >
+        {mode === 'empty' && !writingOwn ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-2 px-4 py-7 text-center">
+            <Button variant="primary" size="lg" icon={<Sparkles size={17} />} onClick={writeForMe}>
+              Write it for me
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                flushSync(() => setWritingOwn(true))
+                box.current?.focus()
+              }}
+              className="text-[13.5px] font-medium text-muted underline-offset-4 hover:text-fg hover:underline"
+            >
+              or write my own
+            </button>
+          </div>
         ) : (
-          <select className="input mt-3" value={nextLevelId} onChange={(ev) => setNextLevel(cls.id, swimmer.id, ev.target.value)} aria-label="Next level">
-            <option value="none">No next level (program complete)</option>
-            {LEVELS.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-                {l.id === suggestedNext ? '  (suggested)' : ''}
-              </option>
-            ))}
-          </select>
+          <>
+            <textarea
+              ref={box}
+              className="input min-h-44 resize-y text-[15px] leading-relaxed"
+              value={e.comment}
+              onChange={(ev) => setComment(cls.id, swimmer.id, ev.target.value)}
+              placeholder={`Write ${first}’s comment. Mention at least two skills.`}
+              aria-label={`Report card comment for ${swimmer.name}`}
+            />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="ghost" icon={<PenLine size={14} />} onClick={() => setCustomizing((v) => !v)} aria-expanded={customizing}>
+                Change what it says
+                <ChevronDown size={14} className={`transition-transform ${customizing ? 'rotate-180' : ''}`} />
+              </Button>
+              <span className="ml-auto flex items-center gap-2">
+                <span className={`text-xs tabular-nums ${e.comment.length > 700 ? 'text-warn' : 'text-dim'}`}>{e.comment.length} characters</span>
+                <Button size="sm" variant="ghost" icon={copied ? <Check size={14} /> : <Copy size={14} />} onClick={copy} disabled={!e.comment}>
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+              </span>
+            </div>
+
+            <AnimatePresence initial={false}>
+              {customizing && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                  <div className="mt-3 space-y-4 rounded-2xl bg-fg/[0.03] p-4">
+                    <ChipGroup label={`Praise ${first} for`} hint="Pick one">
+                      <PraiseChips
+                        cls={cls}
+                        e={e}
+                        selected={picks.praiseSkillId}
+                        onToggle={(id) => applyPicks({ ...picks, praiseSkillId: picks.praiseSkillId === id ? undefined : id })}
+                      />
+                    </ChipGroup>
+                    <ChipGroup label={passed ? `Tips for the next level` : `What ${first} should work on`} hint={`${picks.focus.length} of ${MAX_FOCUS}`}>
+                      <FocusChips
+                        cls={cls}
+                        e={e}
+                        picks={picks.focus}
+                        onToggle={(skillId, element) => {
+                          const has = picks.focus.some((f) => f.skillId === skillId && f.element === element)
+                          let focus: FocusPick[] = has
+                            ? picks.focus.filter((f) => !(f.skillId === skillId && f.element === element))
+                            : [...picks.focus, { skillId, element }]
+                          if (focus.length > MAX_FOCUS) {
+                            focus = focus.slice(-MAX_FOCUS)
+                            toast(`Up to ${MAX_FOCUS} things to work on. Swapped out the oldest.`)
+                          }
+                          void applyPicks({ ...picks, focus })
+                        }}
+                      />
+                    </ChipGroup>
+                    <p className="text-[12.5px] text-dim">The comment is rewritten each time you change a pick.</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <CommentChecks issues={commentIssues} hasComment={Boolean(e.comment.trim())} />
+          </>
         )}
-      </section>
+      </Step>
+
+      <NextLevelStep cls={cls} e={e} swimmer={swimmer} level={level} passed={passed} progressIncomplete={progress.incomplete} />
     </div>
+  )
+}
+
+/** The manual's rules, shown as a short checklist once there's a comment. */
+function CommentChecks({ issues, hasComment }: { issues: ReturnType<typeof reportWarnings>; hasComment: boolean }) {
+  if (!hasComment) return null
+  if (!issues.length)
+    return (
+      <p className="mt-3 flex items-center gap-2 rounded-xl bg-good/[0.08] px-3 py-2 text-[13px] text-good">
+        <Check size={15} strokeWidth={3} /> Follows the manual: mentions two or more skills, and no attendance or behaviour.
+      </p>
+    )
+  return (
+    <ul className="mt-3 space-y-2" aria-live="polite">
+      {issues.map((w) => (
+        <li
+          key={w.id}
+          className={`flex items-start gap-2.5 rounded-xl border px-3 py-2 text-[13px] leading-snug ${w.level === 'warn' ? 'border-warn/30 bg-warn/[0.08] text-fg' : 'border-line bg-fg/[0.03] text-muted'}`}
+        >
+          <AlertTriangle size={15} className={`mt-px shrink-0 ${w.level === 'warn' ? 'text-warn' : 'text-dim'}`} />
+          {w.text}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function NextLevelStep({
+  cls,
+  e,
+  swimmer,
+  level,
+  passed,
+  progressIncomplete,
+}: {
+  cls: SwimClass
+  e: Enrollment
+  swimmer: Swimmer
+  level: LevelDef | undefined
+  passed: boolean
+  progressIncomplete: number
+}) {
+  const setNextLevel = useStore((s) => s.setNextLevel)
+  const [changing, setChanging] = useState(false)
+  const first = firstName(swimmer.name)
+  const suggested = passed ? (level?.next ?? '') : cls.levelId
+  const chosen = e.nextLevelId || suggested || 'none'
+  const name = chosen === 'none' ? null : (LEVEL_BY_ID[chosen]?.name ?? null)
+  const advancing = level?.next && e.nextLevelId === level.next && progressIncomplete > 0
+
+  return (
+    <Step
+      n={3}
+      title="Next level"
+      done
+      hint={
+        level?.ageBased
+          ? 'Registration for this program is based on age, so there’s nothing to choose.'
+          : passed
+            ? `${first} passed every skill, so they move up.`
+            : `${first} hasn’t passed every skill yet, so they repeat the level. That’s the manual’s rule.`
+      }
+    >
+      {!level?.ageBased && (
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="rounded-xl bg-fg/[0.05] px-3.5 py-2 text-[15px] font-semibold">{name ? `Register in ${name}` : 'Program complete'}</span>
+          {!changing ? (
+            <button type="button" onClick={() => setChanging(true)} className="text-[13.5px] font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
+              Change
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <select className="input h-10 w-auto" value={chosen} onChange={(ev) => setNextLevel(cls.id, swimmer.id, ev.target.value)} aria-label="Next level" autoFocus>
+                <option value="none">No next level (program complete)</option>
+                {LEVELS.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                    {l.id === suggested ? '  (suggested)' : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setChanging(false)}
+                aria-label="Done changing"
+                className="inline-flex size-9 items-center justify-center rounded-full text-dim hover:bg-fg/[0.06] hover:text-fg"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+      {advancing && (
+        <p className="mt-3 flex items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/[0.08] px-3 py-2 text-[13px] leading-snug">
+          <AlertTriangle size={15} className="mt-px shrink-0 text-warn" />
+          Moving up with {progressIncomplete} skill{progressIncomplete === 1 ? '' : 's'} not yet passed. The manual says every skill must be passed first.
+        </p>
+      )}
+    </Step>
   )
 }
 
 function ChipGroup({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="mt-4">
-      <div className="mb-2 flex items-center justify-between text-[13px] text-muted">
+    <div>
+      <div className="mb-2 flex items-center justify-between text-[13px] font-medium">
         <span>{label}</span>
-        {hint && <span className="text-xs tabular-nums text-dim">{hint}</span>}
+        {hint && <span className="text-xs font-normal tabular-nums text-dim">{hint}</span>}
       </div>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   )
 }
 
-function Chip({ on, tone = 'aqua', onClick, title, children, badge }: { on: boolean; tone?: 'aqua' | 'good' | 'warn'; onClick: () => void; title?: string; children: ReactNode; badge?: number }) {
+function Chip({
+  on,
+  tone = 'aqua',
+  onClick,
+  title,
+  children,
+  badge,
+}: {
+  on: boolean
+  tone?: 'aqua' | 'good' | 'warn'
+  onClick: () => void
+  title?: string
+  children: ReactNode
+  badge?: number
+}) {
   const active = { aqua: 'border-aqua/50 bg-aqua/12 text-fg', good: 'border-good/45 bg-good/12 text-fg', warn: 'border-warn/50 bg-warn/12 text-fg' }[tone]
   return (
     <button
@@ -482,7 +684,7 @@ function Chip({ on, tone = 'aqua', onClick, title, children, badge }: { on: bool
       aria-pressed={on}
       title={title}
       onClick={onClick}
-      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-[background-color,border-color,color,transform] active:scale-95 ${on ? active : 'border-line-2 text-muted hover:border-dim/60 hover:text-fg'}`}
+      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-[background-color,border-color,color,transform] active:scale-95 ${on ? active : 'border-line-2 bg-panel text-muted hover:border-dim/60 hover:text-fg'}`}
     >
       {on && badge !== undefined ? (
         <span className="flex size-4 items-center justify-center rounded-full bg-fg text-[10px] font-bold text-ink">{badge}</span>
@@ -504,7 +706,7 @@ function PraiseChips({ cls, e, selected, onToggle }: { cls: SwimClass; e: Enroll
     seen.add(name)
     return true
   })
-  if (!passed.length) return <p className="text-[13px] text-dim">Mark skills as passed above to praise them here.</p>
+  if (!passed.length) return <p className="text-[13px] text-dim">Mark some skills Passed in step 1 to praise them here.</p>
   return (
     <>
       {passed.map((s) => (
@@ -519,7 +721,7 @@ function PraiseChips({ cls, e, selected, onToggle }: { cls: SwimClass; e: Enroll
 function FocusChips({ cls, e, picks, onToggle }: { cls: SwimClass; e: Enrollment; picks: FocusPick[]; onToggle: (id: string, el: Element) => void }) {
   const [all, setAll] = useState(false)
   const commentable = cls.skills.filter((s) => availableElements(s).length)
-  if (!commentable.length) return <p className="text-[13px] text-dim">This class’s skills have no must-sees. Write the comment by hand.</p>
+  if (!commentable.length) return <p className="text-[13px] text-dim">This class’s skills have no manual wording to use. Write the comment by hand.</p>
   const incomplete = commentable.filter((s) => e.skills[s.id] === 'incomplete')
   const picked = (s: Skill, el: Element) => picks.findIndex((f) => f.skillId === s.id && f.element === el)
   const shown = all ? commentable : commentable.filter((s) => e.skills[s.id] === 'incomplete' || picks.some((f) => f.skillId === s.id))
@@ -532,66 +734,67 @@ function FocusChips({ cls, e, picks, onToggle }: { cls: SwimClass; e: Enrollment
           const i = picked(s, el)
           const name = cap(plainSkillName(s.name))
           return (
-            <Chip key={`${s.id}:${el}`} on={i !== -1} badge={i + 1} tone={incomplete.includes(s) ? 'warn' : 'aqua'} onClick={() => onToggle(s.id, el)} title={s.mustSees?.[el]}>
-              {el === 'note' ? name : `${name} · ${ELEMENT_LABEL[el].toLowerCase()}`}
-              {incomplete.includes(s) && i === -1 && <Minus size={12} className="text-warn" aria-label="incomplete" />}
+            <Chip
+              key={`${s.id}:${el}`}
+              on={i !== -1}
+              badge={i + 1}
+              tone={incomplete.includes(s) ? 'warn' : 'aqua'}
+              onClick={() => onToggle(s.id, el)}
+              title={s.mustSees?.[el]}
+            >
+              {el === 'note' ? name : `${name}: ${ELEMENT_LABEL[el].toLowerCase()}`}
             </Chip>
           )
         }),
       )}
       {hidden > 0 && (
         <button type="button" onClick={() => setAll(true)} className="min-h-9 rounded-full px-3 text-[13px] font-semibold text-aqua hover:underline">
-          {incomplete.length ? `Other skills (${hidden})` : `Show skills (${hidden})`}
+          {incomplete.length ? `More skills (${hidden})` : `Show skills (${hidden})`}
         </button>
       )}
     </>
   )
 }
 
+/** Each skill with two plain buttons: Passed and Not yet. Tapping the one that's on clears it. */
 function Checklist({ cls, e, onChange }: { cls: SwimClass; e: Enrollment; onChange: (skillId: string, s: SkillStatus | undefined) => void }) {
-  const next = (v: SkillStatus | undefined): SkillStatus | undefined => (v === undefined ? 'pass' : v === 'pass' ? 'incomplete' : undefined)
   return (
-    <section className="card p-5">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-[16px] font-bold">Skills</h2>
-        <span className="text-xs text-dim">Tap to cycle: passed, needs work, not assessed</span>
-      </div>
-      <div className="mt-3 space-y-4">
-        {categoriesOf(cls.skills).map((cat) => (
-          <div key={cat}>
-            <h3 className="mb-1.5 text-[12.5px] font-semibold text-dim">{cat}</h3>
-            <ul className="space-y-1">
-              {cls.skills
-                .filter((s) => s.category === cat)
-                .map((s) => {
-                  const v = e.skills[s.id]
-                  const label = v === 'pass' ? 'passed' : v === 'incomplete' ? 'needs work' : 'not assessed'
-                  return (
-                    <li key={s.id}>
+    <div className="space-y-4">
+      {categoriesOf(cls.skills).map((cat) => (
+        <div key={cat}>
+          <h3 className="mb-1 text-[12px] font-semibold uppercase tracking-wider text-dim">{cat}</h3>
+          <ul className="divide-y divide-line">
+            {cls.skills
+              .filter((s) => s.category === cat)
+              .map((s) => {
+                const v = e.skills[s.id]
+                return (
+                  <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
+                    <span className={`min-w-0 flex-1 basis-48 text-[14.5px] ${v === undefined ? 'text-fg' : v === 'pass' ? 'text-muted' : 'text-fg'}`}>{s.name}</span>
+                    <div className="flex shrink-0 gap-1.5" role="group" aria-label={s.name}>
                       <button
                         type="button"
-                        onClick={() => onChange(s.id, next(v))}
-                        aria-label={`${s.name}: ${label}. Tap to change.`}
-                        className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left text-[14px] transition-colors ${v === 'incomplete' ? 'bg-[#fde68a]/25 hover:bg-[#fde68a]/35 dark:bg-warn/12' : 'hover:bg-fg/[0.04]'}`}
+                        aria-pressed={v === 'pass'}
+                        onClick={() => onChange(s.id, v === 'pass' ? undefined : 'pass')}
+                        className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors active:scale-95 ${v === 'pass' ? 'border-good bg-good text-ink' : 'border-line-2 text-muted hover:border-good/60 hover:text-good'}`}
                       >
-                        <motion.span
-                          key={v ?? 'none'}
-                          initial={{ scale: 0.6 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: 'spring', stiffness: 600, damping: 22 }}
-                          className={`flex size-6 shrink-0 items-center justify-center rounded-md border ${v === 'pass' ? 'border-good/45 bg-good/15 text-good' : v === 'incomplete' ? 'border-warn/50 bg-warn/15 text-warn' : 'border-dashed border-line-2'}`}
-                        >
-                          {v === 'pass' ? <Check size={13} strokeWidth={3} /> : v === 'incomplete' ? <Minus size={13} strokeWidth={3} /> : null}
-                        </motion.span>
-                        <span className={`flex-1 ${v === undefined ? 'text-muted' : ''}`}>{s.name}</span>
+                        <Check size={14} strokeWidth={3} /> Passed
                       </button>
-                    </li>
-                  )
-                })}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </section>
+                      <button
+                        type="button"
+                        aria-pressed={v === 'incomplete'}
+                        onClick={() => onChange(s.id, v === 'incomplete' ? undefined : 'incomplete')}
+                        className={`inline-flex h-9 items-center rounded-full border px-3.5 text-[13px] font-semibold transition-colors active:scale-95 ${v === 'incomplete' ? 'border-warn bg-warn text-ink' : 'border-line-2 text-muted hover:border-warn/60 hover:text-warn'}`}
+                      >
+                        Not yet
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+          </ul>
+        </div>
+      ))}
+    </div>
   )
 }

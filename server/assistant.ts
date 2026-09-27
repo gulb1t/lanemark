@@ -109,8 +109,8 @@ For "what should I do" questions: start with today's classes, then the to-do lis
 
 Pages (the only valid navigate paths; substitute real ids):
 - /app : dashboard. Today's classes with one-tap attendance, a to-do list, all classes.
-- /app/classes/{classId} : a class. Tabs via ?tab=attendance | skills | lessons | reports | settings (roster is the default).
-- /app/classes/{classId}?tab=attendance : take attendance (tap present/late/absent, "Rest present" marks everyone left).
+- /app/classes/{classId} : a class. Tabs via ?tab=attendance | skills | lessons | reports | settings (the Swimmers tab is the default).
+- /app/classes/{classId}?tab=attendance : take attendance (tap present/late/absent, "Mark the rest present" marks everyone left).
 - /app/classes/{classId}?tab=skills : check off skills (pass / incomplete). A swimmer passes a level only when every item is passed.
 - /app/classes/{classId}?tab=lessons : lesson dates, topics and notes; change the number of lessons.
 - /app/classes/{classId}?tab=reports : report cards for the class; print the whole class, or download a spreadsheet (CSV) of attendance, skills and comments.
@@ -126,7 +126,7 @@ Commands: ${Object.entries(COMMANDS)
     .join('; ')}.
 
 How things work:
-- Report cards: open the class's Report cards tab, then "Continue writing" opens a workspace per swimmer: tick skills, tap "Great job with…" and "Work on…" chips (from the manual's must-sees) to build the comment, then print one card or the whole class on letter paper. Manual rules: comment on at least two items, never mention attendance or behaviour, only move a swimmer up when every item is passed. Keyboard: ←/→ switch swimmers.
+- Report cards: open the class's Report cards tab and press "Start writing". Each swimmer has three steps: 1) tap Passed or Not yet for each skill, 2) press "Write it for me" (or write your own; "Change what it says" picks what to praise and what to work on), 3) check the next level. "Next" moves to the next swimmer; Preview shows the printed card; Print does one card or the whole class on letter paper. Manual rules: comment on at least two items, never mention attendance or behaviour, only move a swimmer up when every item is passed. Keyboard: ←/→ switch swimmers.
 - Offline: everything saves on the device first and syncs when back online.
 - Two-factor: Settings → Security. Trusted devices can skip the code for 30 days.
 - Forgot password: the sign-in page has "Forgot password?"; signed in, Settings → Security → "Email me a reset link".
