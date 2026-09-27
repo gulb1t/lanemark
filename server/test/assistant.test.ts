@@ -27,6 +27,7 @@ describe('assistant', () => {
     expect(safePath('/app/curriculum?level=sw4', ctx)).toBe(true)
     expect(safePath('/app/classes/c1?tab=attendance', ctx)).toBe(true)
     expect(safePath('/app/pool?tab=rankings', ctx)).toBe(true)
+    expect(safePath('/help', ctx)).toBe(true)
     expect(safePath('/app/classes/someone-else', ctx)).toBe(false)
     expect(safePath('https://evil.example', ctx)).toBe(false)
     expect(safePath('//evil.example/app', ctx)).toBe(false)
