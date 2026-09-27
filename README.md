@@ -5,6 +5,7 @@
 - **Offline-first.** Every edit saves on the device instantly and syncs in the background, and a service worker keeps the app itself on the device, so it opens and works with no signal at all. Pool Wi-Fi drops, nothing is lost.
 - **Real accounts.** Email confirmation and password reset over SMTP, scrypt-hashed passwords, httpOnly session cookies, TOTP two-factor with recovery codes, device management and security alerts.
 - **Report card workspace.** Checklist, one-tap comment chips built from the manual's must-sees, live rule checks and a letter-size print preview, swimmer by swimmer.
+- **Pools and a supervisor view.** Instructors join their facility's pool with an invite code. Supervisors see every class's attendance, skills assessed and report cards done, which classes need attention, and rankings of how caught up classes and instructors are. The server sends them counts only, never swimmers' names, marks or comments.
 - **Private by design.** No analytics or third parties. See the in-app privacy page at `/privacy`.
 - **Your database.** Built-in SQLite with zero setup, or your MongoDB Atlas cluster with one environment variable.
 
@@ -82,7 +83,7 @@ src/                 React 19 + Vite + Tailwind v4 + Motion
   data/              curriculum presets and report-card must-sees
   pages/, components/
 server/              Hono on Node
-  app.ts             routes: auth, 2FA, sessions, account, sync
+  app.ts             routes: auth, 2FA, sessions, account, sync, pools
   auth/              scrypt passwords, RFC 6238 TOTP, recovery codes
   db/                Repo interface + SQLite and MongoDB implementations
 ```
@@ -99,7 +100,7 @@ server/              Hono on Node
    - Dashboard: today's class first, and a to-do list (last week's missed attendance, report cards due, skills to assess).
    - **Take attendance** → *Rest present* → tap one swimmer late: the lesson-done moment appears.
    - Class → **Report cards** → *Continue writing*: tap chips to build a comment, watch the rule warnings and the printed card update, flip swimmers with ← →, then **Print → Whole class**.
-4. **Supervisor angle (1 min):** every card follows the manual's wording and rules, prints on letter paper, and the data stays on a server the city runs (`/privacy`).
+4. **Supervisor angle (1 min):** open **Pool**. The demo coach supervises a sample pool of six instructors: the overview shows which classes need attention and why, **Rankings** orders classes and instructors by how caught up their records are (never swimmers), and **Team** has the invite code. Every card follows the manual's wording and rules, and the data stays on a server the city runs (`/privacy`).
 
 To start the demo over, use Settings → Data → Reset demo (or a private window).
 

@@ -310,7 +310,7 @@ function Audience() {
       icon: <Building2 size={20} />,
       who: 'For supervisors and cities',
       title: 'Every instructor’s cards look and read the same.',
-      points: ['The manual’s rules checked before a card prints', 'Letter-size cards with the next level already filled in', 'Runs on your own server, in the region you choose', 'No ads, no tracking, delete anything any time'],
+      points: ['One overview of every class: attendance, skills and report cards', 'The manual’s rules checked before a card prints', 'Letter-size cards with the next level already filled in', 'Runs on your own server, in the region you choose'],
     },
   ]
   return (
@@ -539,6 +539,7 @@ const FAQ = [
   ['Is SwimTrack free?', 'Yes, for instructors: create an account and use every feature. Pools and cities can add setup, class-list imports, priority support and their own server (see Pricing). You can also self-host it: it’s a single Node server with a built-in SQLite database.'],
   ['Does it work without Wi-Fi?', 'Yes. Once you’ve opened SwimTrack on a device, the app itself is kept on it, so it opens with no signal. Every edit saves on the device first and syncs when you’re back online. The sync pill in the top bar always shows where things stand.'],
   ['Where is swimmer data stored?', 'On the server and database whoever runs SwimTrack chooses (a city can host it itself, in Canada), plus an offline copy on the instructor’s own device. Swimmer records never go to a third party. The privacy page has the details.'],
+  ['Can a supervisor see every class?', 'Yes, with a pool. Instructors join with an invite code, and supervisors see each class’s attendance, skills assessed and report cards done, plus rankings of which classes and instructors are most caught up. They see counts only, never swimmers’ names, marks or comments, and swimmers are never ranked.'],
   ['Does it follow the report card manual?', 'Comments are built from the manual’s passing and not-yet-passing templates and must-sees, incomplete items are highlighted like the paper card, and SwimTrack warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
   ['Which programs does it cover?', `The Lifesaving Society’s Swim for Life levels (Parent & Tot, Preschool 1–5, Swimmer 1–6), Swim Patrol (Rookie, Ranger, Star), Bronze Star and Teen/Adult 1–3: ${LEVELS.length} levels in total.`],
   ['Can I change the skills?', 'Every class gets its own editable copy of its level’s skills. Rename, reorder, add or remove them without touching the presets.'],

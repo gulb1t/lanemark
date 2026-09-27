@@ -26,6 +26,7 @@ describe('assistant', () => {
   it('only allows in-app pages and the user’s own classes', () => {
     expect(safePath('/app/curriculum?level=sw4', ctx)).toBe(true)
     expect(safePath('/app/classes/c1?tab=attendance', ctx)).toBe(true)
+    expect(safePath('/app/pool?tab=rankings', ctx)).toBe(true)
     expect(safePath('/app/classes/someone-else', ctx)).toBe(false)
     expect(safePath('https://evil.example', ctx)).toBe(false)
     expect(safePath('//evil.example/app', ctx)).toBe(false)

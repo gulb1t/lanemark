@@ -6,7 +6,7 @@ import { Logo, Wordmark } from '../components/Logo'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 const GLANCE = [
-  { icon: Eye, title: 'Only you see your classes', body: 'Rosters are tied to one instructor account. Nothing is shared, sold or shown to other users.' },
+  { icon: Eye, title: 'Swimmers stay with their instructor', body: 'Rosters are tied to one instructor account. Pool supervisors see counts, never names. Nothing is sold.' },
   { icon: HardDrive, title: 'Stored where you host it', body: 'One server and one database that your organisation runs, in the region you choose.' },
   { icon: Cookie, title: 'No tracking', body: 'No analytics, ads or third-party scripts. Cookies are only used to keep you signed in.' },
   { icon: Trash2, title: 'Deleted when you say', body: 'Swimmers, classes or the whole account can be deleted at any time, straight away.' },
@@ -27,6 +27,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
             ['Classes', 'Level, session, schedule, lesson dates and topics, attendance marks, skill marks, report card comments and the recommended next level.'],
             ['Sessions', 'A hashed session token, the device’s browser name and a shortened IP address (the last part is dropped before saving), so you can see and sign out your devices. If you tick “don’t ask for a code on this device”, a hashed 30-day trusted-device mark is kept too.'],
             ['Emailed links', 'A hash of each confirm-email or reset-password link, deleted once it expires (24 hours or 30 minutes).'],
+            ['Pools', 'If you join or start one: the pool’s name and invite code, who is in it, each person’s role (supervisor or instructor) and when they joined.'],
           ]}
         />
         <p>
@@ -62,7 +63,14 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
     icon: Eye,
     body: (
       <>
-        <p>Each instructor account only ever reads and writes its own classes and swimmers. There is no public page, no search and no sharing between accounts.</p>
+        <p>Each instructor account only ever reads and writes its own classes and swimmers. There is no public page and no search.</p>
+        <p>
+          <b>Pools.</b> An instructor can join their facility’s pool with an invite code from a supervisor. The pool’s supervisors then see counts for that instructor’s
+          current classes: class name and level, lessons taught, attendance rate, how many skills are assessed and passed, and how many report cards are done. The server
+          works these out and sends only the numbers, so supervisors never receive swimmers’ names, photos, notes, individual marks or attendance, or report card comments.
+          Supervisors also see members’ names and email addresses. If a supervisor turns on the leaderboard, instructors see each other’s names and caught-up scores.
+          Swimmers are never ranked. Leaving the pool, or being removed from it, stops the sharing straight away.
+        </p>
         <p>
           People who administer the server and its database can technically access stored records, as with any system. Limit that access the way you would for any
           system holding participant records.
@@ -144,7 +152,8 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
             <b>A swimmer or class:</b> delete it from its page. It’s removed from the server on the next sync, on every device.
           </li>
           <li>
-            <b>Everything:</b> Settings → Account → Delete account removes the account, every class, swimmer and session immediately. It can’t be undone.
+            <b>Everything:</b> Settings → Account → Delete account removes the account, every class, swimmer and session immediately. It can’t be undone. If the
+            account was a pool’s only supervisor, the pool closes and its instructors keep their own classes.
           </li>
           <li>
             <b>A copy for your records:</b> Settings → Data exports a JSON backup before deleting.

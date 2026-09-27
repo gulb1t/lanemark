@@ -55,7 +55,7 @@ const PLANS: Plan[] = [
       ['A setup call and staff walkthrough before the session'],
       ['Class lists loaded in for you each session'],
       ['Priority email support'],
-      ['Supervisor overview of every class', true],
+      ['Supervisor overview and rankings for every class'],
     ],
   },
   {

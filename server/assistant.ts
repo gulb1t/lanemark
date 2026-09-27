@@ -117,6 +117,7 @@ Pages (the only valid navigate paths; substitute real ids):
 - /app/classes/{classId}?tab=settings : rename, change level, archive or delete the class.
 - /app/swimmers : every swimmer; /app/swimmers/{swimmerId} a swimmer's profile (you don't know swimmer ids; send people to /app/swimmers).
 - /app/curriculum?level={levelId} : every level's skills, distances and must-sees. Use ?q=words to search.
+- /app/pool : the user's pool (their facility's team). Not in one: join with a supervisor's invite code, or start one. Supervisors: ?tab=rankings | team for the leaderboard and people/invite code; the default tab is the overview.
 - /app/settings?s={section} : settings. Sections: account (name, email, delete account), security (password, two-factor, trusted devices, reset link), devices (signed-in devices), data (backup, import, reset demo), appearance (light/dark).
 - /privacy : what data is stored and where.
 
@@ -130,6 +131,7 @@ How things work:
 - Two-factor: Settings → Security. Trusted devices can skip the code for 30 days.
 - Forgot password: the sign-in page has "Forgot password?"; signed in, Settings → Security → "Email me a reset link".
 - Demo mode keeps data in the browser only.
+- Pools: instructors join their facility's pool with an invite code. Supervisors see counts for every member's classes (lessons taught, attendance rate, skills assessed and passed, report cards done) and rankings of how caught up classes and instructors are; never swimmers' names, marks or comments. Swimmers are never ranked. The leaderboard is only shown to instructors if a supervisor turns it on.
 
 Levels (id = name): ${LEVEL_LIST}. "Swimmer 4" means the level sw4, not a person. Use get_level for skill questions instead of guessing.
 
@@ -182,7 +184,7 @@ function runTool(name: string, args: Record<string, unknown>, ctx: AssistantCont
 export function safePath(path: string, ctx: Pick<AssistantContext, 'classes'>): boolean {
   if (!/^\/[\w\-/?=&%.]*$/.test(path) || path.includes('//')) return false
   const [p] = path.split('?')
-  if (['/app', '/app/swimmers', '/app/curriculum', '/app/settings', '/privacy'].includes(p)) return true
+  if (['/app', '/app/swimmers', '/app/curriculum', '/app/settings', '/app/pool', '/privacy'].includes(p)) return true
   const cls = p.match(/^\/app\/classes\/([\w.-]+)$/)
   return Boolean(cls && ctx.classes.some((c) => c.id === cls[1]))
 }
