@@ -93,7 +93,7 @@ describe('pools', () => {
     expect((await late.post('/api/pool/join', { code: fresh.json.inviteCode })).status).toBe(200)
   })
 
-  it('gives supervisors counts for every class, and never swimmer names, notes, marks or comments', async () => {
+  it('the overview is counts for every class; swimmers, marks and comments only come with an opened class', async () => {
     const { boss, coach } = await team()
     await coach.post('/api/sync', {
       cursor: 0,
@@ -125,6 +125,38 @@ describe('pools', () => {
     })
     const raw = JSON.stringify(res.json)
     for (const secret of ['Maya', 'Noah', 'flutter', 'Nervous', 'w1', 'w2', 'incomplete', 'present']) expect(raw).not.toContain(secret)
+  })
+
+  it('lets supervisors open a member’s class in full, read-only, and nobody else', async () => {
+    const { app, boss, coach } = await team()
+    await coach.post('/api/sync', {
+      cursor: 0,
+      changes: [
+        { kind: 'swimmer', id: 'w1', op: 'put', data: swimmer('w1', 'Maya Chen') },
+        { kind: 'swimmer', id: 'w2', op: 'put', data: swimmer('w2', 'Noah Patel') },
+        { kind: 'swimmer', id: 'w9', op: 'put', data: swimmer('w9', 'Not In This Class') },
+        { kind: 'class', id: 'c1', op: 'put', data: cls('c1') },
+      ],
+    })
+    const coachId = (await coach.get('/api/me')).json.user.id
+    const bossId = (await boss.get('/api/me')).json.user.id
+    const res = await boss.get(`/api/pool/members/${coachId}/classes/c1`)
+    expect(res.status).toBe(200)
+    expect(res.json.instructor.name).toBe('Casey Coach')
+    expect(res.json.class.enrollments[0].comment).toBe('Maya’s flutter kick is strong.')
+    expect(res.json.swimmers.map((w: { name: string }) => w.name).sort()).toEqual(['Maya Chen', 'Noah Patel'])
+    expect((await boss.get(`/api/pool/members/${coachId}/classes/nope`)).status).toBe(404)
+
+    // Instructors can't look at anyone's classes, including a supervisor's.
+    expect((await coach.get(`/api/pool/members/${bossId}/classes/c1`)).status).toBe(403)
+    // A supervisor of another pool can't either.
+    const outsider = client(app)
+    await register(outsider, 'outsider@example.com')
+    await outsider.post('/api/pool', { name: 'Elsewhere' })
+    expect((await outsider.get(`/api/pool/members/${coachId}/classes/c1`)).status).toBe(404)
+    // Once someone leaves, their classes are closed to the pool.
+    await coach.post('/api/pool/leave')
+    expect((await boss.get(`/api/pool/members/${coachId}/classes/c1`)).status).toBe(404)
   })
 
   it('shows instructors the leaderboard only when the supervisor shares it, with no class details', async () => {

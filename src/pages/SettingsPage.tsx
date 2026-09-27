@@ -190,7 +190,7 @@ function PoolPanel() {
       description={
         pool
           ? `You’re ${pool.role === 'supervisor' ? 'a supervisor' : 'an instructor'} at ${pool.name}.`
-          : 'Join your pool’s team so a supervisor can see how your classes are going. Swimmers’ names, marks and comments stay private.'
+          : 'Join your pool’s team so your supervisors can see your classes and report cards. They can look, not edit.'
       }
     >
       <ButtonLink to="/app/pool" variant={pool ? 'secondary' : 'primary'} size="sm" icon={<Building2 size={14} />}>

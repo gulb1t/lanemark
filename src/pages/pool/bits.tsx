@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Check, EyeOff, ShieldCheck } from 'lucide-react'
+import { Eye, Lock, ShieldCheck } from 'lucide-react'
 import { Avatar } from '../../components/ui/Avatar'
 import { rank, type ClassStatus } from '../../lib/overview'
 import { pct } from '../../lib/stats'
@@ -48,13 +48,13 @@ export function RoleChip({ role }: { role: PoolRole }) {
 
 /** What joining a pool shares, in plain words. Shown before joining and to every member afterwards. */
 export function WhatTheySee() {
-  const sees = ['Your class names and levels', 'Lessons taught and attendance rates', 'How many skills are assessed and passed', 'How many report cards are done']
-  const never = ['Swimmers’ names, photos or notes', 'Anyone’s individual marks or attendance', 'Report card comments']
+  const sees = ['Every class, with its lesson plans', 'Swimmers, with their photos and notes', 'Attendance and skill marks', 'Report card comments and next levels']
+  const cant = ['Change anything (it’s view-only)', 'See your classes once you leave the pool', 'Show your classes to other instructors']
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <h3 className="mb-2 flex items-center gap-2 text-[13px] font-semibold">
-          <Check size={14} className="text-good" /> Supervisors see counts
+          <Eye size={14} className="text-aqua" /> Supervisors can see
         </h3>
         <ul className="space-y-1.5 text-[13.5px] text-muted">
           {sees.map((s) => (
@@ -64,10 +64,10 @@ export function WhatTheySee() {
       </div>
       <div>
         <h3 className="mb-2 flex items-center gap-2 text-[13px] font-semibold">
-          <EyeOff size={14} className="text-dim" /> Never
+          <Lock size={14} className="text-dim" /> They can’t
         </h3>
         <ul className="space-y-1.5 text-[13.5px] text-muted">
-          {never.map((s) => (
+          {cant.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>

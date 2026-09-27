@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { ArrowRight, CalendarCheck, Check, ChevronDown, FileText, ListChecks, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Avatar } from '../../components/ui/Avatar'
 import { LevelChip, Stat } from '../../components/ui/bits'
 import { getLevel } from '../../data/curriculum'
@@ -8,10 +9,11 @@ import { attentionNotes, caughtUp, classStatus, rank, summarize, type ClassProgr
 import { pct } from '../../lib/stats'
 import type { InstructorProgress } from '../../store/usePool'
 import { RankBadge, Score, StatusPill } from './bits'
+import { classLink } from './data'
 
 interface Row {
   cls: ClassProgress
-  who: string
+  who: InstructorProgress
 }
 
 export function OverviewTab({ instructors, onRankings }: { instructors: InstructorProgress[]; onRankings: () => void }) {
@@ -20,7 +22,7 @@ export function OverviewTab({ instructors, onRankings }: { instructors: Instruct
   const onTrack = all.filter((c) => ['on-track', 'finished'].includes(classStatus(c))).length
   const started = all.filter((c) => !['empty', 'upcoming'].includes(classStatus(c))).length
   const attention: Row[] = instructors
-    .flatMap((i) => i.classes.map((cls) => ({ cls, who: i.name })))
+    .flatMap((i) => i.classes.map((cls) => ({ cls, who: i })))
     .filter((r) => classStatus(r.cls) === 'behind')
     .sort((a, b) => (caughtUp(a.cls) ?? 1) - (caughtUp(b.cls) ?? 1))
   const top = rank(
@@ -139,17 +141,20 @@ function NeedsAttention({ rows }: { rows: Row[] }) {
       </div>
       <ul className="mt-2 divide-y divide-line">
         {shown.map(({ cls, who }) => (
-          <li key={`${who}:${cls.id}`} className="flex items-center gap-3.5 px-5 py-3">
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2">
-                <LevelChip level={getLevel(cls.levelId)} />
-                <span className="truncate text-[14px] font-medium">{cls.name}</span>
+          <li key={`${who.id}:${cls.id}`}>
+            <Link to={classLink(who.id, who.you, cls.id)} className="group flex items-center gap-3.5 px-5 py-3 transition-colors hover:bg-fg/[0.025]">
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <LevelChip level={getLevel(cls.levelId)} />
+                  <span className="truncate text-[14px] font-medium">{cls.name}</span>
+                </span>
+                <span className="mt-0.5 block truncate text-[12.5px] text-dim">
+                  {who.name} · {attentionNotes(cls).join(' · ') || 'Falling behind'}
+                </span>
               </span>
-              <span className="mt-0.5 block truncate text-[12.5px] text-dim">
-                {who} · {attentionNotes(cls).join(' · ') || 'Falling behind'}
-              </span>
-            </span>
-            <span className="font-mono text-[13px] font-semibold tabular-nums text-warn">{pct(caughtUp(cls))}</span>
+              <span className="font-mono text-[13px] font-semibold tabular-nums text-warn">{pct(caughtUp(cls))}</span>
+              <ArrowRight size={15} className="shrink-0 text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
+            </Link>
           </li>
         ))}
       </ul>
@@ -220,7 +225,7 @@ function InstructorTable({ instructors }: { instructors: InstructorProgress[] })
                 <Score value={s.caughtUp} className="max-md:mt-3" />
                 <ChevronDown size={16} className={`hidden justify-self-end text-dim transition-transform md:block ${expanded ? 'rotate-180' : ''}`} />
               </button>
-              {expanded && <ClassList classes={i.classes} />}
+              {expanded && <ClassList who={i} />}
             </li>
           )
         })}
@@ -233,7 +238,8 @@ function Cell({ children }: { children: ReactNode }) {
   return <span className="hidden font-mono text-[13px] tabular-nums text-muted md:block">{children}</span>
 }
 
-function ClassList({ classes }: { classes: ClassProgress[] }) {
+function ClassList({ who }: { who: InstructorProgress }) {
+  const classes = who.classes
   if (!classes.length) return <p className="border-t border-line bg-fg/[0.015] px-5 py-4 text-[13px] text-dim">No active classes.</p>
   return (
     <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="divide-y divide-line border-t border-line bg-fg/[0.015]">
@@ -241,33 +247,35 @@ function ClassList({ classes }: { classes: ClassProgress[] }) {
         const status = classStatus(c)
         const notes = attentionNotes(c)
         return (
-          <li key={c.id} className={`px-5 py-3 md:pl-[4.25rem] ${COLS}`}>
-            <span className="min-w-0">
-              <span className="flex min-w-0 items-center gap-2">
-                <LevelChip level={getLevel(c.levelId)} />
-                <span className="truncate text-[13.5px] font-medium">{c.name}</span>
-              </span>
-              <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-dim">
-                <StatusPill status={status} />
-                <span>
-                  Lesson {Math.max(c.past, c.taught)} of {c.lessons}
+          <li key={c.id}>
+            <Link to={classLink(who.id, who.you, c.id)} className={`group block px-5 py-3 transition-colors hover:bg-fg/[0.03] md:pl-[4.25rem] ${COLS}`}>
+              <span className="min-w-0">
+                <span className="flex min-w-0 items-center gap-2">
+                  <LevelChip level={getLevel(c.levelId)} />
+                  <span className="truncate text-[13.5px] font-medium">{c.name}</span>
                 </span>
-                {notes.length > 0 && status === 'behind' && <span className="text-warn">{notes.join(' · ')}</span>}
+                <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-dim">
+                  <StatusPill status={status} />
+                  <span>
+                    Lesson {Math.max(c.past, c.taught)} of {c.lessons}
+                  </span>
+                  {notes.length > 0 && status === 'behind' && <span className="text-warn">{notes.join(' · ')}</span>}
+                </span>
+                <span className="mt-1.5 block font-mono text-[12px] text-dim md:hidden">
+                  Attendance {pct(c.attendanceRate)} · Skills {pct(c.assessed)} · Reports {c.reportsDone}/{c.swimmers}
+                </span>
               </span>
-              <span className="mt-1.5 block font-mono text-[12px] text-dim md:hidden">
-                Attendance {pct(c.attendanceRate)} · Skills {pct(c.assessed)} · Reports {c.reportsDone}/{c.swimmers}
-              </span>
-            </span>
-            <Cell>
-              {c.swimmers} swimmer{c.swimmers === 1 ? '' : 's'}
-            </Cell>
-            <Cell>{pct(c.attendanceRate)}</Cell>
-            <Cell>{pct(c.assessed)}</Cell>
-            <Cell>
-              {c.reportsDone}/{c.swimmers}
-            </Cell>
-            <Score value={caughtUp(c)} className="max-md:mt-2" />
-            <span />
+              <Cell>
+                {c.swimmers} swimmer{c.swimmers === 1 ? '' : 's'}
+              </Cell>
+              <Cell>{pct(c.attendanceRate)}</Cell>
+              <Cell>{pct(c.assessed)}</Cell>
+              <Cell>
+                {c.reportsDone}/{c.swimmers}
+              </Cell>
+              <Score value={caughtUp(c)} className="max-md:mt-2" />
+              <ArrowRight size={15} className="hidden justify-self-end text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-fg md:block" />
+            </Link>
           </li>
         )
       })}

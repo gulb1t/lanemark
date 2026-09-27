@@ -2,8 +2,9 @@ import { cloneSkills, LEVEL_BY_ID } from '../data/curriculum.ts'
 import { addDays, isoDate, parseIso } from './dates.ts'
 import { rng, seasonOf } from './demo.ts'
 import { classProgress } from './overview.ts'
+import { draftComment } from './report.ts'
 import type { InstructorProgress, Pool, PoolMember } from '../store/usePool.ts'
-import type { AttendanceStatus, Enrollment, SkillStatus, SwimClass } from '../types.ts'
+import type { AttendanceStatus, Enrollment, SkillStatus, Swimmer, SwimClass } from '../types.ts'
 
 /**
  * Made-up instructors for the demo's pool, each with their own habits so the overview and rankings have something
@@ -102,8 +103,36 @@ const COACHES: DemoCoach[] = [
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
 
-/** One class, five weeks into an eight-lesson session like the demo coach's own classes. */
-function demoClass(coach: DemoCoach, [levelId, day, time]: DemoCoach['classes'][number], seed: number, today: string): SwimClass {
+const FIRST = [
+  'Aria',
+  'Leo',
+  'Mila',
+  'Kai',
+  'Nora',
+  'Eli',
+  'Zara',
+  'Omar',
+  'Lucia',
+  'Theo',
+  'Isla',
+  'Ravi',
+  'Hana',
+  'Felix',
+  'Amelia',
+  'Jin',
+  'Sienna',
+  'Mateo',
+  'Layla',
+  'Arjun',
+  'Chloe',
+  'Noah',
+  'Yara',
+  'Ben',
+]
+const LAST = ['Rossi', 'Singh', 'Nguyen', 'Kowalski', 'Haddad', 'Ferreira', 'Park', 'Mensah', 'Costa', 'Bianchi', 'Ali', 'Murphy', 'Tran', 'Silva', 'Chen', 'Russo']
+
+/** One class, five weeks into an eight-lesson session like the demo coach's own classes, with its swimmers. */
+function demoClass(coach: DemoCoach, [levelId, day, time]: DemoCoach['classes'][number], seed: number, today: string): { cls: SwimClass; swimmers: Swimmer[] } {
   const rand = rng(seed)
   const level = LEVEL_BY_ID[levelId]
   const skills = cloneSkills(levelId)
@@ -114,7 +143,13 @@ function demoClass(coach: DemoCoach, [levelId, day, time]: DemoCoach['classes'][
   const progress = past.length / lessons.length
   const roster = 4 + Math.floor(rand() * (level.program === 'parent-tot' || level.program === 'preschool' ? 3 : 5))
 
-  const enrollments: Enrollment[] = Array.from({ length: roster }, (_, k) => {
+  const swimmers: Swimmer[] = Array.from({ length: roster }, (_, k) => ({
+    id: `demo-${seed}-${k}`,
+    name: `${FIRST[Math.floor(rand() * FIRST.length)]} ${LAST[Math.floor(rand() * LAST.length)]}`,
+    notes: '',
+    createdAt: 0,
+  }))
+  const enrollments: Enrollment[] = swimmers.map((swimmer) => {
     const attendance: Record<string, AttendanceStatus> = {}
     for (const l of past) {
       if (!taken.has(l.id)) continue
@@ -127,11 +162,19 @@ function demoClass(coach: DemoCoach, [levelId, day, time]: DemoCoach['classes'][
     skills.slice(0, Math.round(skills.length * share)).forEach((s) => {
       marks[s.id] = rand() < 0.78 ? 'pass' : 'incomplete'
     })
-    return { swimmerId: `demo-${seed}-${k}`, attendance, skills: marks, comment: reportDone ? 'Written' : '', nextLevelId: '' }
+    const comment = reportDone
+      ? draftComment(
+          swimmer.name,
+          skills,
+          marks,
+          skills.every((s) => marks[s.id] === 'pass'),
+        )
+      : ''
+    return { swimmerId: swimmer.id, attendance, skills: marks, comment, nextLevelId: '' }
   })
 
   const weekday = parseIso(first).toLocaleDateString('en-CA', { weekday: 'short' })
-  return {
+  const cls = {
     id: `demo-class-${seed}`,
     name: `${level.name} · ${weekday} ${time}`,
     levelId,
@@ -142,7 +185,10 @@ function demoClass(coach: DemoCoach, [levelId, day, time]: DemoCoach['classes'][
     enrollments,
     createdAt: 0,
   }
+  return { cls, swimmers }
 }
+
+const seedOf = (coach: number, k: number) => 101 + coach * 10 + k
 
 const joined = (daysAgo: number, now: number) => now - daysAgo * 864e5
 
@@ -176,8 +222,18 @@ export function demoOverview(pool: Pool, yourClasses: SwimClass[], now = Date.no
       name: m.name,
       role: m.role,
       you: false,
-      classes: coach.classes.map((spec, k) => classProgress(demoClass(coach, spec, 101 + i * 10 + k, today), today)),
+      classes: coach.classes.map((spec, k) => classProgress(demoClass(coach, spec, seedOf(i, k), today).cls, today)),
     }
   })
   return { today, instructors }
+}
+
+/** A made-up instructor's class in full, as a supervisor opening it would see it. */
+export function demoClassDetail(memberId: string, classId: string, now = Date.now()) {
+  const i = Number(memberId.replace('demo-coach-', ''))
+  const coach = COACHES[i]
+  const k = coach ? coach.classes.findIndex((_, n) => `demo-class-${seedOf(i, n)}` === classId) : -1
+  if (!coach || k === -1) return null
+  const { cls, swimmers } = demoClass(coach, coach.classes[k], seedOf(i, k), isoDate(new Date(now)))
+  return { instructor: { id: memberId, name: coach.name }, class: cls, swimmers }
 }

@@ -17,6 +17,9 @@ export async function attempt<T>(fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+/** Your own classes open as usual; anyone else's open in the supervisor's view-only page. */
+export const classLink = (memberId: string, you: boolean, classId: string) => (you ? `/app/classes/${classId}` : `/app/pool/${memberId}/classes/${classId}`)
+
 export function useDemo() {
   return useSession((s) => s.status === 'demo')
 }

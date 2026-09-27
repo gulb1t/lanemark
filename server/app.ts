@@ -10,7 +10,7 @@ import { fakeVerify, hashPassword, passwordProblem, verifyPassword } from './aut
 import { generateRecoveryCodes, generateSecret, normalizeRecoveryCode, otpauthUrl, verifyTotp } from './auth/totp.ts'
 import type { Config } from './config.ts'
 import { classProgress, summarize } from '../src/lib/overview.ts'
-import type { SwimClass } from '../src/types.ts'
+import type { Swimmer, SwimClass } from '../src/types.ts'
 import { EmailTakenError, monotonicClock, type DocRecord, type MemberRecord, type PoolRecord, type Repo, type SessionRecord, type TokenPurpose, type UserRecord } from './db/types.ts'
 import { askAssistant, AssistantError } from './assistant.ts'
 import { emails } from './lib/emails.ts'
@@ -934,9 +934,28 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   })
 
   /**
+   * Supervisors: one member's class in full (roster, attendance, skill marks, comments) with the swimmers in it, to
+   * look at, print or export. Read-only: nothing here writes to the instructor's account.
+   */
+  app.get('/api/pool/members/:id/classes/:classId', async (c) => {
+    const found = await poolOf(c.get('user').id)
+    if (!found) return notInPool(c)
+    if (found.member.role !== 'supervisor') return supervisorsOnly(c)
+    const memberId = c.req.param('id')
+    const target = await repo.getMembership(memberId)
+    const owner = target?.poolId === found.pool.id ? await repo.getUserById(memberId) : null
+    if (!owner) return fail(c, 404, 'not_found', 'That person isn’t in this pool.')
+    const cls = (await repo.liveDocs(memberId, 'class')).map((d) => d.data as SwimClass).find((x) => x.id === c.req.param('classId'))
+    if (!cls) return fail(c, 404, 'not_found', 'That class doesn’t exist any more.')
+    const enrolled = new Set(cls.enrollments.map((e) => e.swimmerId))
+    const swimmers = (await repo.liveDocs(memberId, 'swimmer')).map((d) => d.data as Swimmer).filter((w) => enrolled.has(w.id))
+    return c.json({ instructor: { id: owner.id, name: owner.name }, class: cls, swimmers })
+  })
+
+  /**
    * Supervisors: progress counts for every member's current classes. Instructors: the leaderboard (names and
-   * caught-up scores) when the supervisor shares it. Worked out here so swimmer names, marks and comments never
-   * leave the instructor's account.
+   * caught-up scores) when the supervisor shares it. Counts only, so the page stays light; supervisors open a class
+   * for its swimmers and comments.
    */
   app.get('/api/pool/overview', async (c) => {
     const found = await poolOf(c.get('user').id)

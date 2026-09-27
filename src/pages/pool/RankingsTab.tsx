@@ -1,5 +1,6 @@
 import { Trophy } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { LevelChip, Segmented, Switch } from '../../components/ui/bits'
 import { getLevel } from '../../data/curriculum'
 import { api } from '../../lib/api'
@@ -7,7 +8,7 @@ import { caughtUp, rank, summarize } from '../../lib/overview'
 import { setPool, type InstructorProgress, type Pool } from '../../store/usePool'
 import { toast } from '../../store/useUi'
 import { InstructorRanking, RankBadge, Score, ScoringNote } from './bits'
-import { attempt, useDemo, useUserId } from './data'
+import { attempt, classLink, useDemo, useUserId } from './data'
 
 export function RankingsTab({ pool, instructors }: { pool: Pool; instructors: InstructorProgress[] }) {
   const [view, setView] = useState<'instructors' | 'classes'>('instructors')
@@ -27,7 +28,7 @@ export function RankingsTab({ pool, instructors }: { pool: Pool; instructors: In
   }
 
   const classes = rank(
-    instructors.flatMap((i) => i.classes.map((cls) => ({ cls, who: i.name }))),
+    instructors.flatMap((i) => i.classes.map((cls) => ({ cls, who: i }))),
     (r) => caughtUp(r.cls),
     (r) => r.cls.name,
   )
@@ -65,18 +66,20 @@ export function RankingsTab({ pool, instructors }: { pool: Pool; instructors: In
         ) : (
           <ol className="mt-3 divide-y divide-line border-t border-line">
             {classes.map(({ item: { cls, who }, rank: place, score }) => (
-              <li key={`${who}:${cls.id}`} className="flex items-center gap-3 px-5 py-3 sm:px-6">
-                <RankBadge place={place} />
-                <span className="min-w-0 flex-1">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <LevelChip level={getLevel(cls.levelId)} />
-                    <span className="truncate text-[14px] font-medium">{cls.name}</span>
+              <li key={`${who.id}:${cls.id}`}>
+                <Link to={classLink(who.id, who.you, cls.id)} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-fg/[0.025] sm:px-6">
+                  <RankBadge place={place} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <LevelChip level={getLevel(cls.levelId)} />
+                      <span className="truncate text-[14px] font-medium">{cls.name}</span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-[12.5px] text-dim">
+                      {who.name} · Lesson {Math.max(cls.past, cls.taught)} of {cls.lessons}
+                    </span>
                   </span>
-                  <span className="mt-0.5 block truncate text-[12.5px] text-dim">
-                    {who} · Lesson {Math.max(cls.past, cls.taught)} of {cls.lessons}
-                  </span>
-                </span>
-                <Score value={score} className="w-28 shrink-0 sm:w-48" />
+                  <Score value={score} className="w-28 shrink-0 sm:w-48" />
+                </Link>
               </li>
             ))}
           </ol>

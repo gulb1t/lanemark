@@ -86,8 +86,7 @@ function NoPool() {
         <div className="eyebrow mb-2">Pool</div>
         <h1 className="page-title">{invited ? 'You’re invited to a pool' : 'Work as a team'}</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-muted">
-          In a pool, supervisors see how every class is going (attendance, skills and report cards) without anyone sending a spreadsheet. Your swimmers stay in your
-          account.
+          In a pool, supervisors can see every class (attendance, skills and report cards) without anyone sending a spreadsheet. They can look, print and export, but only you can change your classes.
         </p>
       </section>
 
@@ -174,7 +173,7 @@ function InstructorView({ pool }: { pool: Pool }) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section className="card p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold">What your supervisors see</h2>
-          <p className="mt-1 text-[13.5px] text-muted">Numbers come from your synced classes and update when you’re online.</p>
+          <p className="mt-1 text-[13.5px] text-muted">They see your classes as of your last sync, and can print or export them.</p>
           <div className="mt-5">
             <WhatTheySee />
           </div>

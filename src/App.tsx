@@ -24,6 +24,7 @@ const SwimmerProfile = lazy(load.swimmer)
 const CurriculumPage = lazy(load.curriculum)
 const SettingsPage = lazy(load.settings)
 const PoolPage = lazy(load.pool)
+const PoolClassPage = lazy(load.poolClass)
 const ReportWorkspace = lazy(load.reports)
 const Privacy = lazy(load.privacy)
 const NotFound = lazy(load.notFound)
@@ -86,6 +87,7 @@ export default function App() {
               <Route path="curriculum" element={<CurriculumPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="pool" element={<PoolPage />} />
+              <Route path="pool/:memberId/classes/:classId" element={<PoolClassPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>

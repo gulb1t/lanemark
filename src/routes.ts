@@ -15,6 +15,7 @@ export const load = {
   curriculum: () => import('./pages/CurriculumPage'),
   settings: () => import('./pages/SettingsPage'),
   pool: () => import('./pages/PoolPage'),
+  poolClass: () => import('./pages/PoolClassPage'),
   reports: () => import('./pages/ReportWorkspace'),
   privacy: () => import('./pages/Privacy'),
   notFound: () => import('./pages/NotFound'),
