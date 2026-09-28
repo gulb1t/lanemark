@@ -95,6 +95,31 @@ const buzz = (pattern: number | number[] = 8) => {
   }
 }
 
+/** Present, then late, then absent, then back to unmarked. */
+const NEXT: Record<AttendanceStatus | 'none', AttendanceStatus | undefined> = { none: 'present', present: 'late', late: 'absent', absent: undefined }
+
+/** One button per swimmer: each tap moves to the next mark, so a row stays one line even on a phone. */
+function CycleButton({ name, value, onChange }: { name: string; value: AttendanceStatus | undefined; onChange: (next: AttendanceStatus | undefined) => void }) {
+  const look = value ? LOOK[value] : null
+  const Icon = look?.icon
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.92 }}
+      onClick={() => onChange(NEXT[value ?? 'none'])}
+      aria-label={`${name}: ${look ? look.label : 'not marked'}. Tap for ${NEXT[value ?? 'none'] ? LOOK[NEXT[value ?? 'none']!].label.toLowerCase() : 'not marked'}.`}
+      className={`flex h-11 w-[7.25rem] shrink-0 items-center justify-center gap-1.5 rounded-xl border text-[14px] font-semibold transition-colors ${look ? look.cls : 'border-dashed border-line-2 text-dim hover:border-dim/70 hover:text-muted'}`}
+    >
+      {Icon ? (
+        <motion.span key={value} initial={{ scale: 0.6, rotate: -8 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="flex">
+          <Icon size={16} strokeWidth={2.5} />
+        </motion.span>
+      ) : null}
+      {look ? look.label : 'Mark'}
+    </motion.button>
+  )
+}
+
 function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swimmer> }) {
   const [params] = useSearchParams()
   const [lessonId, setLessonId] = useState(() => pickDefaultLesson(cls, params.get('lesson')))
@@ -179,8 +204,9 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
             <div className="truncate text-[13px] text-muted">{lesson.topic || 'No topic yet'}</div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="mr-1 font-mono text-xs text-muted">
-              <span className="text-good">{head.present}</span> · <span className="text-warn">{head.late}</span> · <span className="text-bad">{head.absent}</span>
+            <span className="mr-1 text-[13px] tabular-nums text-muted">
+              <span className="font-medium text-good">{head.present} present</span> · <span className="font-medium text-warn">{head.late} late</span> ·{' '}
+              <span className="font-medium text-bad">{head.absent} absent</span>
               {unmarked > 0 && <span className="text-dim"> · {unmarked} left</span>}
             </span>
             {head.marked > 0 && (
@@ -287,38 +313,16 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
                 <Avatar name={swimmer.name} photo={swimmer.photo} size={40} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[15px] font-medium">{swimmer.name}</div>
-                  <div className="font-mono text-[11px] text-dim">{pct(attendanceSummary(e, cls.lessons).rate)} attendance</div>
+                  <div className="text-[12.5px] text-dim">{pct(attendanceSummary(e, cls.lessons).rate)} attendance</div>
                 </div>
-                <div className="flex gap-1.5">
-                  {STATUSES.map((s) => {
-                    const { icon: Icon, label, cls: tone } = LOOK[s]
-                    const on = value === s
-                    return (
-                      <motion.button
-                        key={s}
-                        type="button"
-                        whileTap={{ scale: 0.88 }}
-                        onClick={() => setAttendance(cls.id, e.swimmerId, lesson.id, on ? undefined : s)}
-                        aria-pressed={on}
-                        aria-label={`${swimmer.name}: ${label}`}
-                        title={`${label} (${LOOK[s].key})`}
-                        className={`relative flex h-12 min-w-12 items-center justify-center gap-1.5 rounded-xl border px-3 text-[13px] font-semibold transition-colors sm:h-11 sm:min-w-[6.5rem] ${on ? tone : 'border-line-2 text-dim hover:border-dim/70 hover:text-muted'}`}
-                      >
-                        <motion.span animate={on ? { scale: [0.6, 1.2, 1], rotate: [0, -8, 0] } : { scale: 1 }} transition={{ duration: 0.35 }} className="flex">
-                          <Icon size={17} strokeWidth={2.5} />
-                        </motion.span>
-                        <span className="hidden sm:inline">{label}</span>
-                      </motion.button>
-                    )
-                  })}
-                </div>
+                <CycleButton name={swimmer.name} value={value} onChange={(next) => setAttendance(cls.id, e.swimmerId, lesson.id, next)} />
               </div>
             )
           })}
         </div>
       </div>
       <p className="hidden items-center gap-1.5 text-xs text-dim sm:flex">
-        Keyboard: <Kbd>↑</Kbd>
+        Tap a swimmer’s button to go present → late → absent. Keyboard: <Kbd>↑</Kbd>
         <Kbd>↓</Kbd> move, <Kbd>P</Kbd> present, <Kbd>L</Kbd> late, <Kbd>A</Kbd> absent, <Kbd>⌫</Kbd> clear
       </p>
     </div>
