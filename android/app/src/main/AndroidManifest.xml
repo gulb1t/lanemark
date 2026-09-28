@@ -30,13 +30,13 @@
 
             <!--
               App Links: pool invites and the links in Lanemark's emails open here instead of the browser. Android checks
-              https://swimtrack.fly.dev/.well-known/assetlinks.json to confirm the site and the app belong together.
+              https://lanemark.fly.dev/.well-known/assetlinks.json to confirm the site and the app belong together.
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="swimtrack.fly.dev" />
+                <data android:scheme="https" android:host="lanemark.fly.dev" />
                 <data android:path="/app/pool" />
                 <data android:path="/verify-email" />
                 <data android:path="/reset-password" />

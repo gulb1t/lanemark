@@ -16,7 +16,7 @@ script also finds them in `~/Android/jdk-21` and the usual SDK folders.
 | `npm run app:keystore` | Makes the release signing key, once. **Back up** `android/lanemark-release.jks` and `android/keystore.properties`: every update must be signed with the same key |
 | `npm run app -- --release` | Builds the signed release APK and the `.aab` bundle for the Play Store |
 
-`APP_API_URL=https://… npm run app` points the app at another server. The default is https://swimtrack.fly.dev.
+`APP_API_URL=https://… npm run app` points the app at another server. The default is https://lanemark.fly.dev.
 
 ### Putting the test APK on your phone
 
@@ -61,7 +61,7 @@ Tests: `server/test/app-client.test.ts`. The app's origin runs at `https://local
 ## App Links
 
 Pool invites (`/app/pool?code=…`) and the email links (`/verify-email`, `/reset-password`) open in the app when it's
-installed. Android checks `https://swimtrack.fly.dev/.well-known/assetlinks.json`, which lists the certificates in
+installed. Android checks `https://lanemark.fly.dev/.well-known/assetlinks.json`, which lists the certificates in
 `server/app-links.json`. That list holds this computer's debug key (for the test APK). `npm run app:keystore` adds the
 release key's fingerprint; ship the site afterwards.
 

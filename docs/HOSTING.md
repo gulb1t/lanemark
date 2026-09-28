@@ -34,12 +34,12 @@ aren't delivered; they're only written to the server log, so set up email before
    fly auth signup
    ```
 
-2. In `fly.toml`, change `app = "swimtrack"` to a unique name, e.g. `my-lanemark`. Then, from the
+2. In `fly.toml`, change `app = "lanemark"` to a unique name, e.g. `my-lanemark`. Then, from the
    `Lanemark` folder:
 
    ```bash
    fly apps create my-lanemark
-   fly volumes create swimtrack_data --region yyz --size 1
+   fly volumes create lanemark_data --region yyz --size 1
    fly secrets set APP_URL=https://my-lanemark.fly.dev SECRET_KEY="$(openssl rand -base64 32)"
    fly secrets set SMTP_URL='smtps://…' MAIL_FROM='Lanemark <you@gmail.com>' CONTACT_EMAIL=you@gmail.com
    fly secrets set VOIDAI_API_KEY=…

@@ -2,7 +2,7 @@
 
 <!-- Generated from src/data/guide.ts by `npm run guide:md`. Edit that file, not this one. -->
 
-The same guide is in the app under **Help** (`/help`), where every “Try it” opens the real screen. You can also [try the demo](https://swimtrack.fly.dev/demo).
+The same guide is in the app under **Help** (`/help`), where every “Try it” opens the real screen. You can also [try the demo](https://lanemark.fly.dev/demo).
 
 ## Contents
 
@@ -33,7 +33,7 @@ _Today’s classes, what’s left to do, and all your classes in one place._
   <img src="../public/guide/dashboard-light.webp" alt="Your home screen" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=dashboard)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=dashboard)
 
 <a id="new-class"></a>
 
@@ -53,7 +53,7 @@ _Pick the level and Lanemark loads its skills for you._
   <img src="../public/guide/new-class-light.webp" alt="Make a class" width="712">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=new-class)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=new-class)
 
 <a id="add-swimmers"></a>
 
@@ -75,7 +75,7 @@ _Add new swimmers, or put swimmers you already have into a class._
   <img src="../public/guide/add-swimmers-light.webp" alt="Add swimmers" width="552">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=swimmers-tab)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=swimmers-tab)
 
 ## Every lesson
 
@@ -101,7 +101,7 @@ _A few taps at the start of each lesson._
   <img src="../public/guide/attendance-light.webp" alt="Take attendance" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=attendance)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=attendance)
 
 <a id="skills"></a>
 
@@ -121,7 +121,7 @@ _Mark each skill as passed or not yet, for the whole class or one swimmer at a t
   <img src="../public/guide/skills-light.webp" alt="Check off skills" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=skills)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=skills)
 
 <a id="lesson-plans"></a>
 
@@ -141,7 +141,7 @@ _A topic, date and notes for each lesson._
   <img src="../public/guide/lessons-light.webp" alt="Plan your lessons" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=lessons)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=lessons)
 
 ## Report cards
 
@@ -169,7 +169,7 @@ _One swimmer at a time, in three steps._
   <img src="../public/guide/report-card-light.webp" alt="Write report cards" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=report-card)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=report-card)
 
 <a id="print"></a>
 
@@ -188,7 +188,7 @@ _Letter-size report cards, one per page, or a spreadsheet of the whole class._
   <img src="../public/guide/preview-light.webp" alt="Print or download" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=reports)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=reports)
 
 <a id="manual-rules"></a>
 
@@ -238,7 +238,7 @@ _Every class’s progress in one place, and who needs a hand._
   <img src="../public/guide/pool-light.webp" alt="Supervise a pool" width="720">
 </picture>
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=pool)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=pool)
 
 ## Your account
 
@@ -277,4 +277,4 @@ _Two-factor sign-in, and a list of your devices._
 3. **Settings → Devices** lists where you’re signed in. Sign out any device you don’t recognise.
 4. Forgot your password? Press **Forgot password?** on the sign-in page and we’ll email you a link.
 
-[Try it in the demo →](https://swimtrack.fly.dev/demo?go=settings)
+[Try it in the demo →](https://lanemark.fly.dev/demo?go=settings)

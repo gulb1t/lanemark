@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'app'
       ? {
           'import.meta.env.VITE_APP': JSON.stringify('1'),
-          'import.meta.env.VITE_API_URL': JSON.stringify(process.env.APP_API_URL ?? 'https://swimtrack.fly.dev'),
+          'import.meta.env.VITE_API_URL': JSON.stringify(process.env.APP_API_URL ?? 'https://lanemark.fly.dev'),
         }
       : {},
   build: mode === 'app' ? { outDir: 'dist-app', emptyOutDir: true } : {},

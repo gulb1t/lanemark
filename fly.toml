@@ -1,5 +1,5 @@
 # Fly.io, in Toronto so swimmer data stays in Canada. See docs/HOSTING.md.
-app = "swimtrack"            # live at https://swimtrack.fly.dev; a copy of this repo needs its own unique name
+app = "lanemark"            # live at https://lanemark.fly.dev; a copy of this repo needs its own unique name
 primary_region = "yyz"       # Toronto
 
 [env]
@@ -9,7 +9,7 @@ primary_region = "yyz"       # Toronto
 
 # SQLite lives on this volume, so it survives deploys. One machine only: SQLite isn't shared between machines.
 [[mounts]]
-  source = "swimtrack_data"
+  source = "lanemark_data"
   destination = "/data"
 
 [http_service]

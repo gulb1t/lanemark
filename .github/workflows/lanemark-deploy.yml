@@ -61,18 +61,17 @@ jobs:
 
       - name: Deploy to Fly
         if: steps.token.outputs.ok == 'true'
-        # Still the 'swimtrack' Fly app (Fly apps can't be renamed); it changes when the server moves to a 'lanemark' app.
-        run: flyctl deploy --app swimtrack --remote-only --ha=false
+        run: flyctl deploy --app lanemark --remote-only --ha=false
 
       - name: Check the live site
         if: steps.token.outputs.ok == 'true'
         run: |
           for i in $(seq 1 12); do
-            if curl -fsS https://swimtrack.fly.dev/api/health > /dev/null; then
-              echo "https://swimtrack.fly.dev is up"
+            if curl -fsS https://lanemark.fly.dev/api/health > /dev/null; then
+              echo "https://lanemark.fly.dev is up"
               exit 0
             fi
             sleep 5
           done
-          echo "::error::https://swimtrack.fly.dev isn't answering. Check the logs in the Fly dashboard."
+          echo "::error::https://lanemark.fly.dev isn't answering. Check the logs in the Fly dashboard."
           exit 1

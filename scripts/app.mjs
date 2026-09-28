@@ -124,7 +124,7 @@ if (mode === 'release' && !existsSync(join(android, 'keystore.properties'))) fai
 
 step('1. Building the app’s screens')
 run('npx', ['vite', 'build', '--mode', 'app', '--logLevel', 'warn'], { hint: 'Fix the build errors above.' })
-ok(`Built for ${process.env.APP_API_URL ?? 'https://swimtrack.fly.dev'}`)
+ok(`Built for ${process.env.APP_API_URL ?? 'https://lanemark.fly.dev'}`)
 
 step('2. Copying them into the Android project')
 run('npx', ['cap', 'sync', 'android'], { quiet: true })

@@ -270,7 +270,7 @@ if (!opts.deploy) {
       windows ? 'Install it: pwsh -Command "iwr https://fly.io/install.ps1 -useb | iex"' : 'Install it: curl -L https://fly.io/install.sh | sh',
     )
   const app = readFileSync('fly.toml', 'utf8').match(/^app\s*=\s*["']([^"']+)["']/m)?.[1]
-  if (!app) fail('fly.toml doesn’t say which app to deploy.', 'Add a line like: app = "swimtrack"')
+  if (!app) fail('fly.toml doesn’t say which app to deploy.', 'Add a line like: app = "lanemark"')
   if (read(fly, ['auth', 'whoami']) === null) {
     if (opts.dry) fail('You’re not signed in to Fly.', `Run: ${fly} auth login`)
     warn('Signing in to Fly first (a browser window opens).')

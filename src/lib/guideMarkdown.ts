@@ -1,7 +1,7 @@
 import type { GuideSection } from '../data/guide.ts'
 
 /** The live demo, for "Try it" links in the Markdown guide. */
-export const LIVE_URL = 'https://swimtrack.fly.dev'
+export const LIVE_URL = 'https://lanemark.fly.dev'
 
 type Shots = Record<string, { width: number; height: number }>
 

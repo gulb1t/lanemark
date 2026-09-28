@@ -390,7 +390,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   // ── public ────────────────────────────────────────────────────────
   app.get('/api/health', (c) => c.json({ ok: true, db: repo.kind }))
 
-  // Android checks this before letting the app open swimtrack.fly.dev links (invites, email links). It lists the
+  // Android checks this before letting the app open lanemark.fly.dev links (invites, email links). It lists the
   // certificates the app is signed with; `npm run app:keystore` adds the release one to server/app-links.json.
   app.get('/.well-known/assetlinks.json', (c) =>
     c.json(

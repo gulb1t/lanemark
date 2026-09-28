@@ -42,7 +42,7 @@ export function useNativeApp() {
         else if (history.length > 1 && history.state?.idx > 0) navigate(-1)
         else navigate('/app', { replace: true })
       }),
-      // App Links: https://swimtrack.fly.dev/... opened from an email or a message lands on that screen here.
+      // App Links: https://lanemark.fly.dev/... opened from an email or a message lands on that screen here.
       App.addListener('appUrlOpen', ({ url }: URLOpenListenerEvent) => {
         try {
           const u = new URL(url)
