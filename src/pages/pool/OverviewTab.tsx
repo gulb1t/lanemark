@@ -84,7 +84,7 @@ export function OverviewTab({ instructors, onRankings }: { instructors: Instruct
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <NeedsAttention rows={attention} />
-        <section className="card flex flex-col overflow-hidden" aria-labelledby="top-h">
+        <section className="card flex flex-col overflow-hidden max-sm:hidden" aria-labelledby="top-h">
           <div className="flex items-baseline justify-between px-5 pt-5">
             <h2 id="top-h" className="text-[16px] font-bold">
               Most caught up

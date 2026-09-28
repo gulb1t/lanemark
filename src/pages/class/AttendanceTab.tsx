@@ -58,7 +58,7 @@ export function AttendanceTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map
             { value: 'grid', label: <><LayoutGrid size={14} /> Whole session</> },
           ]}
         />
-        <ul className="flex gap-3 text-xs text-muted" aria-label="Legend">
+        <ul className="flex gap-3 text-xs text-muted max-sm:hidden" aria-label="Legend">
           {STATUSES.map((k) => {
             const { icon: Icon, label, cls: c } = LOOK[k]
             return (
