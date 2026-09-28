@@ -49,7 +49,8 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         </p>
         <p>
           <b>On the instructor’s device.</b> So it works on deck without Wi-Fi, the app keeps a copy of that instructor’s classes in the browser’s storage and syncs changes
-          when the connection returns. Signing out removes the copy from the device.
+          when the connection returns. Signing out removes the copy from the device. The Android app also keeps its sign-in in the phone’s secure storage. With
+          fingerprint or face unlock on, the check happens on the phone: SwimTrack never receives your fingerprint or face.
         </p>
         <p>
           <b>Nowhere else.</b> Fonts and code are served by the same server. There are no analytics, ad networks or crash reporters. The only outside services are the email provider for account email and, if it’s turned on, the assistant (see below).
@@ -89,6 +90,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         <li>Optional two-factor authentication with any authenticator app, plus one-time recovery codes.</li>
         <li>HttpOnly, SameSite session cookies with origin checks on every change, so other sites can’t act as you.</li>
         <li>A list of signed-in devices in Settings, with sign-out for any of them. Changing or resetting a password signs out other devices.</li>
+        <li>In the Android app, the sign-in is encrypted by the phone’s secure hardware and can be locked behind your fingerprint, face or screen lock.</li>
         <li>Email alerts when the password or email address changes, or two-factor authentication is turned off.</li>
       </ul>
     ),

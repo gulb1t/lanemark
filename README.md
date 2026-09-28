@@ -165,6 +165,8 @@ To start the demo over, use Settings → Data → Reset demo (or a private windo
 
 Levels are presets: every class gets its own editable copy of its skills.
 
-## Roadmap
+## Android app
 
-See [docs/MOBILE.md](docs/MOBILE.md) for the Android (APK) and iOS plan.
+SwimTrack is also an Android app with fingerprint or face unlock, printing, the share sheet and offline use.
+`npm run app` builds a test APK, and `npm run app -- --install` puts it on a phone plugged in by USB. See
+[docs/MOBILE.md](docs/MOBILE.md) for the release build, how the app signs in, and the iOS plan (planned).

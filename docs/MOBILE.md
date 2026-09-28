@@ -1,61 +1,80 @@
-# Mobile plan: Android first, then iOS
+# The Android app
 
-Goal: a real installable app (an APK you can sideload, then Play Store), reusing this codebase instead of rewriting it.
+SwimTrack for Android is a real installed app, not a website in a frame. Its screens are this codebase's React app,
+built with `vite build --mode app` and shipped inside the APK. It opens on sign-in (or straight to your classes), works
+offline like the site, and talks to the live server with its own sign-in token.
 
-## Approach: Capacitor
+## Build it
 
-[Capacitor](https://capacitorjs.com) wraps the built web app (`dist/`) in a native Android/iOS shell with access to native APIs. It's the right fit because:
+You need Java 21 and the Android SDK. [Android Studio](https://developer.android.com/studio) installs both. The build
+script also finds them in `~/Android/jdk-21` and the usual SDK folders.
 
-- The UI is already mobile-first: bottom tab bar, safe-area padding, bottom sheets, 44px+ tap targets.
-- The app is already offline-first (IndexedDB cache + sync queue), which is exactly what a native app needs.
-- One codebase for web, Android and iOS. React Native would mean rewriting every screen.
-
-## What's already done
-
-- Responsive layouts, bottom tab bar, `env(safe-area-inset-*)` padding, vaul bottom sheets on phones
-- PWA manifest and icons (`public/manifest.webmanifest`); the site can already be "installed" from Chrome on Android
-- `VITE_API_URL` support in `src/lib/api.ts`, so a bundled app can talk to a remote server
-- Offline sync engine that survives app restarts (IndexedDB)
-
-## Phase 1: Android APK
-
-1. `npm i @capacitor/core @capacitor/cli @capacitor/android` then `npx cap init SwimTrack app.swimtrack --web-dir dist`
-2. `npx cap add android`
-3. Build with the deployed API URL: `VITE_API_URL=https://your-domain npm run build && npx cap sync android`
-4. Open in Android Studio (`npx cap open android`) and choose **Build → Build APK(s)**. The APK is sideloadable.
-
-### Auth in the native app
-
-The web app uses httpOnly cookies. Inside Capacitor the app runs on `https://localhost`, so the API is cross-site. Two options:
-
-- **Recommended: bearer tokens for native.** Add `POST /api/auth/token` flows that return the session token in the body when a `X-Client: native` header is present. Store it with `@capacitor/preferences` (or the encrypted `capacitor-secure-storage` plugin) and send it as `Authorization: Bearer …`. The server's `requireUser` accepts either a cookie or a bearer token. CSRF checks don't apply to bearer requests, since they aren't sent automatically by the browser.
-- **Alternative:** `CapacitorHttp` (native HTTP stack) keeps cookies in the native jar. It's simpler, but less explicit.
-
-Either way, add `https://localhost` (Android) and `capacitor://localhost` (iOS) to `APP_ORIGINS`.
-
-### Native niceties
-
-| Feature | Plugin |
+| Command | What it does |
 | --- | --- |
-| Status bar colour follows the theme | `@capacitor/status-bar` |
-| Haptic tick when marking attendance or passing a skill | `@capacitor/haptics` |
-| Camera for swimmer photos | `@capacitor/camera` (`fileToAvatar` already downsizes) |
-| Share/print report cards as PDF | `@capacitor/share` + a PDF export |
-| Keep the screen awake while taking attendance | `@capacitor-community/keep-awake` |
-| App icon and splash | `@capacitor/assets` generated from `public/icon.svg` |
-| Biometric unlock of the stored token | `@aparajita/capacitor-biometric-auth` |
+| `npm run app` | Builds a test APK: `android/app/build/outputs/apk/debug/app-debug.apk` |
+| `npm run app -- --install` | …and installs it on the phone plugged in by USB (USB debugging on), then opens it |
+| `npm run app:keystore` | Makes the release signing key, once. **Back up** `android/swimtrack-release.jks` and `android/keystore.properties`: every update must be signed with the same key |
+| `npm run app -- --release` | Builds the signed release APK and the `.aab` bundle for the Play Store |
 
-## Phase 2: Play Store
+`APP_API_URL=https://… npm run app` points the app at another server. The default is https://swimtrack.fly.dev.
 
-- Signed release build (keystore), target SDK per Play policy, privacy policy page (the app stores minors' names and photos, so the data safety form matters)
-- Crash reporting (Sentry) and an in-app "export my data" (already exists as JSON backup)
+### Putting the test APK on your phone
 
-## Phase 3: iOS
+- **By USB:** turn on Developer options and USB debugging, plug the phone in, then run `npm run app -- --install`.
+- **By file:** send `app-debug.apk` to the phone (Drive, email, cable) and open it. Android asks once to allow installs
+  from that app.
 
-`npx cap add ios`, build in Xcode on a Mac, TestFlight, then App Store. Same auth approach (bearer + Keychain storage). Apple requires in-app account deletion, which already exists in Settings.
+The test APK and the release APK are signed with different keys. To switch from one to the other, uninstall first.
 
-## Server changes needed before shipping mobile
+## What's in it
 
-- Bearer-token auth path (above) and its tests
-- Email verification and password reset (needs an email provider, e.g. Resend or Postmark)
-- Optional: passkeys (WebAuthn) as a phishing-proof alternative to passwords
+| | How |
+| --- | --- |
+| **Fingerprint or face unlock** | The sign-in token is encrypted with a key in the phone's secure hardware (Android Keystore). With unlock on, the key only works after a fingerprint, strong face unlock or the screen lock (`VaultPlugin.java`). Adding a new fingerprint destroys the key, so the app asks for the password once. On phones whose only face unlock is the weaker kind, the check guards the token instead. The app locks at start and after time away: 1, 5 or 30 minutes, or only at start (Settings → This phone). |
+| **Offline** | Same as the site: edits save on the phone (IndexedDB) and sync when there's signal. |
+| **Printing report cards** | Android's print screen: any nearby printer, or Save as PDF (`DevicePlugin.java`). |
+| **Spreadsheets, backups, recovery codes** | The share sheet: save to Files or Drive, email, open in Sheets. |
+| **Invites** | The share sheet, with a link that opens the app on phones that have it (App Links). |
+| **Swimmer photos** | Take a photo, or pick one with Android's photo picker (no storage permission). |
+| **On deck** | The screen stays on while the attendance screen is open (can be turned off), and a small buzz on each mark. |
+| **Back button** | Closes the open sheet, menu or tour first, then goes back, then leaves the app from the home screen. |
+| **Look** | Same design as the site, with lighter blurs so older phones stay smooth. The status bar follows the theme. The icon (adaptive, and themed on Android 13+) and splash come from the logo. |
+
+## How sign-in works
+
+Browsers use an httpOnly cookie. The app sends `X-SwimTrack-Client: android` on every request instead, and the server:
+
+- answers sign-up, sign-in and the two-factor step with the session token in the body (plus the 2FA ticket, and the
+  "trust this device" mark), and never sets cookies for the app;
+- reads `Authorization: Bearer …` from the app, and never a cookie;
+- skips the browser-only CSRF origin check for these requests (nothing is sent automatically, so there's nothing to
+  forge), and answers CORS only for the app's own origins (`https://localhost`, `capacitor://localhost`), without
+  credentials.
+
+Tests: `server/test/app-client.test.ts`. The app's origin runs at `https://localhost` inside the phone.
+
+## App Links
+
+Pool invites (`/app/pool?code=…`) and the email links (`/verify-email`, `/reset-password`) open in the app when it's
+installed. Android checks `https://swimtrack.fly.dev/.well-known/assetlinks.json`, which lists the certificates in
+`server/app-links.json`. That list holds this computer's debug key (for the test APK). `npm run app:keystore` adds the
+release key's fingerprint; ship the site afterwards.
+
+## Play Store (next)
+
+- `npm run app:keystore`, then `npm run app -- --release`, and upload the `.aab` in the Play Console.
+- Data safety form: the app stores swimmers' names, notes and photos (minors), synced to the SwimTrack server. The
+  privacy page already covers what's collected.
+- Bump `versionCode` and `versionName` in `android/app/build.gradle` for every upload.
+
+## iOS (planned)
+
+`npx cap add ios`, then build in Xcode on a Mac. The server side is ready (`X-SwimTrack-Client: ios`); the Vault and
+Device plugins need Swift versions (Keychain + Face ID, and UIPrintInteractionController).
+
+## Curriculum sources
+
+- report card writing guide (item names, must-see comments, report templates)
+- Lifesaving Society Swim for Life *At-a-Glance* guides (skills and distances)
+
+Levels are presets: every class gets its own editable copy of its skills.

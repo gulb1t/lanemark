@@ -544,7 +544,7 @@ const FAQ = [
   ['Which programs does it cover?', `The Lifesaving Society’s Swim for Life levels (Parent & Tot, Preschool 1–5, Swimmer 1–6), Swim Patrol (Rookie, Ranger, Star), Bronze Star and Teen/Adult 1–3: ${LEVELS.length} levels in total.`],
   ['Can I change the skills?', 'Every class gets its own editable copy of its level’s skills. Rename, reorder, add or remove them without touching the presets.'],
   ['How do report cards work?', 'SwimTrack follows the manual’s passing and failing templates. Pick what the swimmer excelled at and what to work on, and it writes the comment from the official must-sees. Edit freely, then print the whole class.'],
-  ['Is there a phone app?', 'You can add SwimTrack to your home screen today and it runs like an app, offline included. Native Android and iOS apps are planned.'],
+  ['Is there a phone app?', 'You can add SwimTrack to your home screen today and it runs like an app, offline included. An Android app with fingerprint unlock is being tested before it goes on the Play Store. An iPhone app is planned.'],
 ]
 
 function Faq() {
