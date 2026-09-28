@@ -33,7 +33,7 @@ export function Score({ value, className = '' }: { value: number | null; classNa
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         />
       </div>
-      <span className="w-10 text-right font-mono text-[13px] font-semibold tabular-nums">{pct(value)}</span>
+      <span className="w-10 text-right text-[13px] font-semibold tabular-nums">{pct(value)}</span>
     </div>
   )
 }
@@ -91,7 +91,7 @@ export function RankBadge({ place }: { place: number }) {
   const medal = MEDAL[place - 1]
   return (
     <span
-      className="inline-flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-bold tabular-nums"
+      className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold tabular-nums"
       style={medal ? { color: medal, background: `color-mix(in oklab, ${medal} 16%, transparent)` } : { color: 'var(--color-dim)' }}
     >
       {place}

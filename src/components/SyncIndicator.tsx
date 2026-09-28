@@ -27,7 +27,7 @@ export function SyncIndicator({ compact = false }: { compact?: boolean }) {
       onClick={() => void syncNow()}
       title={view.tip}
       aria-label={`${view.label}. ${view.tip}`}
-      className={`inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-fg/[0.03] px-2.5 font-mono text-[11px] font-medium transition-colors hover:bg-fg/[0.07] ${view.tone}`}
+      className={`inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-fg/[0.03] px-2.5 tabular-nums text-[11px] font-medium transition-colors hover:bg-fg/[0.07] ${view.tone}`}
     >
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span

@@ -128,7 +128,7 @@ export default function SwimmerProfile() {
                 <motion.li key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                   <Link to={`/app/classes/${c.id}?tab=skills`} className="card spotlight group flex items-center gap-4 p-4">
                     <ProgressRing value={p.ratio} size={56} stroke={4} color={passed ? 'var(--color-good)' : hue}>
-                      <span className="font-mono text-[11px] font-semibold">{Math.round(p.ratio * 100)}%</span>
+                      <span className="tabular-nums text-[11px] font-semibold">{Math.round(p.ratio * 100)}%</span>
                     </ProgressRing>
                     <div className="relative min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export default function SwimmerProfile() {
                       <div className="mt-2 flex items-center gap-2 text-xs text-muted">
                         <span className="w-20">Attendance</span>
                         <ProgressBar value={a.rate ?? 0} color="var(--color-good)" className="flex-1" />
-                        <span className="w-9 text-right font-mono">{pct(a.rate)}</span>
+                        <span className="w-9 text-right tabular-nums">{pct(a.rate)}</span>
                       </div>
                     </div>
                     <ArrowRight size={16} className="relative text-dim transition-transform group-hover:translate-x-1 group-hover:text-aqua" />

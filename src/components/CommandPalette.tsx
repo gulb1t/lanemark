@@ -61,7 +61,7 @@ function PaletteBody() {
               loop
               filter={paletteFilter}
               onKeyDown={(e) => e.key === 'Escape' && setPaletteOpen(false)}
-              className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-dim"
+              className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[12px] [&_[cmdk-group-heading]]:text-dim"
             >
               <div className="flex items-center gap-3 border-b border-line px-4">
                 <Search size={17} className="shrink-0 text-dim" />

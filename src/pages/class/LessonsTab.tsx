@@ -190,14 +190,14 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
               className={`card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 p-3 sm:flex sm:items-start sm:gap-3 ${isToday ? 'border-aqua/40 shadow-[var(--glow)]' : ''}`}
             >
               <div
-                className={`relative z-10 flex size-10 shrink-0 flex-col items-center justify-center rounded-xl border font-mono text-sm ${isToday ? 'border-aqua/50 bg-aqua/15 text-aqua' : past ? 'border-line-2 bg-panel-2 text-dim' : 'border-line-2 bg-panel-2 text-muted'}`}
+                className={`relative z-10 flex size-10 shrink-0 flex-col items-center justify-center rounded-xl border tabular-nums text-sm ${isToday ? 'border-aqua/50 bg-aqua/15 text-aqua' : past ? 'border-line-2 bg-panel-2 text-dim' : 'border-line-2 bg-panel-2 text-muted'}`}
               >
                 {i + 1}
               </div>
               <div className="contents min-w-0 flex-1 gap-2 sm:grid sm:grid-cols-[10rem_1fr]">
                 <div className="relative">
                   <input type="date" className="input" aria-label={`Lesson ${i + 1} date`} value={l.date} onChange={(e) => updateLesson(cls.id, l.id, { date: e.target.value })} />
-                  {isToday && <span className="absolute -top-2 right-2 rounded bg-aqua px-1.5 font-mono text-[9px] font-bold leading-4 text-aqua-fg">TODAY</span>}
+                  {isToday && <span className="absolute -top-2 right-2 rounded bg-aqua px-1.5 text-[10px] font-semibold leading-4 text-aqua-fg">Today</span>}
                 </div>
                 <input
                   className="input max-sm:col-span-3"
@@ -219,7 +219,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
                 />
               </div>
               <div className="col-start-3 row-start-1 flex items-center gap-1 sm:flex-col sm:items-end sm:gap-1">
-                <span className="font-mono text-xs tabular-nums text-dim" title="Present or late / marked">
+                <span className="text-xs tabular-nums text-dim" title="Present or late / marked">
                   {h.marked ? `${h.present + h.late}/${h.marked} in` : l.date ? formatDate(l.date, { weekday: 'short' }) : '—'}
                 </span>
                 <IconButton label={`Delete lesson ${i + 1}`} tone="danger" disabled={cls.lessons.length <= 1} onClick={() => remove(l, i + 1)}>

@@ -198,7 +198,7 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                         <Avatar name={swimmer.name} size={30} />
                       </ProgressRing>
                       <span className="max-w-20 truncate text-xs font-medium text-fg">{firstName(swimmer.name)}</span>
-                      <span className={`font-mono text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
+                      <span className={`tabular-nums text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
                         {p.pass}/{p.total}
                       </span>
                     </div>
@@ -332,7 +332,7 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
             </div>
           </div>
           <ProgressRing value={p.ratio} size={44} stroke={4} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
-            <span className="font-mono text-[10px] font-semibold">{Math.round(p.ratio * 100)}%</span>
+            <span className="tabular-nums text-[10px] font-semibold">{Math.round(p.ratio * 100)}%</span>
           </ProgressRing>
         </div>
         {categoriesOf(cls.skills).map((cat) => (

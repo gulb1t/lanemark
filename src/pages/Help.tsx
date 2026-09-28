@@ -100,7 +100,7 @@ export default function Help() {
                 <Icon size={18} />
               </span>
               <span className="min-w-0">
-                <span className="font-mono text-[11px] text-dim">STEP {n}</span>
+                <span className="tabular-nums text-[11px] text-dim">Step {n}</span>
                 <span className="mt-0.5 block text-[15.5px] font-semibold">{title}</span>
                 <span className="mt-1 block text-[13.5px] text-muted">{body}</span>
               </span>
@@ -203,7 +203,7 @@ function TopicCard({ topic, inApp, onZoom }: { topic: GuideTopic; inApp: boolean
           <ol className="mt-5 space-y-3">
             {topic.steps.map((step, i) => (
               <li key={i} className="flex gap-3 text-[14.5px] leading-relaxed text-muted">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-aqua/12 font-mono text-[12px] font-bold text-aqua">{i + 1}</span>
+                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-aqua/12 tabular-nums text-[12px] font-bold text-aqua">{i + 1}</span>
                 <span>{rich(step)}</span>
               </li>
             ))}

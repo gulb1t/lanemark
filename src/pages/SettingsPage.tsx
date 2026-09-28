@@ -1037,7 +1037,7 @@ function DevicesSection() {
                       {s.device}
                       {s.current && <span className="rounded-md bg-aqua/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-aqua">This device</span>}
                     </div>
-                    <div className="font-mono text-[11.5px] text-dim">
+                    <div className="tabular-nums text-[11.5px] text-dim">
                       {s.ip} · active {timeAgo(s.lastSeenAt, now)} · signed in {timeAgo(s.createdAt, now)}
                     </div>
                   </div>

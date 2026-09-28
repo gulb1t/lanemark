@@ -232,7 +232,7 @@ function AttendanceGrid({ cls, rows }: { cls: SwimClass; rows: Rows }) {
             <th className="sticky left-0 z-10 bg-panel px-4 py-3 text-left font-semibold">Swimmer</th>
             {cls.lessons.map((l, i) => (
               <th key={l.id} className="px-1.5 py-3 text-center font-normal text-dim" title={l.topic || undefined}>
-                <span className="block font-mono text-[12px] font-semibold text-muted">{i + 1}</span>
+                <span className="block tabular-nums text-[12px] font-semibold text-muted">{i + 1}</span>
                 <span className="block whitespace-nowrap text-[11px]">{l.date ? formatDate(l.date, { month: 'short', day: 'numeric' }) : '—'}</span>
               </th>
             ))}
@@ -249,7 +249,7 @@ function AttendanceGrid({ cls, rows }: { cls: SwimClass; rows: Rows }) {
                   <td key={l.id} className="border-t border-line px-1.5 py-2.5 text-center">
                     {m ? (
                       <span
-                        className={`inline-flex size-6 items-center justify-center rounded-md font-mono text-[11.5px] font-bold ${MARK[m].tone}`}
+                        className={`inline-flex size-6 items-center justify-center rounded-md tabular-nums text-[11.5px] font-bold ${MARK[m].tone}`}
                         title={MARK[m].label}
                       >
                         {MARK[m].letter}
@@ -260,7 +260,7 @@ function AttendanceGrid({ cls, rows }: { cls: SwimClass; rows: Rows }) {
                   </td>
                 )
               })}
-              <td className="border-t border-line px-4 py-2.5 text-right font-mono tabular-nums">{pct(attendanceSummary(e, cls.lessons).rate)}</td>
+              <td className="border-t border-line px-4 py-2.5 text-right tabular-nums">{pct(attendanceSummary(e, cls.lessons).rate)}</td>
             </tr>
           ))}
         </tbody>
@@ -279,7 +279,7 @@ function SkillsGrid({ cls, rows }: { cls: SwimClass; rows: Rows }) {
             <th className="sticky left-0 z-10 bg-panel px-4 py-3 text-left font-semibold">Skill</th>
             {rows.map(({ swimmer }) => (
               <th key={swimmer.id} className="px-1.5 py-3 text-center font-normal" title={swimmer.name}>
-                <span className="inline-flex size-7 items-center justify-center rounded-full bg-fg/[0.06] font-mono text-[10.5px] font-semibold text-muted">
+                <span className="inline-flex size-7 items-center justify-center rounded-full bg-fg/[0.06] tabular-nums text-[10.5px] font-semibold text-muted">
                   {initials(swimmer.name)}
                 </span>
               </th>

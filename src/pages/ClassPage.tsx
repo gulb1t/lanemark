@@ -113,9 +113,9 @@ export default function ClassPage() {
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <LevelChip level={level} />
-              {cls.session && <span className="font-mono text-xs text-dim">{cls.session}</span>}
+              {cls.session && <span className="tabular-nums text-xs text-dim">{cls.session}</span>}
               {/* Phones: the counts ride along on this line instead of taking a row of their own. */}
-              <span className="font-mono text-xs text-dim sm:hidden">
+              <span className="tabular-nums text-xs text-dim sm:hidden">
                 · {cls.enrollments.length} swimmers · {cls.lessons.length} lessons
               </span>
               {cls.archived && (
@@ -127,7 +127,7 @@ export default function ClassPage() {
             <h1 className="page-title max-sm:!text-[1.7rem]">{cls.name}</h1>
             {scheduleNote(cls) && <p className="mt-1 text-sm text-muted sm:mt-1.5">{scheduleNote(cls)}</p>}
           </div>
-          <dl className="flex gap-6 font-mono text-sm tabular-nums text-muted max-sm:hidden">
+          <dl className="flex gap-6 text-sm tabular-nums text-muted max-sm:hidden">
             {[
               [cls.enrollments.length, 'swimmers'],
               [cls.lessons.length, 'lessons'],

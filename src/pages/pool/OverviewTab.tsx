@@ -102,7 +102,7 @@ export function OverviewTab({ instructors, onRankings }: { instructors: Instruct
                   {item.name}
                   {item.you && <span className="ml-1.5 text-[12px] font-normal text-dim">(you)</span>}
                 </span>
-                <span className="font-mono text-[13px] font-semibold tabular-nums">{pct(score)}</span>
+                <span className="text-[13px] font-semibold tabular-nums">{pct(score)}</span>
               </li>
             ))}
           </ol>
@@ -152,7 +152,7 @@ function NeedsAttention({ rows }: { rows: Row[] }) {
                   {who.name} · {attentionNotes(cls).join(' · ') || 'Falling behind'}
                 </span>
               </span>
-              <span className="font-mono text-[13px] font-semibold tabular-nums text-warn">{pct(caughtUp(cls))}</span>
+              <span className="text-[13px] font-semibold tabular-nums text-warn">{pct(caughtUp(cls))}</span>
               <ArrowRight size={15} className="shrink-0 text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
             </Link>
           </li>
@@ -235,7 +235,7 @@ function InstructorTable({ instructors }: { instructors: InstructorProgress[] })
 }
 
 function Cell({ children }: { children: ReactNode }) {
-  return <span className="hidden font-mono text-[13px] tabular-nums text-muted md:block">{children}</span>
+  return <span className="hidden text-[13px] tabular-nums text-muted md:block">{children}</span>
 }
 
 function ClassList({ who }: { who: InstructorProgress }) {
@@ -261,7 +261,7 @@ function ClassList({ who }: { who: InstructorProgress }) {
                   </span>
                   {notes.length > 0 && status === 'behind' && <span className="text-warn">{notes.join(' · ')}</span>}
                 </span>
-                <span className="mt-1.5 block font-mono text-[12px] text-dim md:hidden">
+                <span className="mt-1.5 block tabular-nums text-[12px] text-dim md:hidden">
                   Attendance {pct(c.attendanceRate)} · Skills {pct(c.assessed)} · Reports {c.reportsDone}/{c.swimmers}
                 </span>
               </span>

@@ -183,10 +183,10 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
               onClick={() => setLessonId(l.id)}
               className={`relative flex shrink-0 flex-col items-start rounded-2xl border px-3.5 py-2 text-left transition-colors ${active ? 'border-aqua/50 bg-aqua/10' : 'border-line bg-panel hover:border-line-2'}`}
             >
-              <span className="flex items-center gap-1.5 font-mono text-[11px] text-dim">
+              <span className="flex items-center gap-1.5 tabular-nums text-[11px] text-dim">
                 L{i + 1}
                 {done && <CheckCheck size={12} className="text-good" />}
-                {l.date === isoDate() && <span className="rounded bg-aqua/20 px-1 text-[9px] font-semibold text-aqua">TODAY</span>}
+                {l.date === isoDate() && <span className="rounded bg-aqua/20 px-1 text-[10px] font-semibold text-aqua">Today</span>}
               </span>
               <span className={`text-[13px] font-medium ${active ? 'text-fg' : 'text-muted'}`}>{l.date ? formatDate(l.date, { month: 'short', day: 'numeric' }) : `Lesson ${i + 1}`}</span>
             </button>
@@ -344,8 +344,8 @@ function GridMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
             <th className="sticky left-0 z-10 min-w-44 bg-panel px-4 py-3 text-left font-medium text-muted">Swimmer</th>
             {cls.lessons.map((l, i) => (
               <th key={l.id} className={`px-1 py-2 text-center font-normal ${l.date === today ? 'bg-aqua/[0.06]' : ''}`} title={l.topic || `Lesson ${i + 1}`}>
-                <div className={`font-mono text-xs ${l.date === today ? 'text-aqua' : 'text-muted'}`}>L{i + 1}</div>
-                <div className="font-mono text-[10px] text-dim">{l.date ? formatDate(l.date, { month: 'numeric', day: 'numeric' }) : '·'}</div>
+                <div className={`tabular-nums text-xs ${l.date === today ? 'text-aqua' : 'text-muted'}`}>L{i + 1}</div>
+                <div className="tabular-nums text-[10px] text-dim">{l.date ? formatDate(l.date, { month: 'numeric', day: 'numeric' }) : '·'}</div>
                 <button
                   type="button"
                   onClick={async () => {
@@ -405,7 +405,7 @@ function GridMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
                     </td>
                   )
                 })}
-                <td className="px-4 py-2 text-right font-mono text-[13px] tabular-nums text-muted">{pct(sum.rate)}</td>
+                <td className="px-4 py-2 text-right text-[13px] tabular-nums text-muted">{pct(sum.rate)}</td>
               </tr>
             )
           })}
@@ -416,7 +416,7 @@ function GridMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
             {cls.lessons.map((l) => {
               const h = lessonHeadcount(cls, l.id)
               return (
-                <td key={l.id} className="py-2 text-center font-mono text-xs tabular-nums text-muted">
+                <td key={l.id} className="py-2 text-center text-xs tabular-nums text-muted">
                   {h.marked ? h.present + h.late : '·'}
                 </td>
               )
