@@ -70,8 +70,12 @@ export function Popover({
       const up = side === 'top' ? anchor.top >= el.offsetHeight + gap * 2 || anchor.top > below : !fitsBelow && anchor.top > below
       el.style.top = up ? '' : `${anchor.bottom + gap}px`
       el.style.bottom = up ? `${vh - anchor.top + gap}px` : ''
-      el.style.left = align === 'start' ? `${Math.max(gap, anchor.left)}px` : ''
-      el.style.right = align === 'end' ? `${Math.max(gap, document.documentElement.clientWidth / z - anchor.right)}px` : ''
+      // Kept inside the screen even when the button sits near an edge (phones).
+      const vw = document.documentElement.clientWidth / z
+      const room = Math.max(gap, vw - el.offsetWidth - gap)
+      el.style.left = align === 'start' ? `${Math.min(Math.max(gap, anchor.left), room)}px` : ''
+      el.style.right = align === 'end' ? `${Math.min(Math.max(gap, vw - anchor.right), room)}px` : ''
+      el.style.maxWidth = `${vw - gap * 2}px`
       el.style.transformOrigin = `${up ? 'bottom' : 'top'} ${align === 'end' ? 'right' : 'left'}`
     }
     place()

@@ -243,49 +243,58 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
 function DateFiller({ onFill, firstDate }: { onFill: (start: string, every: number) => void; firstDate?: string }) {
   const [start, setStart] = useState(firstDate || isoDate())
   const [every, setEvery] = useState(7)
-  return (
-    <Popover
-      label="Fill lesson dates"
-      trigger={({ toggle }) => (
-        <Button size="sm" icon={<CalendarRange size={14} />} onClick={toggle}>
-          Fill dates
-        </Button>
-      )}
+  const phone = usePhoneLayout()
+  const [open, setOpen] = useState(false)
+  const form = (close: () => void) => (
+    <form
+      className={phone ? 'space-y-4' : 'w-64 space-y-3 p-2'}
+      onSubmit={(e) => {
+        e.preventDefault()
+        onFill(start, every)
+        close()
+      }}
     >
-      {(close) => (
-        <form
-          className="w-64 space-y-3 p-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            onFill(start, every)
-            close()
-          }}
-        >
-          <div className="text-sm font-semibold">Schedule every lesson</div>
-          <label className="block">
-            <span className="mb-1 block text-xs text-muted">First lesson</span>
-            <input type="date" className="input" value={start} onChange={(e) => setStart(e.target.value)} required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs text-muted">Repeat</span>
-            <Select
-              label="Repeat"
-              value={String(every)}
-              onChange={(v) => setEvery(Number(v))}
-              options={[
-                { value: '7', label: 'Weekly' },
-                { value: '1', label: 'Daily (camps, intensives)' },
-                { value: '2', label: 'Every 2 days' },
-                { value: '3', label: 'Every 3 days' },
-                { value: '14', label: 'Every 2 weeks' },
-              ]}
-            />
-          </label>
-          <Button type="submit" variant="primary" size="sm" className="w-full">
-            Fill dates
-          </Button>
-        </form>
-      )}
+      {!phone && <div className="text-sm font-semibold">Schedule every lesson</div>}
+      <Field label="First lesson">
+        <input type="date" className="input" value={start} onChange={(e) => setStart(e.target.value)} required />
+      </Field>
+      <Field label="Repeat">
+        <Select
+          label="Repeat"
+          value={String(every)}
+          onChange={(v) => setEvery(Number(v))}
+          options={[
+            { value: '7', label: 'Weekly' },
+            { value: '1', label: 'Daily (camps, intensives)' },
+            { value: '2', label: 'Every 2 days' },
+            { value: '3', label: 'Every 3 days' },
+            { value: '14', label: 'Every 2 weeks' },
+          ]}
+        />
+      </Field>
+      <Button type="submit" variant="primary" size={phone ? 'md' : 'sm'} className="w-full">
+        Fill dates
+      </Button>
+    </form>
+  )
+  const trigger = (toggle: () => void) => (
+    <Button size="sm" icon={<CalendarRange size={14} />} onClick={toggle}>
+      Fill dates
+    </Button>
+  )
+  // A popover is too narrow for a phone, so there it's a sheet.
+  if (phone)
+    return (
+      <>
+        {trigger(() => setOpen(true))}
+        <Modal open={open} onClose={() => setOpen(false)} title="Schedule every lesson" description="Sets every lesson’s date from the first one.">
+          {form(() => setOpen(false))}
+        </Modal>
+      </>
+    )
+  return (
+    <Popover label="Fill lesson dates" trigger={({ toggle }) => trigger(toggle)}>
+      {(close) => form(close)}
     </Popover>
   )
 }
