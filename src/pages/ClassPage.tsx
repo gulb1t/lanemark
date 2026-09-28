@@ -39,7 +39,7 @@ const CLASS_TOUR: TourStep[] = [
   {
     target: '[data-tour=tab-attendance]',
     title: 'Attendance',
-    body: 'Open this when a lesson starts. Tap Present, Late or Absent for each swimmer, or Mark the rest present.',
+    body: 'Open this when a lesson starts. Tap a swimmer’s button once for present, twice for late, three times for absent. Or mark the rest present.',
   },
   { target: '[data-tour=tab-skills]', title: 'Skills', body: 'Check off skills for the whole class in one grid, or one swimmer at a time.' },
   { target: '[data-tour=tab-reports]', title: 'Report cards', body: 'At the end of the session, write and print the cards here, one swimmer at a time.' },

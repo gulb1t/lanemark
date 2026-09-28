@@ -89,7 +89,7 @@ export const GUIDE: GuideSection[] = [
         shot: 'attendance',
         steps: [
           'On the home screen, press **Take attendance** on today’s class. (Or open the class and go to the **Attendance** tab.)',
-          'Tap **Present**, **Late** or **Absent** for each swimmer.',
+          'Tap each swimmer’s button: once for **Present**, twice for **Late**, three times for **Absent** (a fourth tap clears it).',
           'Everyone else is here? Press **Mark the rest present**.',
           'When everyone is marked you’ll see **attendance done**, with a shortcut to check skills.',
         ],

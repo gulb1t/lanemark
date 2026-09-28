@@ -88,7 +88,7 @@ On deck, with wet hands. Big buttons, and it works without Wi-Fi.
 _A few taps at the start of each lesson._
 
 1. On the home screen, press **Take attendance** on today’s class. (Or open the class and go to the **Attendance** tab.)
-2. Tap **Present**, **Late** or **Absent** for each swimmer.
+2. Tap each swimmer’s button: once for **Present**, twice for **Late**, three times for **Absent** (a fourth tap clears it).
 3. Everyone else is here? Press **Mark the rest present**.
 4. When everyone is marked you’ll see **attendance done**, with a shortcut to check skills.
 
