@@ -4,6 +4,8 @@ import {
   BadgeCheck,
   Building2,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Copy,
   Database,
   Download,
@@ -30,7 +32,7 @@ import { Modal } from '../components/ui/Modal'
 import { PasswordInput, StrengthMeter } from '../components/ui/PasswordInput'
 import { Field, Spinner, Switch } from '../components/ui/bits'
 import { api, errorMessage, type User } from '../lib/api'
-import { timeAgo, useNow } from '../lib/hooks'
+import { timeAgo, useNow, usePhoneLayout } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
 import { usePool } from '../store/usePool'
@@ -48,21 +50,83 @@ type Section = 'phone' | 'account' | 'security' | 'devices' | 'data' | 'appearan
 export default function SettingsPage() {
   const status = useSession((s) => s.status)
   const demo = status === 'demo'
+  const phone = usePhoneLayout()
   const [params, setParams] = useSearchParams()
-  const sections: { id: Section; label: string; icon: ReactNode }[] = [
-    ...(IS_APP && !demo ? ([{ id: 'phone', label: 'This phone', icon: <Smartphone size={16} /> }] as const) : []),
+  const sections: { id: Section; label: string; hint: string; icon: ReactNode }[] = [
+    ...(IS_APP && !demo ? ([{ id: 'phone', label: 'This phone', hint: 'Fingerprint unlock, screen on deck', icon: <Smartphone size={16} /> }] as const) : []),
     ...(!demo
       ? ([
-          { id: 'account', label: 'Account', icon: <UserRound size={16} /> },
-          { id: 'security', label: 'Security', icon: <ShieldCheck size={16} /> },
-          { id: 'devices', label: 'Devices', icon: <Laptop size={16} /> },
+          { id: 'account', label: 'Account', hint: 'Name, email, password, pool', icon: <UserRound size={16} /> },
+          { id: 'security', label: 'Security', hint: 'Two-step sign-in, recovery codes', icon: <ShieldCheck size={16} /> },
+          { id: 'devices', label: 'Devices', hint: 'Where you’re signed in', icon: <Laptop size={16} /> },
         ] as const)
       : []),
-    { id: 'data', label: 'Data', icon: <Database size={16} /> },
-    { id: 'appearance', label: 'Appearance', icon: <Palette size={16} /> },
+    { id: 'data', label: 'Data', hint: 'Sync, backup, erase', icon: <Database size={16} /> },
+    { id: 'appearance', label: 'Appearance', hint: 'Light or dark', icon: <Palette size={16} /> },
   ]
   const requested = params.get('s') as Section | null
-  const section = sections.find((s) => s.id === requested)?.id ?? sections[0].id
+  const found = sections.find((s) => s.id === requested)
+  // Phones get a list to tap into (the back button returns to it); wider screens show a section straight away.
+  const section = found?.id ?? (phone ? null : sections[0].id)
+  const open = (id: Section) => setParams({ s: id }, { replace: !phone })
+
+  const demoCard = demo && (
+    <div className="card flex flex-wrap items-center gap-4 border-aqua/30 p-5">
+      {/* basis-64 lets the button drop below the text on phones instead of squeezing it into a narrow column. */}
+      <div className="flex-1 basis-64">
+        <div className="font-semibold">You’re using the demo</div>
+        <p className="mt-0.5 text-sm text-muted">Create an account to sync across devices, turn on two-factor sign-in and keep your data safe.</p>
+      </div>
+      <ButtonLink to="/signup" variant="primary">
+        Create free account
+      </ButtonLink>
+    </div>
+  )
+
+  const content = section && (
+    <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="min-w-0 space-y-5">
+      {section === 'phone' && <PhoneSection />}
+      {section === 'account' && <AccountSection />}
+      {section === 'security' && <SecuritySection />}
+      {section === 'devices' && <DevicesSection />}
+      {section === 'data' && <DataSection />}
+      {section === 'appearance' && <AppearanceSection />}
+    </motion.div>
+  )
+
+  if (phone) {
+    const current = sections.find((s) => s.id === section)
+    if (current)
+      return (
+        <div className="space-y-6">
+          <div>
+            <button type="button" onClick={() => (history.state?.idx > 0 ? history.back() : setParams({}, { replace: true }))} className="-ml-1 mb-3 inline-flex items-center gap-1 text-[14px] font-medium text-muted hover:text-fg">
+              <ChevronLeft size={18} /> Settings
+            </button>
+            <h1 className="page-title">{current.label}</h1>
+          </div>
+          {content}
+        </div>
+      )
+    return (
+      <div className="space-y-6">
+        <h1 className="page-title">Settings</h1>
+        {demoCard}
+        <nav className="card divide-y divide-line overflow-hidden" aria-label="Settings sections">
+          {sections.map((s) => (
+            <button key={s.id} type="button" onClick={() => open(s.id)} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors active:bg-fg/[0.05]">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-aqua/10 text-aqua">{s.icon}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-medium">{s.label}</span>
+                <span className="block truncate text-[13px] text-muted">{s.hint}</span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-dim" />
+            </button>
+          ))}
+        </nav>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
@@ -71,18 +135,7 @@ export default function SettingsPage() {
         <h1 className="page-title">Your account</h1>
       </div>
 
-      {demo && (
-        <div className="card flex flex-wrap items-center gap-4 border-aqua/30 p-5">
-          {/* basis-64 lets the button drop below the text on phones instead of squeezing it into a narrow column. */}
-          <div className="flex-1 basis-64">
-            <div className="font-semibold">You’re using the demo</div>
-            <p className="mt-0.5 text-sm text-muted">Create an account to sync across devices, turn on two-factor sign-in and keep your data safe.</p>
-          </div>
-          <ButtonLink to="/signup" variant="primary">
-            Create free account
-          </ButtonLink>
-        </div>
-      )}
+      {demoCard}
 
       <div className="grid gap-6 lg:grid-cols-[13rem_1fr]">
         <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 no-scrollbar lg:mx-0 lg:flex-col lg:px-0" aria-label="Settings sections">
@@ -92,7 +145,7 @@ export default function SettingsPage() {
               <button
                 key={s.id}
                 type="button"
-                onClick={() => setParams({ s: s.id }, { replace: true })}
+                onClick={() => open(s.id)}
                 className={`relative flex shrink-0 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-[14px] font-medium transition-colors ${active ? 'text-fg' : 'text-muted hover:text-fg'}`}
               >
                 {active && <motion.span layoutId="settings-nav" className="absolute inset-0 rounded-xl bg-fg/[0.07] shadow-[inset_0_0_0_1px_var(--color-line)]" transition={{ type: 'spring', stiffness: 480, damping: 38 }} />}
@@ -103,14 +156,7 @@ export default function SettingsPage() {
           })}
         </nav>
 
-        <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="min-w-0 space-y-5">
-          {section === 'phone' && <PhoneSection />}
-          {section === 'account' && <AccountSection />}
-          {section === 'security' && <SecuritySection />}
-          {section === 'devices' && <DevicesSection />}
-          {section === 'data' && <DataSection />}
-          {section === 'appearance' && <AppearanceSection />}
-        </motion.div>
+        {content}
       </div>
     </div>
   )
@@ -1009,7 +1055,7 @@ function DataSection() {
           ].map(([label, value]) => (
             <div key={label} className="rounded-2xl border border-line bg-ink/40 p-3 last:max-sm:col-span-2 sm:p-4">
               <div className="eyebrow">{label}</div>
-              <div className="mt-1 font-mono text-lg font-semibold sm:text-xl">{value}</div>
+              <div className="mt-1 font-display text-lg font-semibold tabular-nums sm:text-xl">{value}</div>
             </div>
           ))}
         </div>
