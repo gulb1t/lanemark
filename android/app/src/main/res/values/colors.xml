@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app's dark page colour (the ink colour in index.css), so the splash hands over to the app without a flash. -->
+    <color name="splash_background">#FF060709</color>
+    <color name="colorPrimary">#FF060709</color>
+    <color name="colorPrimaryDark">#FF060709</color>
+    <color name="colorAccent">#FF3CE0CF</color>
+</resources>
