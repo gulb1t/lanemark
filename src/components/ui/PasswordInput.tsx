@@ -39,10 +39,12 @@ export function StrengthMeter({ password }: { password: string }) {
           </div>
         ))}
       </div>
-      <div className="mt-1.5 flex justify-between text-xs">
-        <span style={{ color: password ? COLORS[score] : 'var(--color-dim)' }}>{password ? LABELS[score] : 'At least 10 characters'}</span>
-        <span className="text-dim">A few random words works great.</span>
-      </div>
+      <p className="mt-1.5 text-[12.5px] leading-snug text-dim">
+        <span className="font-medium" style={{ color: password ? COLORS[score] : undefined }}>
+          {password ? LABELS[score] : 'At least 10 characters'}
+        </span>
+        {' · '}A few random words work great.
+      </p>
     </div>
   )
 }

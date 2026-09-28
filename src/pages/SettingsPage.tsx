@@ -537,6 +537,29 @@ function ResetLink() {
 }
 
 function PasswordPanel({ user }: { user: User }) {
+  const phone = usePhoneLayout()
+  const [open, setOpen] = useState(false)
+  return (
+    <Panel title="Password" description="Changing your password signs out every other device.">
+      {/* On a phone the form gets its own sheet instead of three more boxes on an already long page. */}
+      {phone ? (
+        <>
+          <Button icon={<KeyRound size={15} />} className="w-full" onClick={() => setOpen(true)}>
+            Change password
+          </Button>
+          <Modal open={open} onClose={() => setOpen(false)} title="Change password" description="Other devices will be signed out.">
+            <PasswordForm user={user} onDone={() => setOpen(false)} />
+          </Modal>
+        </>
+      ) : (
+        <PasswordForm user={user} />
+      )}
+      <ResetLink />
+    </Panel>
+  )
+}
+
+function PasswordForm({ user, onDone }: { user: User; onDone?: () => void }) {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [code, setCode] = useState('')
@@ -553,6 +576,7 @@ function PasswordPanel({ user }: { user: User }) {
       setCurrent('')
       setNext('')
       setCode('')
+      onDone?.()
     } catch (err) {
       toast(errorMessage(err), 'error')
     } finally {
@@ -561,28 +585,23 @@ function PasswordPanel({ user }: { user: User }) {
   }
 
   return (
-    <Panel title="Password" description="Changing your password signs out every other device.">
-      <form onSubmit={submit} className="grid max-w-md gap-4">
-        <Field label="Current password">
-          <PasswordInput autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+    <form onSubmit={submit} className="grid max-w-md gap-4">
+      <Field label="Current password">
+        <PasswordInput autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+      </Field>
+      <Field label="New password" error={problem}>
+        <PasswordInput autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} maxLength={200} />
+        <StrengthMeter password={next} />
+      </Field>
+      {user.twoFactor && (
+        <Field label="Authenticator code">
+          <CodeInput value={code} onChange={setCode} />
         </Field>
-        <Field label="New password" error={problem}>
-          <PasswordInput autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} maxLength={200} />
-          <StrengthMeter password={next} />
-        </Field>
-        {user.twoFactor && (
-          <Field label="Authenticator code">
-            <CodeInput value={code} onChange={setCode} />
-          </Field>
-        )}
-        <div>
-          <Button type="submit" variant="primary" loading={busy} disabled={!current || !next || Boolean(problem) || (user.twoFactor && code.length !== 6)}>
-            Change password
-          </Button>
-        </div>
-      </form>
-      <ResetLink />
-    </Panel>
+      )}
+      <Button type="submit" variant="primary" className="max-sm:w-full sm:w-fit" loading={busy} disabled={!current || !next || Boolean(problem) || (user.twoFactor && code.length !== 6)}>
+        Change password
+      </Button>
+    </form>
   )
 }
 
@@ -732,7 +751,7 @@ function TwoFactorPanel({ user }: { user: User }) {
         <span className={`flex size-11 items-center justify-center rounded-xl border ${user.twoFactor ? 'border-good/30 bg-good/10 text-good' : 'border-line-2 bg-panel-2 text-dim'}`}>
           <ShieldCheck size={20} />
         </span>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1 basis-48">
           <div className="font-semibold">{user.twoFactor ? 'On' : 'Off'}</div>
           <div className="text-[13px] text-muted">
             {user.twoFactor ? `${user.recoveryCodesLeft} recovery code${user.recoveryCodesLeft === 1 ? '' : 's'} left` : 'Your account is protected by your password only.'}
@@ -749,7 +768,7 @@ function TwoFactorPanel({ user }: { user: User }) {
               </Button>
             </div>
           ) : (
-            <Button variant="primary" size="sm" onClick={() => setStep('password')}>
+            <Button variant="primary" size="sm" className="max-sm:w-full" onClick={() => setStep('password')}>
               Turn on
             </Button>
           ))}
@@ -795,32 +814,7 @@ function TwoFactorPanel({ user }: { user: User }) {
                 </form>
               )}
 
-              {step === 'scan' && setup && (
-                <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
-                  <motion.div initial={{ scale: 0.9, opacity: 0, rotate: -2 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} className="w-fit self-start rounded-2xl bg-white p-3 shadow-[var(--glow)]">
-                    <img src={`data:image/svg+xml;utf8,${encodeURIComponent(setup.qrSvg)}`} alt="QR code for your authenticator app" width={176} height={176} />
-                  </motion.div>
-                  <div className="space-y-4">
-                    <ol className="list-decimal space-y-1.5 pl-4 text-[13.5px] text-muted">
-                      <li>Open your authenticator app and scan the code.</li>
-                      <li>Can’t scan? Enter this key manually:</li>
-                    </ol>
-                    <CopyValue value={setup.secret.match(/.{1,4}/g)!.join(' ')} raw={setup.secret} />
-                    <div>
-                      <div className="mb-2 text-[13px] font-medium text-muted">3. Enter the 6-digit code it shows</div>
-                      <CodeInput value={code} onChange={setCode} onComplete={(v) => void enable(v)} disabled={busy} error={Boolean(error)} autoFocus />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="primary" loading={busy} disabled={code.length !== 6} onClick={() => void enable()}>
-                        Verify and turn on
-                      </Button>
-                      <Button variant="ghost" onClick={reset}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {step === 'scan' && setup && <ScanStep setup={setup} code={code} setCode={setCode} busy={busy} error={Boolean(error)} onEnable={(v) => void enable(v)} onCancel={reset} />}
 
               {step === 'codes' && <RecoveryCodes codes={codes} onDone={reset} />}
 
@@ -856,6 +850,71 @@ function TwoFactorPanel({ user }: { user: User }) {
   )
 }
 
+/** A numbered step in a short how-to. */
+function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <div className="mb-2 flex items-center gap-2 text-[14px] font-medium">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-aqua/15 text-[12px] font-semibold text-aqua">{n}</span>
+        {title}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Adding SwimTrack to an authenticator app. On a computer, scanning the QR code with a phone is quickest; on the phone
+ * itself there's nothing to scan with, so the app opens the authenticator directly (or the key is copied in).
+ */
+function ScanStep({ setup, code, setCode, busy, error, onEnable, onCancel }: { setup: Setup; code: string; setCode: (v: string) => void; busy: boolean; error: boolean; onEnable: (v?: string) => void; onCancel: () => void }) {
+  const phone = usePhoneLayout()
+  const [showQr, setShowQr] = useState(false)
+  const qr = (
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-fit rounded-2xl bg-white p-3 shadow-[var(--glow)]">
+      <img src={`data:image/svg+xml;utf8,${encodeURIComponent(setup.qrSvg)}`} alt="QR code for your authenticator app" width={phone ? 160 : 176} height={phone ? 160 : 176} />
+    </motion.div>
+  )
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
+      {!phone && qr}
+      <div className="min-w-0 space-y-5">
+        {phone ? (
+          <Step n={1} title="Add SwimTrack to your authenticator app">
+            <a href={setup.otpauthUrl} className="btn-glass flex h-11 w-full items-center justify-center gap-2 rounded-full text-[14px] font-medium">
+              <KeyRound size={15} /> Open authenticator app
+            </a>
+            <p className="mt-3 text-[13px] text-muted">Nothing happened? Copy this key into the app instead:</p>
+            <div className="mt-2">
+              <CopyValue value={setup.secret.match(/.{1,4}/g)!.join(' ')} raw={setup.secret} />
+            </div>
+            <button type="button" onClick={() => setShowQr((v) => !v)} className="mt-3 text-[13px] font-medium text-muted underline underline-offset-4 hover:text-fg">
+              {showQr ? 'Hide the QR code' : 'Authenticator on another device? Show a QR code'}
+            </button>
+            {showQr && <div className="mt-3">{qr}</div>}
+          </Step>
+        ) : (
+          <Step n={1} title="Scan the code with your authenticator app">
+            <p className="mb-2 text-[13px] text-muted">Can’t scan? Enter this key instead:</p>
+            <CopyValue value={setup.secret.match(/.{1,4}/g)!.join(' ')} raw={setup.secret} />
+          </Step>
+        )}
+        <Step n={2} title="Enter the 6-digit code it shows">
+          <CodeInput value={code} onChange={setCode} onComplete={(v) => onEnable(v)} disabled={busy} error={error} autoFocus={!phone} />
+        </Step>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary" loading={busy} disabled={code.length !== 6} onClick={() => onEnable()}>
+            Verify and turn on
+          </Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CopyValue({ value, raw }: { value: string; raw: string }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -867,10 +926,14 @@ function CopyValue({ value, raw }: { value: string; raw: string }) {
           setTimeout(() => setCopied(false), 1500)
         })
       }}
-      className="flex w-full items-center justify-between gap-3 rounded-xl border border-line-2 bg-ink/50 px-3.5 py-2.5 text-left font-mono text-[13px] tracking-wider transition-colors hover:border-aqua/40"
+      aria-label="Copy the key"
+      className="flex w-full min-w-0 items-center gap-3 rounded-xl border border-line-2 bg-ink/50 py-2.5 pl-3.5 pr-2.5 text-left transition-colors hover:border-aqua/40"
     >
-      <span className="break-all">{value}</span>
-      {copied ? <Check size={15} className="shrink-0 text-good" /> : <Copy size={15} className="shrink-0 text-dim" />}
+      <span className="min-w-0 flex-1 break-all font-mono text-[13px] leading-relaxed tracking-wider">{value}</span>
+      <span className={`flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] font-medium ${copied ? 'bg-good/15 text-good' : 'bg-fg/[0.06] text-muted'}`}>
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+        {copied ? 'Copied' : 'Copy'}
+      </span>
     </button>
   )
 }

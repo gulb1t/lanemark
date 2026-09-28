@@ -62,11 +62,11 @@ export function CodeInput({
   }
 
   return (
-    <motion.div className="flex max-w-[22rem] justify-between gap-2" animate={error ? { x: [0, -10, 10, -7, 7, -3, 0] } : { x: 0 }} transition={{ duration: 0.45 }}>
+    <motion.div className="flex w-full max-w-[22rem] justify-between gap-1.5 sm:gap-2" animate={error ? { x: [0, -10, 10, -7, 7, -3, 0] } : { x: 0 }} transition={{ duration: 0.45 }}>
       {digits.map((d, i) => {
         const filled = d.trim() !== ''
         return (
-          <div key={i} className={`relative ${i === 3 ? 'ml-3' : ''}`}>
+          <div key={i} className={`relative min-w-0 max-w-12 flex-1 ${i === 3 ? 'ml-2 sm:ml-3' : ''}`}>
             <input
               ref={(el) => {
                 refs.current[i] = el
@@ -83,7 +83,7 @@ export function CodeInput({
               aria-label={`Digit ${i + 1}`}
               aria-invalid={error || undefined}
               maxLength={6}
-              className={`h-14 w-11 rounded-xl border bg-ink text-center font-mono text-2xl font-semibold text-fg outline-none transition-[border-color,box-shadow,transform] focus:border-aqua/70 focus:shadow-[0_0_0_4px_rgb(var(--accent-rgb)/0.14)] sm:w-12 ${error ? 'border-bad/60' : filled ? 'border-aqua/40' : 'border-line-2'}`}
+              className={`h-14 w-full rounded-xl border bg-ink text-center font-mono text-2xl font-semibold text-fg outline-none transition-[border-color,box-shadow,transform] focus:border-aqua/70 focus:shadow-[0_0_0_4px_rgb(var(--accent-rgb)/0.14)] ${error ? 'border-bad/60' : filled ? 'border-aqua/40' : 'border-line-2'}`}
             />
             {filled && (
               <motion.span
