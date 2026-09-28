@@ -1,0 +1,38 @@
+{
+  "dashboard": {
+    "width": 1152,
+    "height": 740
+  },
+  "new-class": {
+    "width": 712,
+    "height": 732
+  },
+  "add-swimmers": {
+    "width": 552,
+    "height": 693
+  },
+  "attendance": {
+    "width": 1120,
+    "height": 640
+  },
+  "skills": {
+    "width": 1120,
+    "height": 600
+  },
+  "lessons": {
+    "width": 1120,
+    "height": 480
+  },
+  "report-card": {
+    "width": 736,
+    "height": 575
+  },
+  "preview": {
+    "width": 936,
+    "height": 760
+  },
+  "pool": {
+    "width": 1152,
+    "height": 880
+  }
+}
