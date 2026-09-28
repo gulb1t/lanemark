@@ -106,7 +106,7 @@ export default function ClassPage() {
         </div>
       </div>
 
-      <div className="no-print sticky top-[4.5rem] z-20 -mx-4 bg-ink/70 px-4 backdrop-blur-xl sm:top-[5.25rem] sm:mx-0 sm:rounded-2xl sm:border sm:border-line sm:bg-panel/70 sm:px-1.5">
+      <div className="no-print sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-4 border-b border-line bg-ink/90 px-4 backdrop-blur-xl md:top-[5.25rem] sm:mx-0 sm:rounded-2xl sm:border sm:border-line sm:bg-panel/70 sm:px-1.5">
         <div
           ref={strip}
           role="tablist"
@@ -122,7 +122,7 @@ export default function ClassPage() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setParams(id === 'roster' ? {} : { tab: id }, { replace: true })}
-                className={`relative flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-[13.5px] font-medium transition-colors ${active ? 'text-fg' : 'text-muted hover:text-fg'}`}
+                className={`relative flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-medium transition-colors sm:px-3.5 sm:text-[13.5px] ${active ? 'text-fg' : 'text-muted hover:text-fg'}`}
               >
                 {active && (
                   <motion.span
@@ -132,7 +132,7 @@ export default function ClassPage() {
                     transition={{ type: 'spring', stiffness: 480, damping: 38 }}
                   />
                 )}
-                <Icon size={15} className="relative" style={active ? { color: hue } : undefined} />
+                <Icon size={15} className="relative max-sm:hidden" style={active ? { color: hue } : undefined} />
                 <span className="relative">{label}</span>
               </button>
             )

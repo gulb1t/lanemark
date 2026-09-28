@@ -239,7 +239,7 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
             <LevelChip level={level} />
             Lesson {lessonIndex + 1} of {cls.lessons.length}
           </div>
-          <h3 className="mt-2 truncate font-display text-[1.35rem] font-bold leading-tight tracking-tight">{cls.name}</h3>
+          <h3 className="mt-2 line-clamp-2 font-display text-[1.35rem] font-bold leading-tight tracking-tight">{cls.name}</h3>
           <p className="mt-1 truncate text-[14px] text-muted">{lesson.topic || 'No topic planned'}</p>
         </div>
         <Link

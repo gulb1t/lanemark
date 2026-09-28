@@ -243,9 +243,14 @@ dialog::backdrop {
     background-color: var(--color-panel);
     background-image: linear-gradient(180deg, color-mix(in oklab, var(--color-fg) 2.2%, transparent), transparent 42%);
     border: 1px solid var(--color-line);
-    border-radius: 1.5rem;
+    border-radius: 1.25rem;
     box-shadow: var(--card-shadow);
     transition: border-color 0.2s, background-color 0.2s, box-shadow 0.25s;
+  }
+  @media (min-width: 640px) {
+    .card {
+      border-radius: 1.5rem;
+    }
   }
   [data-theme="light"] .card {
     background-image: none;

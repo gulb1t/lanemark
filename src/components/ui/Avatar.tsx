@@ -36,7 +36,8 @@ export function Avatar({ name, photo, size = 40, className = '' }: Props) {
       }}
       className={`inline-flex shrink-0 select-none items-center justify-center rounded-full border border-fg/10 font-semibold text-white/95 ${className}`}
     >
-      {initials(name)}
+      {/* Small ones sit overlapped in rows, where two letters would run under the next circle. */}
+      {size <= 30 ? initials(name).slice(0, 1) : initials(name)}
     </span>
   )
 }
