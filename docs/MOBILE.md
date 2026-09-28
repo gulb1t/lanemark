@@ -24,7 +24,13 @@ script also finds them in `~/Android/jdk-21` and the usual SDK folders.
 - **By file:** send `app-debug.apk` to the phone (Drive, email, cable) and open it. Android asks once to allow installs
   from that app.
 
-The test APK and the release APK are signed with different keys. To switch from one to the other, uninstall first.
+Every test APK is signed with the same shared test key (`android/app/debug.keystore`), wherever it's built, so a new
+one installs over the last. The release APK uses your own key: to switch between the two, uninstall first.
+
+### Without Android Studio
+
+Every push that changes `SwimTrack/` builds the test APK on GitHub (the **SwimTrack Android** workflow). Open the run
+under the repo's **Actions** tab and download `swimtrack-test-apk` at the bottom: it's a zip with the APK inside.
 
 ## What's in it
 

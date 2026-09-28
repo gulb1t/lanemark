@@ -55,6 +55,8 @@ captures/
 # Keystore files: the app's signing key and its passwords stay on your computer (back them up!)
 *.jks
 *.keystore
+# The shared test key (standard debug password "android"), so test builds install over each other.
+!app/debug.keystore
 keystore.properties
 
 # External native build folder generated in Android Studio 2.2 and later
