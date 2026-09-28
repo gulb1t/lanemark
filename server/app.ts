@@ -57,6 +57,14 @@ const MAX_DOCS_PER_USER = 5000
 const VERIFY_TTL = DAY
 const RESET_TTL = 30 * MINUTE
 
+/**
+ * The phone app sends `X-SwimTrack-Client: android` (or `ios`) on every request and signs in with a bearer token
+ * instead of cookies: sign-in answers carry the token, and the app keeps it in the phone's secure storage. Its pages
+ * are served from these origins inside the app, so the API answers them over CORS (never with credentials).
+ */
+const CLIENT_HEADER = 'x-swimtrack-client'
+const APP_ORIGINS = new Set(['https://localhost', 'capacitor://localhost'])
+
 type Vars = { user: UserRecord; session: SessionRecord }
 type Env = { Bindings: HttpBindings; Variables: Vars }
 type Ctx = Context<Env>
@@ -151,7 +159,15 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   /** No Max-Age: the browser drops it when it closes. */
   const browserCookie = { httpOnly: true, secure, sameSite: 'Lax', path: '/' } as const
 
-  async function startSession(c: Ctx, user: UserRecord, persistent = true) {
+  /** A request from the phone app (see CLIENT_HEADER). These never use cookies, in either direction. */
+  const isApp = (c: Ctx) => /^(android|ios)$/.test(c.req.header(CLIENT_HEADER) ?? '')
+  /** The session token: the bearer token from the app, the cookie from a browser. */
+  const sessionToken = (c: Ctx) => (isApp(c) ? c.req.header('authorization')?.match(/^Bearer ([\w-]{20,100})$/)?.[1] : getCookie(c, SESSION_COOKIE))
+  /** What a sign-in answer adds for the app: the token it keeps. Browsers get a cookie instead. */
+  const issued = (c: Ctx, token: string) => (isApp(c) ? { token } : {})
+
+  /** Starts a session and returns its token (also set as the cookie for browsers). */
+  async function startSession(c: Ctx, user: UserRecord, persistent = true): Promise<string> {
     const token = randomToken()
     const t = now()
     await repo.createSession({
@@ -167,11 +183,12 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       attempts: 0,
       persistent,
     })
-    setCookie(c, SESSION_COOKIE, token, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
+    if (!isApp(c)) setCookie(c, SESSION_COOKIE, token, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
+    return token
   }
 
-  /** Remembers this device for 30 days so sign-ins here skip the authenticator code. */
-  async function trustDevice(c: Ctx, user: UserRecord) {
+  /** Remembers this device for 30 days so sign-ins here skip the authenticator code. Returns the mark's token. */
+  async function trustDevice(c: Ctx, user: UserRecord): Promise<string> {
     const token = randomToken()
     const t = now()
     await repo.createSession({
@@ -186,13 +203,14 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       expiresAt: t + TRUST_TTL,
       attempts: 0,
     })
-    setCookie(c, TRUST_COOKIE, token, cookieOpts(TRUST_TTL))
+    if (!isApp(c)) setCookie(c, TRUST_COOKIE, token, cookieOpts(TRUST_TTL))
+    return token
   }
 
-  /** True when this browser carries a live trusted-device mark for this user. */
-  async function isTrusted(c: Ctx, user: UserRecord) {
+  /** True when this browser (or the app, which sends the mark in the body) carries a live trusted-device mark. */
+  async function isTrusted(c: Ctx, user: UserRecord, appMark?: string) {
     if (user.trustDevices === false) return false
-    const token = getCookie(c, TRUST_COOKIE)
+    const token = isApp(c) ? appMark : getCookie(c, TRUST_COOKIE)
     if (!token) return false
     const rec = await repo.getSessionByTokenHash(sha256(token))
     return Boolean(rec && rec.kind === 'trusted' && rec.userId === user.id && rec.expiresAt > now())
@@ -293,17 +311,33 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   app.use('/api/*', async (c, next) => {
     c.header('Cache-Control', 'no-store')
     const method = c.req.method
+    // The phone app's pages live on their own origin inside the app. It may call the API, without credentials:
+    // it authenticates with a bearer token, so a page there without the token can't do anything a stranger can't.
+    const origin = c.req.header('origin')
+    if (origin && APP_ORIGINS.has(origin)) {
+      c.header('Access-Control-Allow-Origin', origin)
+      c.header('Vary', 'Origin')
+      if (method === 'OPTIONS') {
+        c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
+        c.header('Access-Control-Allow-Headers', `accept, authorization, content-type, ${CLIENT_HEADER}`)
+        c.header('Access-Control-Max-Age', '600')
+        return c.body(null, 204)
+      }
+    }
     if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
       // CSRF: state-changing requests must come from our own origin and carry JSON (which forces a CORS preflight).
-      const origin = c.req.header('origin')
-      const host = c.req.header('host')
-      let sameOrigin = false
-      try {
-        sameOrigin = Boolean(origin && host && new URL(origin).host === host)
-      } catch {
-        /* malformed origin */
+      // The app's requests don't use cookies, so there is nothing for another site to ride on; its custom header
+      // can't be sent cross-site without a preflight, which only the app's own origins pass.
+      if (!isApp(c)) {
+        const host = c.req.header('host')
+        let sameOrigin = false
+        try {
+          sameOrigin = Boolean(origin && host && new URL(origin).host === host)
+        } catch {
+          /* malformed origin */
+        }
+        if (!origin || !(sameOrigin || allowedOrigin(origin))) return fail(c, 403, 'bad_origin', 'Request blocked.')
       }
-      if (!origin || !(sameOrigin || allowedOrigin(origin))) return fail(c, 403, 'bad_origin', 'Request blocked.')
       if (!c.req.header('content-type')?.startsWith('application/json')) return fail(c, 415, 'bad_type', 'Send JSON.')
     }
     await next()
@@ -313,12 +347,12 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   /** Loads the signed-in user, sliding the session's expiry forward at most once an hour. */
   const requireUser: MiddlewareHandler<Env> = async (c, next) => {
-    const token = getCookie(c, SESSION_COOKIE)
+    const token = sessionToken(c)
     const session = token ? await repo.getSessionByTokenHash(sha256(token)) : null
     const t = now()
     if (!session || session.kind !== 'session' || session.expiresAt <= t) {
       if (session) await repo.deleteSession(session.id)
-      if (token) deleteCookie(c, SESSION_COOKIE, { path: '/', secure })
+      if (token && !isApp(c)) deleteCookie(c, SESSION_COOKIE, { path: '/', secure })
       return fail(c, 401, 'unauthenticated', 'Please sign in.')
     }
     const user = await repo.getUserById(session.userId)
@@ -331,7 +365,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       session.lastSeenAt = t
       session.expiresAt = t + (persistent ? SESSION_TTL : SHORT_TTL)
       await repo.updateSession(session.id, { lastSeenAt: t, expiresAt: session.expiresAt })
-      setCookie(c, SESSION_COOKIE, token!, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
+      if (!isApp(c)) setCookie(c, SESSION_COOKIE, token!, persistent ? cookieOpts(SESSION_TTL) : browserCookie)
     }
     c.set('user', user)
     c.set('session', session)
@@ -369,8 +403,8 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       throw err
     }
     await sendVerification(user)
-    await startSession(c, user)
-    return c.json({ user: publicUser(user) }, 201)
+    const token = await startSession(c, user)
+    return c.json({ user: publicUser(user), ...issued(c, token) }, 201)
   })
 
   app.post('/api/auth/login', async (c) => {
@@ -387,7 +421,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     limiter.reset(`login:acct:${data.email}`)
     const persistent = data.remember !== false
 
-    if (user.totpSecretEnc && !(await isTrusted(c, user))) {
+    if (user.totpSecretEnc && !(await isTrusted(c, user, data.trustToken))) {
       const token = randomToken()
       const t = now()
       await repo.createSession({
@@ -403,11 +437,12 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
         attempts: 0,
         persistent,
       })
-      setCookie(c, MFA_COOKIE, token, cookieOpts(MFA_TTL))
-      return c.json({ twoFactor: true, trustAllowed: user.trustDevices !== false })
+      // The app holds the ticket itself and sends it back with the code.
+      if (!isApp(c)) setCookie(c, MFA_COOKIE, token, cookieOpts(MFA_TTL))
+      return c.json({ twoFactor: true, trustAllowed: user.trustDevices !== false, ...(isApp(c) ? { ticket: token } : {}) })
     }
-    await startSession(c, user, persistent)
-    return c.json({ user: publicUser(user), trustedDevice: Boolean(user.totpSecretEnc) })
+    const token = await startSession(c, user, persistent)
+    return c.json({ user: publicUser(user), trustedDevice: Boolean(user.totpSecretEnc), ...issued(c, token) })
   })
 
   app.post('/api/auth/login/verify', async (c) => {
@@ -415,10 +450,10 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     if (data instanceof Response) return data
     const wait = limiter.hit([[`mfa:ip:${clientIp(c)}`, 30, 15 * MINUTE]])
     if (wait) return tooMany(c, wait)
-    const token = getCookie(c, MFA_COOKIE)
+    const token = isApp(c) ? data.ticket : getCookie(c, MFA_COOKIE)
     const ticket = token ? await repo.getSessionByTokenHash(sha256(token)) : null
     const expired = () => {
-      deleteCookie(c, MFA_COOKIE, { path: '/', secure })
+      if (!isApp(c)) deleteCookie(c, MFA_COOKIE, { path: '/', secure })
       return fail(c, 401, 'mfa_expired', 'Your sign-in timed out. Enter your password again.')
     }
     if (!ticket || ticket.kind !== 'mfa' || ticket.expiresAt <= now()) {
@@ -439,11 +474,16 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       return fail(c, 401, 'invalid_code', 'That code isn’t valid. Codes change every 30 seconds.')
     }
     await repo.deleteSession(ticket.id)
-    deleteCookie(c, MFA_COOKIE, { path: '/', secure })
-    await startSession(c, user, ticket.persistent !== false)
-    if (data.trust && user.trustDevices !== false) await trustDevice(c, user)
+    if (!isApp(c)) deleteCookie(c, MFA_COOKIE, { path: '/', secure })
+    const session = await startSession(c, user, ticket.persistent !== false)
+    const mark = data.trust && user.trustDevices !== false ? await trustDevice(c, user) : null
     const fresh = (await repo.getUserById(user.id))!
-    return c.json({ user: publicUser(fresh), usedRecoveryCode: method === 'recovery' })
+    return c.json({
+      user: publicUser(fresh),
+      usedRecoveryCode: method === 'recovery',
+      ...issued(c, session),
+      ...(isApp(c) && mark ? { trustToken: mark } : {}),
+    })
   })
 
   // Confirms the address from an emailed link. Works without being signed in (the link may open on another device).
@@ -520,12 +560,12 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   })
 
   app.post('/api/auth/logout', async (c) => {
-    const token = getCookie(c, SESSION_COOKIE)
+    const token = sessionToken(c)
     if (token) {
       const session = await repo.getSessionByTokenHash(sha256(token))
-      if (session) await repo.deleteSession(session.id)
+      if (session?.kind === 'session') await repo.deleteSession(session.id)
     }
-    deleteCookie(c, SESSION_COOKIE, { path: '/', secure })
+    if (!isApp(c)) deleteCookie(c, SESSION_COOKIE, { path: '/', secure })
     return c.json({ ok: true })
   })
 
@@ -990,7 +1030,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     if (!config.ai.key) return fail(c, 404, 'not_found', 'The assistant isn’t set up on this server.')
     const data = await body(c, AssistantBody)
     if (data instanceof Response) return data
-    const token = getCookie(c, SESSION_COOKIE)
+    const token = sessionToken(c)
     const session = token ? await repo.getSessionByTokenHash(sha256(token)) : null
     const who = session?.kind === 'session' && session.expiresAt > now() ? `user:${session.userId}` : `ip:${clientIp(c)}`
     const wait = limiter.hit([

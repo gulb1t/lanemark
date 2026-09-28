@@ -20,9 +20,18 @@ export const RegisterBody = z.object({
   password: z.string().max(PASSWORD_MAX),
 })
 
-export const LoginBody = z.object({ email: Email, password: z.string().min(1).max(PASSWORD_MAX), remember: z.boolean().optional() })
+/** A token the server handed the phone app (which keeps them itself, where a browser would keep a cookie). */
+const AppToken = z.string().regex(/^[\w-]{20,100}$/)
+export const LoginBody = z.object({
+  email: Email,
+  password: z.string().min(1).max(PASSWORD_MAX),
+  remember: z.boolean().optional(),
+  /** The app's trusted-device mark, if it has one. */
+  trustToken: AppToken.optional(),
+})
 export const CodeBody = z.object({ code: z.string().trim().min(6).max(20) })
-export const VerifyLoginBody = CodeBody.extend({ trust: z.boolean().optional() })
+/** `ticket` is the app's half-finished sign-in (browsers carry it in a cookie). */
+export const VerifyLoginBody = CodeBody.extend({ trust: z.boolean().optional(), ticket: AppToken.optional() })
 export const SecurityPrefsBody = z.object({ trustDevices: z.boolean() })
 export const PasswordBody = z.object({ password: z.string().min(1).max(PASSWORD_MAX) })
 export const PasswordAndCodeBody = PasswordBody.extend({ code: z.string().trim().max(20).optional() })

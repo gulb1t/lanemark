@@ -1,13 +1,14 @@
 /** Rough "Chrome on Android" style label for the sessions list. Deliberately simple: display only. */
 export function describeUserAgent(ua: string): string {
   if (!ua) return 'Unknown device'
+  // The phone app's web view also says "Chrome", so check for the app first.
   const browser =
-    /Edg\//.test(ua) ? 'Edge'
+    /SwimTrackApp/.test(ua) ? 'SwimTrack app'
+    : /Edg\//.test(ua) ? 'Edge'
     : /OPR\//.test(ua) ? 'Opera'
     : /Firefox\//.test(ua) ? 'Firefox'
     : /Chrome\//.test(ua) ? 'Chrome'
     : /Safari\//.test(ua) ? 'Safari'
-    : /SwimTrack/.test(ua) ? 'SwimTrack app'
     : 'Browser'
   const os =
     /Android/.test(ua) ? 'Android'
