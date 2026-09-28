@@ -1,0 +1,77 @@
+name: SwimTrack deploy
+
+# Same as the last step of ./ship.sh, from GitHub: checks the code, deploys to Fly and confirms the live site answers.
+# Runs on every push to main that touches SwimTrack/, or by hand (Actions → SwimTrack deploy → Run workflow).
+# Needs a Fly deploy token saved as the repository secret FLY_API_TOKEN; without it the run stops with a note.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SwimTrack/**'
+      - '.github/workflows/swimtrack-deploy.yml'
+  workflow_dispatch:
+
+# One deploy at a time; a newer push waits for the running one instead of racing it.
+concurrency:
+  group: swimtrack-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Check and deploy
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: SwimTrack
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - name: Deploy token saved?
+        id: token
+        working-directory: .
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::warning::No FLY_API_TOKEN secret yet, so nothing was deployed. Add a Fly deploy token in Settings → Secrets and variables → Actions."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.token.outputs.ok == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.token.outputs.ok == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: SwimTrack/package-lock.json
+
+      - name: Type-check, test and lint
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          npm ci
+          npx tsc -b
+          npm test
+          npm run lint
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.token.outputs.ok == 'true'
+
+      - name: Deploy to Fly
+        if: steps.token.outputs.ok == 'true'
+        run: flyctl deploy --app swimtrack --remote-only --ha=false
+
+      - name: Check the live site
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          for i in $(seq 1 12); do
+            if curl -fsS https://swimtrack.fly.dev/api/health > /dev/null; then
+              echo "https://swimtrack.fly.dev is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::https://swimtrack.fly.dev isn't answering. Check the logs in the Fly dashboard."
+          exit 1
