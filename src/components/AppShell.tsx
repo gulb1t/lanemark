@@ -29,7 +29,8 @@ import { MenuItem, Popover } from './ui/Popover'
 const NAV = [
   { to: '/app', label: 'Classes', icon: LayoutGrid, end: true },
   { to: '/app/swimmers', label: 'Swimmers', icon: Users },
-  { to: '/app/curriculum', label: 'Curriculum', icon: BookOpen },
+  // "Levels" on the phone's tab bar, where five tabs share the width.
+  { to: '/app/curriculum', label: 'Curriculum', short: 'Levels', icon: BookOpen },
 ]
 const POOL = { to: '/app/pool', label: 'Pool', icon: Building2, end: false }
 
@@ -115,35 +116,37 @@ export default function AppShell() {
       {/* Phones and small tablets: compact top bar, see-through until the page scrolls under it */}
       <MobileBar />
 
-      <main id="main" tabIndex={-1} className="relative z-10 mx-auto w-full max-w-6xl flex-1 outline-none px-4 pb-28 pt-6 sm:px-6 sm:pt-10 md:pb-12">
+      <main id="main" tabIndex={-1} className="relative z-10 mx-auto w-full max-w-6xl flex-1 outline-none px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pt-10 md:pb-12">
         <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
           {outlet}
         </motion.div>
       </main>
 
-      {/* Mobile: bottom tab bar */}
+      {/* Phones: tab bar docked to the bottom edge, above the gesture bar */}
       <nav
-        className="no-print fixed inset-x-3 bottom-3 z-30 flex h-16 items-stretch justify-around rounded-2xl pill-nav md:hidden"
-        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-ink/95 backdrop-blur-xl md:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Main"
       >
-        {[...nav, { to: '/app/settings', label: 'Settings', icon: Settings, end: false }].map(({ to, label, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className="relative flex flex-1 flex-col items-center justify-center gap-1 text-[10.5px] font-medium">
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.span layoutId="tab-pill" className="absolute inset-1.5 rounded-xl bg-aqua/10" transition={{ type: 'spring', stiffness: 480, damping: 38 }} />
-                )}
-                <Icon size={19} className={`relative transition-colors ${isActive ? 'text-aqua' : 'text-muted'}`} />
-                <span className={`relative ${isActive ? 'text-fg' : 'text-dim'}`}>{label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-        <button type="button" onClick={() => setPaletteOpen(true)} className="flex flex-1 flex-col items-center justify-center gap-1 text-[10.5px] font-medium text-dim">
-          <Search size={19} className="text-muted" />
-          Search
-        </button>
+        <div className="mx-auto flex h-16 max-w-lg items-stretch">
+          {[...nav, { to: '/app/settings', label: 'Settings', icon: Settings, end: false }].map(({ to, label, icon: Icon, end, ...rest }) => (
+            <NavLink key={to} to={to} end={end} className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1">
+              {({ isActive }) => (
+                <>
+                  <span className="relative flex h-8 w-14 items-center justify-center">
+                    {isActive && (
+                      <motion.span layoutId="tab-pill" className="absolute inset-0 rounded-full bg-aqua/15" transition={{ type: 'spring', stiffness: 480, damping: 38 }} />
+                    )}
+                    <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} className={`relative transition-colors ${isActive ? 'text-aqua' : 'text-muted'}`} />
+                  </span>
+                  <span className={`max-w-full truncate px-1 text-[11px] leading-none tracking-tight ${isActive ? 'font-semibold text-fg' : 'font-medium text-muted'}`}>
+                    {'short' in rest ? rest.short : label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
       </nav>
 
       <CommandPalette />
@@ -299,6 +302,9 @@ function MobileBar() {
             <Sparkles size={18} />
           </button>
         )}
+        <button type="button" onClick={() => setPaletteOpen(true)} aria-label="Search" className="inline-flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-fg/[0.07] hover:text-fg">
+          <Search size={19} />
+        </button>
         <SyncIndicator compact />
         <UserMenu />
       </div>
