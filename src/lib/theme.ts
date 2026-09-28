@@ -71,10 +71,10 @@ export function setTheme(pref: ThemePref, origin?: { x: number; y: number }) {
   const h = window.innerHeight
   const x = origin?.x ?? w / 2
   const y = origin?.y ?? 0
-  // In percent of the screen, not pixels: the circle then reaches every corner at any display size (zoom) or screen
-  // size. A circle's % radius is measured against the screen's diagonal ÷ √2.
-  const reach = Math.hypot(Math.max(x, w - x), Math.max(y, h - y))
-  const radius = (reach / (Math.hypot(w, h) / Math.SQRT2)) * 100 + 2
+  // In percent of the screen, never pixels, so it works at any screen size and display size (zoom). A circle's % radius
+  // is measured against the screen's diagonal ÷ √2, so no corner is ever farther than √2 × 100% ≈ 141% from any point
+  // on screen: ending at 150% always covers everything, from wherever it starts.
+  const radius = 150
   const at = `at ${(x / w) * 100}% ${(y / h) * 100}%`
   const transition = document.startViewTransition(() => flushSync(change))
   transition.ready
