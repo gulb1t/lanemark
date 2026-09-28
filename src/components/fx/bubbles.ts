@@ -1,9 +1,10 @@
+import { lessMotion } from '../../lib/effects'
 /**
  * Celebration burst: a handful of translucent bubbles pop out of a point and wobble upwards, like a swimmer
  * exhaling. Drawn on a temporary full-screen canvas that removes itself when the last bubble fades.
  */
 export function burstBubbles(x: number, y: number, { count = 34, hue = 174 } = {}) {
-  if (typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (typeof window === 'undefined' || lessMotion()) return
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   const canvas = document.createElement('canvas')
   canvas.setAttribute('aria-hidden', 'true')

@@ -1,5 +1,6 @@
 import { flushSync } from 'react-dom'
 import { create } from 'zustand'
+import { lessMotion } from './effects'
 
 export type ThemePref = 'system' | 'dark' | 'light'
 type Resolved = 'dark' | 'light'
@@ -62,7 +63,8 @@ export function setTheme(pref: ThemePref, origin?: { x: number; y: number }) {
     useTheme.setState({ pref, resolved })
     apply(resolved)
   }
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Lite effects switch instantly: the wipe snapshots the whole screen, which is heavy for a budget phone.
+  const reduce = lessMotion()
   if (!document.startViewTransition || reduce || resolved === useTheme.getState().resolved) {
     change()
     return

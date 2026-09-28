@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { lessMotion } from '../../lib/effects'
 import { useTheme } from '../../lib/theme'
 
 /**
@@ -230,7 +231,7 @@ export function Caustics({
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
     }
 
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduce = lessMotion()
     // Slow water looks the same at 30 fps, and on phones that halves the GPU and battery cost.
     const halfRate = window.matchMedia('(pointer: coarse)').matches
     let frame = 0

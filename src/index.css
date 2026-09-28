@@ -792,3 +792,38 @@ dialog::backdrop {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/*
+ * Lite effects (weaker phones, or chosen in Settings): the same layout without the drawing a budget phone's graphics
+ * chip struggles with. No frosted glass (bars and sheets turn solid), no background glows or glow shadows.
+ */
+.lite *,
+.lite *::before,
+.lite *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.lite .ambient,
+.lite .spotlight::before,
+.lite .spotlight::after {
+  display: none;
+}
+.lite .pill-nav,
+.lite .glass {
+  background: var(--color-panel);
+}
+.lite .card {
+  background-image: none;
+  box-shadow: none;
+}
+.lite [class*="shadow-[var(--glow)]"],
+.lite [class*="shadow-[0_0_"] {
+  box-shadow: none !important;
+}
+/* Bars that were see-through behind their blur go solid, so text doesn't show through them. */
+.lite [class*="bg-panel/"][class*="backdrop-blur"] {
+  background-color: var(--color-panel);
+}
+.lite [class*="bg-ink/"][class*="backdrop-blur"] {
+  background-color: var(--color-ink);
+}

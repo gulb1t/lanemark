@@ -34,6 +34,7 @@ import { Field, Spinner, Switch } from '../components/ui/bits'
 import { api, errorMessage, type User } from '../lib/api'
 import { timeAgo, useNow, usePhoneLayout } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
+import { setEffectsPref, useEffectsPref, weakDevice, type EffectsPref } from '../lib/effects'
 import { setTextSize, TEXT_SIZES, useTextSize } from '../lib/textSize'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
 import { usePool } from '../store/usePool'
@@ -63,7 +64,7 @@ export default function SettingsPage() {
         ] as const)
       : []),
     { id: 'data', label: 'Data', hint: 'Sync, backup, erase', icon: <Database size={16} /> },
-    { id: 'appearance', label: 'Appearance', hint: 'Light or dark, display size', icon: <Palette size={16} /> },
+    { id: 'appearance', label: 'Appearance', hint: 'Theme, display size, effects', icon: <Palette size={16} /> },
   ]
   const requested = params.get('s') as Section | null
   const found = sections.find((s) => s.id === requested)
@@ -1210,7 +1211,39 @@ function AppearanceSection() {
       </div>
     </Panel>
     <TextSizePanel />
+    <EffectsPanel />
     </>
+  )
+}
+
+function EffectsPanel() {
+  const pref = useEffectsPref((s) => s.pref)
+  const options: { value: EffectsPref; label: string; hint: string }[] = [
+    { value: 'auto', label: 'Automatic', hint: weakDevice() ? 'Lite on this device' : 'Full on this device' },
+    { value: 'full', label: 'Full', hint: 'Glass, glows, animation' },
+    { value: 'lite', label: 'Lite', hint: 'Smoother on older phones' },
+  ]
+  return (
+    <Panel title="Effects" description="Lite drops the frosted glass, glows and most animation, so older or budget phones stay smooth. Everything else stays the same.">
+      <div role="radiogroup" aria-label="Effects" className="grid grid-cols-3 gap-2">
+        {options.map((o) => {
+          const active = o.value === pref
+          return (
+            <button
+              key={o.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setEffectsPref(o.value)}
+              className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-2.5 text-left transition-colors ${active ? 'border-aqua/60 bg-aqua/10' : 'border-line-2 hover:border-dim/60'}`}
+            >
+              <span className={`text-[14px] ${active ? 'font-semibold' : 'font-medium'}`}>{o.label}</span>
+              <span className="text-[12px] leading-snug text-muted">{o.hint}</span>
+            </button>
+          )
+        })}
+      </div>
+    </Panel>
   )
 }
 

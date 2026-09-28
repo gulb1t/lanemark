@@ -1,10 +1,11 @@
-import { MotionConfig } from 'motion/react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
+import { Motion } from './components/Motion'
 import { preloadRoutes } from './routes'
 import './index.css'
+import { initEffects } from './lib/effects'
 import { initTextSize } from './lib/textSize'
 import { initTheme } from './lib/theme'
 import { IS_APP } from './native/platform'
@@ -12,6 +13,7 @@ import { bootstrap } from './store/useSession'
 
 initTheme()
 initTextSize()
+initEffects()
 void bootstrap()
 // Lets the stylesheet go easier on heavy effects inside the phone app.
 if (IS_APP) document.documentElement.classList.add('in-app')
@@ -37,10 +39,10 @@ if (!IS_APP && 'serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MotionConfig reducedMotion="user">
+    <Motion>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </MotionConfig>
+    </Motion>
   </StrictMode>,
 )

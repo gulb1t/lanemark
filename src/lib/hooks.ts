@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffectsPref } from './effects'
 
 /** One delegated listener feeds --mx/--my to whichever .spotlight element is under the pointer. */
 export function useSpotlight() {
@@ -43,7 +44,12 @@ export function useMediaQuery(query: string): boolean {
 export const useIsMobile = () => useMediaQuery('(max-width: 639px)')
 /** Below this width the app uses the phone layout: top bar plus bottom tabs. */
 export const usePhoneLayout = () => useMediaQuery('(max-width: 767px)')
-export const useReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)')
+/** The system asks for less motion, or lite effects are on (weaker phones). */
+export function useReducedMotion() {
+  const system = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const lite = useEffectsPref((s) => s.lite)
+  return system || lite
+}
 
 export function useOnline(): boolean {
   return useSyncExternalStore(
