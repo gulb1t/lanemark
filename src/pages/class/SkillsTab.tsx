@@ -10,7 +10,7 @@ import { PickerSheet } from '../../components/ui/Picker'
 import { SkillCycle } from '../../components/ui/SkillCycle'
 import { categoriesOf, getLevel } from '../../data/curriculum'
 import { ELEMENT_LABEL } from '../../data/mustSees'
-import { usePhoneLayout } from '../../lib/hooks'
+import { useIsMobile, usePhoneLayout } from '../../lib/hooks'
 import { firstName, passedLevel, skillProgress } from '../../lib/stats'
 import { useStore } from '../../store/useStore'
 import { confirm, toast, withUndo } from '../../store/useUi'
@@ -148,6 +148,9 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
   const categories = useMemo(() => categoriesOf(cls.skills), [cls.skills])
   const { mark, anchors } = useMark(cls, swimmers)
   const members = cls.enrollments.filter((e) => swimmers.has(e.swimmerId))
+  // Phones: a narrow skill column with small wrapping text, slim swimmer columns, and the skill name itself as the
+  // "pass everyone" button (there's no hover to reveal one), so several swimmers fit across.
+  const phone = useIsMobile()
 
   async function passRow(skill: Skill) {
     const changing = members.filter((e) => e.skills[skill.id] !== 'pass')
@@ -166,38 +169,42 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
 
   return (
     <div className="space-y-2">
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
-        <span>Tap a box to mark it:</span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-flex size-5 items-center justify-center rounded-md border border-good/45 bg-good/15 text-good">
-            <Check size={12} strokeWidth={3} />
+      {phone ? (
+        <p className="text-[12px] leading-snug text-muted">Tap a box once for passed, twice for not yet, again to clear. Tap a skill to pass everyone.</p>
+      ) : (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
+          <span>Tap a box to mark it:</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex size-5 items-center justify-center rounded-md border border-good/45 bg-good/15 text-good">
+              <Check size={12} strokeWidth={3} />
+            </span>
+            once for passed
           </span>
-          once for passed
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-flex size-5 items-center justify-center rounded-md border border-warn/50 bg-warn/15 text-warn">
-            <Minus size={12} strokeWidth={3} />
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex size-5 items-center justify-center rounded-md border border-warn/50 bg-warn/15 text-warn">
+              <Minus size={12} strokeWidth={3} />
+            </span>
+            twice for not yet
           </span>
-          twice for not yet
-        </span>
-        <span>three times to clear.</span>
-      </p>
+          <span>three times to clear.</span>
+        </p>
+      )}
       <div className="card overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-line">
-              <th className="sticky left-0 z-10 min-w-64 bg-panel px-4 py-3 text-left font-medium text-muted">Skill</th>
+              <th className="sticky left-0 z-10 bg-panel px-4 py-3 text-left font-medium text-muted max-sm:w-[7.5rem] max-sm:min-w-[7.5rem] max-sm:px-2.5 max-sm:text-[12px] sm:min-w-64">Skill</th>
               {members.map((e) => {
                 const swimmer = swimmers.get(e.swimmerId)!
                 const p = skillProgress(e, cls.skills)
                 const done = passedLevel(e, cls.skills)
                 return (
-                  <th key={e.swimmerId} className="min-w-20 px-2 py-3 text-center font-normal">
+                  <th key={e.swimmerId} className="px-2 py-3 text-center font-normal max-sm:min-w-11 max-sm:px-0.5 max-sm:py-2 sm:min-w-20">
                     <div className="flex flex-col items-center gap-1" ref={(el) => void anchors.set(e.swimmerId, el)}>
-                      <ProgressRing value={p.ratio} size={38} stroke={2.5} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
-                        <Avatar name={swimmer.name} size={30} />
+                      <ProgressRing value={p.ratio} size={phone ? 32 : 38} stroke={2.5} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
+                        <Avatar name={swimmer.name} size={phone ? 26 : 30} />
                       </ProgressRing>
-                      <span className="max-w-20 truncate text-xs font-medium text-fg">{firstName(swimmer.name)}</span>
+                      <span className="max-w-20 truncate text-xs font-medium text-fg max-sm:max-w-11 max-sm:text-[10.5px]">{firstName(swimmer.name)}</span>
                       <span className={`tabular-nums text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
                         {p.pass}/{p.total}
                       </span>
@@ -205,14 +212,14 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                   </th>
                 )
               })}
-              <th className="w-10" />
+              {!phone && <th className="w-10" />}
             </tr>
           </thead>
           <tbody>
             {categories.map((cat) => (
               <Fragment key={cat}>
                 <tr className="bg-fg/[0.025]">
-                  <td colSpan={members.length + 2} className="sticky left-0 px-4 py-1.5">
+                  <td colSpan={members.length + 2} className="sticky left-0 px-4 py-1.5 max-sm:px-2.5">
                     <span className="eyebrow">{cat}</span>
                   </td>
                 </tr>
@@ -220,14 +227,20 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                   .filter((s) => s.category === cat)
                   .map((skill) => (
                     <tr key={skill.id} className="group border-b border-line/50 hover:bg-fg/[0.02]">
-                      <th scope="row" className="sticky left-0 z-10 bg-panel px-4 py-2 text-left align-middle font-normal" title={mustSeeTitle(skill)}>
-                        <span className="flex items-start gap-1.5 leading-snug">
-                          {skill.name}
-                          {skill.mustSees && <Info size={12} className="mt-1 shrink-0 text-dim" aria-label="Has must-see comments" />}
-                        </span>
+                      <th scope="row" className="sticky left-0 z-10 bg-panel px-4 py-2 text-left align-middle font-normal max-sm:px-2.5 max-sm:py-1.5" title={mustSeeTitle(skill)}>
+                        {phone ? (
+                          <button type="button" onClick={() => passRow(skill)} aria-label={`${skill.name}. Tap to pass everyone.`} className="line-clamp-3 text-left text-[12px] leading-tight">
+                            {skill.name}
+                          </button>
+                        ) : (
+                          <span className="flex items-start gap-1.5 leading-snug">
+                            {skill.name}
+                            {skill.mustSees && <Info size={12} className="mt-1 shrink-0 text-dim" aria-label="Has must-see comments" />}
+                          </span>
+                        )}
                       </th>
                       {members.map((e) => (
-                        <td key={e.swimmerId} className="p-1 text-center">
+                        <td key={e.swimmerId} className="p-1 text-center max-sm:px-0.5">
                           <Cell
                             value={e.skills[skill.id]}
                             onClick={() => mark(e.swimmerId, skill.id, nextStatus(e.skills[skill.id]))}
@@ -235,6 +248,7 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                           />
                         </td>
                       ))}
+                      {!phone && (
                       <td className="pr-2">
                         <IconButton
                           label={`Pass “${skill.name}” for everyone`}
@@ -245,6 +259,7 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                           <CheckCheck size={14} />
                         </IconButton>
                       </td>
+                      )}
                     </tr>
                   ))}
               </Fragment>
