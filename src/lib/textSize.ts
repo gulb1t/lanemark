@@ -6,10 +6,10 @@ import { create } from 'zustand'
  * popovers and tours divide by uiZoom().
  */
 export const TEXT_SIZES = [
-  { id: 'small', label: 'Smaller', zoom: 0.9 },
-  { id: 'default', label: 'Default', zoom: 1 },
-  { id: 'large', label: 'Larger', zoom: 1.1 },
-  { id: 'largest', label: 'Largest', zoom: 1.2 },
+  { id: 'default', label: 'Default', step: 0 },
+  { id: 'large', label: 'Large', step: 1 },
+  { id: 'larger', label: 'Larger', step: 2 },
+  { id: 'largest', label: 'Largest', step: 3 },
 ] as const
 export type TextSize = (typeof TEXT_SIZES)[number]['id']
 
@@ -18,6 +18,7 @@ const KEY = 'swimtrack:text-size'
 function stored(): TextSize {
   try {
     const v = localStorage.getItem(KEY)
+    // 'small' was the old smallest size, which is now the default.
     return TEXT_SIZES.some((s) => s.id === v) ? (v as TextSize) : 'default'
   } catch {
     return 'default'
@@ -26,9 +27,14 @@ function stored(): TextSize {
 
 export const useTextSize = create<{ size: TextSize }>(() => ({ size: stored() }))
 
-/** The app's current zoom factor (1 at the default size). */
+/**
+ * The app's current zoom factor. Phones start a notch smaller than the design (0.9), so more fits on screen; computers
+ * start at 1. Each size up adds 10%.
+ */
 export function uiZoom(): number {
-  return TEXT_SIZES.find((s) => s.id === useTextSize.getState().size)?.zoom ?? 1
+  const base = matchMedia('(max-width: 767px)').matches ? 0.9 : 1
+  const step = TEXT_SIZES.find((s) => s.id === useTextSize.getState().size)?.step ?? 0
+  return Math.round((base + step * 0.1) * 100) / 100
 }
 
 function apply() {
@@ -40,6 +46,8 @@ function apply() {
 
 export function initTextSize() {
   apply()
+  // Turning a tablet, or resizing a window across the phone width, changes the starting size.
+  matchMedia('(max-width: 767px)').addEventListener('change', apply)
 }
 
 export function setTextSize(size: TextSize) {

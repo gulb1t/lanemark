@@ -1217,7 +1217,7 @@ function AppearanceSection() {
 function TextSizePanel() {
   const size = useTextSize((s) => s.size)
   return (
-    <Panel title="Display size" description="Makes text, buttons and spacing bigger or smaller everywhere in SwimTrack, on this device.">
+    <Panel title="Display size" description="Makes text, buttons and spacing bigger everywhere in SwimTrack, on this device.">
       <div role="radiogroup" aria-label="Display size" className="grid grid-cols-4 gap-2">
         {TEXT_SIZES.map((t, i) => {
           const active = t.id === size
