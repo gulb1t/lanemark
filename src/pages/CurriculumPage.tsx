@@ -37,9 +37,9 @@ export default function CurriculumPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow mb-1.5">Swim for Life</p>
+          <p className="eyebrow mb-1.5 max-md:hidden">Swim for Life</p>
           <h1 className="page-title">Curriculum</h1>
-          <p className="mt-2 max-w-xl text-[15px] text-muted">Every level’s skills, distances and report-card must-sees. Classes get their own editable copy.</p>
+          <p className="mt-2 max-w-xl text-[15px] text-muted max-md:hidden">Every level’s skills, distances and report-card must-sees. Classes get their own editable copy.</p>
         </div>
         <div className="relative w-full sm:w-80">
           <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-dim" />

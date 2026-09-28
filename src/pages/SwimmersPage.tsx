@@ -29,7 +29,7 @@ export default function SwimmersPage() {
     <div className="space-y-6">
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow mb-2">Everyone you teach</div>
+          <div className="eyebrow mb-2 max-md:hidden">Everyone you teach</div>
           <h1 className="page-title">Swimmers</h1>
         </div>
         <Button variant="primary" icon={<Plus size={16} />} onClick={() => openDialog('newSwimmer')}>
@@ -41,7 +41,7 @@ export default function SwimmersPage() {
         <EmptyState
           icon={<Users size={22} />}
           title="No swimmers yet"
-          body="Add swimmers here or straight from a class roster. A swimmer can be in several classes and keeps their photo and notes everywhere."
+          body="Add swimmers here or straight from a class roster. A swimmer can be in several classes and keeps their notes everywhere."
           action={
             <Button variant="primary" icon={<Plus size={16} />} onClick={() => openDialog('newSwimmer')}>
               New swimmer
@@ -57,27 +57,50 @@ export default function SwimmersPage() {
             </div>
             <Segmented size="sm" label="Sort" value={sort} onChange={setSort} options={[{ value: 'name', label: 'A–Z' }, { value: 'recent', label: 'Newest' }]} />
           </div>
-          <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-            {rows.map(({ w, in: inClasses }, i) => (
-              <motion.li key={w.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 12) * 0.025 }}>
-                <Link to={`/app/swimmers/${w.id}`} className="card spotlight flex h-full items-start gap-3.5 p-4 transition-transform active:scale-[0.99] max-sm:items-center max-sm:gap-3 max-sm:p-3">
-                  <Avatar name={w.name} size={mobile ? 42 : 52} />
-                  <div className="relative min-w-0 flex-1">
-                    <h3 className="truncate text-[15px] font-semibold">{w.name}</h3>
-                    {w.notes && <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{w.notes}</p>}
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {inClasses.length ? (
-                        inClasses.slice(0, 3).map((c) => <LevelChip key={c.id} level={getLevel(c.levelId)} />)
-                      ) : (
-                        <span className="text-xs text-dim">Not in an active class</span>
-                      )}
+          {mobile ? (
+            // Phones: one list, one line per swimmer, like a contacts app.
+            <ul className="card divide-y divide-line overflow-hidden">
+              {rows.map(({ w, in: inClasses }) => (
+                <li key={w.id}>
+                  <Link to={`/app/swimmers/${w.id}`} className="flex items-center gap-3 px-3.5 py-2.5 transition-colors active:bg-fg/[0.05]">
+                    <Avatar name={w.name} size={36} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-medium">{w.name}</span>
+                      {w.notes && <span className="block truncate text-[12.5px] text-muted">{w.notes}</span>}
+                    </span>
+                    <span className="flex shrink-0 gap-1">
+                      {inClasses.slice(0, 2).map((c) => (
+                        <LevelChip key={c.id} level={getLevel(c.levelId)} />
+                      ))}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+              {!rows.length && <li className="py-10 text-center text-sm text-muted">No swimmers match “{q}”.</li>}
+            </ul>
+          ) : (
+            <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+              {rows.map(({ w, in: inClasses }, i) => (
+                <motion.li key={w.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 12) * 0.025 }}>
+                  <Link to={`/app/swimmers/${w.id}`} className="card spotlight flex h-full items-start gap-3.5 p-4 transition-transform active:scale-[0.99] max-sm:items-center max-sm:gap-3 max-sm:p-3">
+                    <Avatar name={w.name} size={mobile ? 42 : 52} />
+                    <div className="relative min-w-0 flex-1">
+                      <h3 className="truncate text-[15px] font-semibold">{w.name}</h3>
+                      {w.notes && <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{w.notes}</p>}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {inClasses.length ? (
+                          inClasses.slice(0, 3).map((c) => <LevelChip key={c.id} level={getLevel(c.levelId)} />)
+                        ) : (
+                          <span className="text-xs text-dim">Not in an active class</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.li>
-            ))}
-            {!rows.length && <li className="col-span-full py-10 text-center text-sm text-muted">No swimmers match “{q}”.</li>}
-          </ul>
+                  </Link>
+                </motion.li>
+              ))}
+              {!rows.length && <li className="col-span-full py-10 text-center text-sm text-muted">No swimmers match “{q}”.</li>}
+            </ul>
+          )}
         </>
       )}
     </div>

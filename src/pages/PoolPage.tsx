@@ -52,7 +52,7 @@ function PageHeader({ pool, sub, actions }: { pool: Pool; sub: ReactNode; action
   return (
     <section className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <div className="eyebrow mb-2">Pool</div>
+        <div className="eyebrow mb-2 max-md:hidden">Pool</div>
         <h1 className="page-title break-words">{pool.name}</h1>
         <p className="mt-2 text-[15px] text-muted">{sub}</p>
       </div>
@@ -102,7 +102,7 @@ function NoPool() {
   return (
     <div className="space-y-8">
       <section>
-        <div className="eyebrow mb-2">Pool</div>
+        <div className="eyebrow mb-2 max-md:hidden">Pool</div>
         <h1 className="page-title">{invited ? 'You’re invited to a pool' : 'Work as a team'}</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-muted">
           In a pool, supervisors can see every class (attendance, skills and report cards) without anyone sending a spreadsheet. They can look, print and export, but only

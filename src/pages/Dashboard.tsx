@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Archive, ArrowRight, CalendarCheck, CalendarDays, CheckCheck, FileText, ListChecks, Plus, Sparkles, Users, Waves } from 'lucide-react'
+import { Archive, ArrowRight, CalendarCheck, CalendarDays, CheckCheck, ChevronRight, FileText, ListChecks, Plus, Sparkles, Users, Waves } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast as sonner } from 'sonner'
@@ -10,6 +10,7 @@ import { LevelChip, ProgressRing, Segmented, Stat } from '../components/ui/bits'
 import { PROGRAMS, getLevel } from '../data/curriculum'
 import { nextActions, type NextAction } from '../lib/actions'
 import { formatDate, greeting, isoDate } from '../lib/dates'
+import { useIsMobile } from '../lib/hooks'
 import { buildDemoData } from '../lib/demo'
 import { attendanceSummary, classSummary, lessonHeadcount, pct, scheduleNote, skillProgress } from '../lib/stats'
 import { forgetLegacyData, readLegacyData } from '../sync/engine'
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const swimmers = useStore((s) => s.swimmers)
   const user = useSession((s) => s.user)
   const [view, setView] = useState<'active' | 'archived'>('active')
+  const phone = useIsMobile()
   const [params, setParams] = useSearchParams()
 
   const active = classes.filter((c) => !c.archived)
@@ -106,13 +108,13 @@ export default function Dashboard() {
   const first = user?.name.split(/\s+/)[0] ?? 'coach'
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <Tour id="dashboard" steps={DASHBOARD_TOUR} />
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="eyebrow mb-2">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
           <h1 className="page-title">
-            {greeting()}, <span className="accent">{first}.</span>
+            {greeting()}, {first}
           </h1>
           <p className="mt-2 max-w-xl text-[15px] text-muted">
             {todays.length
@@ -146,7 +148,10 @@ export default function Dashboard() {
           </section>
           {/* Both columns end level: the stat tiles (or the to-do card) stretch to match the taller side. */}
           <aside className="flex min-w-0 flex-col gap-4" aria-label="At a glance">
-            <StatsCard totals={totals} active={active.length} swimmers={swimmers.length} />
+            {/* The numbers are for a desk; on a phone the dashboard is what's next and what's left. */}
+            <div className="max-sm:hidden">
+              <StatsCard totals={totals} active={active.length} swimmers={swimmers.length} />
+            </div>
             {upcoming.length > 0 && <ComingUp items={upcoming} />}
           </aside>
         </div>
@@ -176,11 +181,30 @@ export default function Dashboard() {
                   ]}
                 />
               )}
-              <Button size="sm" icon={<Plus size={14} />} onClick={() => openDialog('newClass')} className="sm:hidden" data-tour="new">
-                New
-              </Button>
+              {/* Phones add classes from the list's own "New class" row. */}
+              {phone && view === 'archived' && (
+                <Button size="sm" icon={<Plus size={14} />} onClick={() => openDialog('newClass')} data-tour="new">
+                  New
+                </Button>
+              )}
             </div>
           </div>
+          {phone ? (
+            <ul className="card divide-y divide-line overflow-hidden" data-tour="classes">
+              {shown.map((c) => (
+                <li key={c.id}>
+                  <ClassRow cls={c} />
+                </li>
+              ))}
+              {view === 'active' && (
+                <li>
+                  <button type="button" onClick={() => openDialog('newClass')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-[14px] font-medium text-muted active:bg-fg/[0.05]">
+                    <Plus size={17} /> New class
+                  </button>
+                </li>
+              )}
+            </ul>
+          ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-tour="classes">
             {shown.map((c, i) => (
               <motion.div
@@ -206,6 +230,7 @@ export default function Dashboard() {
               </button>
             )}
           </div>
+          )}
           {view === 'archived' && !archived.length && <p className="py-10 text-center text-sm text-muted">No archived classes.</p>}
         </section>
       ) : (
@@ -222,16 +247,10 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
   const head = lessonHeadcount(cls, lesson.id)
   const total = cls.enrollments.length
   const taken = total > 0 && head.marked === total
-  const hue = level ? PROGRAMS[level.program].hue : 'var(--color-aqua)'
   const members = cls.enrollments.map((e) => swimmers.find((w) => w.id === e.swimmerId)).filter((w): w is Swimmer => Boolean(w))
   const base = `/app/classes/${cls.id}`
   return (
     <article className="card relative overflow-hidden p-5 sm:p-6">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit]"
-        style={{ background: `radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, ${hue} 14%, transparent), transparent 55%)` }}
-      />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[13px] text-muted">
@@ -504,7 +523,7 @@ function Onboarding() {
         >
           <div className="flex items-center justify-between">
             <span className="icon-tile size-10 !rounded-xl">{s.icon}</span>
-            <span className="font-mono text-xs text-dim">0{s.n}</span>
+            <span className="tabular-nums text-xs text-dim">0{s.n}</span>
           </div>
           <h3 className="mt-5 text-[16px] font-semibold">{s.title}</h3>
           <p className="mt-1.5 flex-1 text-[14px] leading-relaxed text-muted">{s.body}</p>
@@ -512,6 +531,24 @@ function Onboarding() {
         </motion.div>
       ))}
     </div>
+  )
+}
+
+/** Phones: one line per class, like the swimmers list. */
+function ClassRow({ cls }: { cls: SwimClass }) {
+  const level = getLevel(cls.levelId)
+  const s = classSummary(cls)
+  return (
+    <Link to={`/app/classes/${cls.id}`} className="flex items-center gap-3 px-4 py-3 transition-colors active:bg-fg/[0.05]">
+      <LevelChip level={level} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[15px] font-medium">{cls.name}</span>
+        <span className="block truncate text-[12.5px] text-muted">
+          {s.swimmers} swimmer{s.swimmers === 1 ? '' : 's'} · {pct(s.skillRatio)} of skills passed
+        </span>
+      </span>
+      <ChevronRight size={17} className="shrink-0 text-dim" />
+    </Link>
   )
 }
 
@@ -527,14 +564,9 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
       to={`/app/classes/${cls.id}`}
       className="card spotlight group block h-full overflow-hidden p-5 transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.99]"
     >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit]"
-        style={{ background: `linear-gradient(180deg, color-mix(in oklab, ${hue} 10%, transparent), transparent 42%)` }}
-      />
       <div className="relative flex items-start justify-between gap-3">
         <LevelChip level={level} />
-        <span className="font-mono text-[11px] text-dim">{cls.session}</span>
+        <span className="tabular-nums text-[11px] text-dim">{cls.session}</span>
       </div>
       <h3 className="relative mt-3 line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight">{cls.name}</h3>
       {scheduleNote(cls) && (
@@ -545,16 +577,16 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
       )}
       <div className="relative mt-5 flex items-center gap-4">
         <ProgressRing value={s.skillRatio ?? 0} size={52} stroke={4.5} color={hue}>
-          <span className="font-mono text-[11px] font-semibold">{pct(s.skillRatio)}</span>
+          <span className="tabular-nums text-[11px] font-semibold">{pct(s.skillRatio)}</span>
         </ProgressRing>
         <div className="min-w-0 flex-1 space-y-1.5 text-[12.5px]">
           <div className="flex justify-between text-muted">
             <span>Attendance</span>
-            <span className="font-mono text-fg">{pct(s.attendanceRate)}</span>
+            <span className="tabular-nums text-fg">{pct(s.attendanceRate)}</span>
           </div>
           <div className="flex justify-between text-muted">
             <span>Lessons</span>
-            <span className="font-mono text-fg">
+            <span className="tabular-nums text-fg">
               {taught}/{s.lessons}
             </span>
           </div>
@@ -566,7 +598,7 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
             <Avatar key={w.id} name={w.name} size={28} className="ring-2 ring-panel" />
           ))}
           {members.length > 5 && (
-            <span className="inline-flex size-7 items-center justify-center rounded-full bg-panel-2 font-mono text-[10px] text-muted ring-2 ring-panel">
+            <span className="inline-flex size-7 items-center justify-center rounded-full bg-panel-2 tabular-nums text-[10px] text-muted ring-2 ring-panel">
               +{members.length - 5}
             </span>
           )}
