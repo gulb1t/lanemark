@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { applyImport } from './lib/dataFile.ts'
 
 export interface Config {
   port: number
@@ -30,12 +31,16 @@ export interface Config {
   contactEmail?: string
   /** OpenAI-compatible chat API for the in-app assistant (VoidAI by default). Unset key = assistant off. */
   ai: { key?: string; model: string; baseUrl: string }
+  /** Set on a server that has moved: pages redirect to this address and the API says where to go. */
+  movedTo?: string
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const production = env.NODE_ENV === 'production'
   const dataDir = resolve(env.DATA_DIR ?? 'data')
   mkdirSync(dataDir, { recursive: true })
+  // A database and key brought over from another server (see server/tools/data-tool.ts) take over before anything opens them.
+  applyImport(dataDir)
   // Development also trusts Cloudflare quick tunnels (`cloudflared tunnel --url http://localhost:5173`), whose address
   // changes every run. Production only ever trusts its own address and APP_ORIGINS.
   const devOrigins = 'http://localhost:5173,http://127.0.0.1:5173,https://*.trycloudflare.com'
@@ -57,6 +62,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     smtpUrl: env.SMTP_URL || undefined,
     mailFrom: env.MAIL_FROM ?? 'Lanemark <no-reply@lanemark.local>',
     contactEmail: env.CONTACT_EMAIL || (production || env.SMTP_URL ? undefined : 'pilots@lanemark.local'),
+    movedTo: env.MOVED_TO ? new URL(env.MOVED_TO).origin : undefined,
     ai: {
       key: env.VOIDAI_API_KEY || env.AI_API_KEY || undefined,
       model: env.AI_MODEL || 'gpt-4.1-mini',

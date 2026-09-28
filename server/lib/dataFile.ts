@@ -13,3 +13,22 @@ export function dataFile(dir: string): string {
   }
   return now
 }
+
+/**
+ * Moving the server: files put in the data folder as `lanemark-import.db` and `secret-import.key` replace the database
+ * and the encryption key on the next start. What was there before is kept beside it as `*.before-import`.
+ */
+export function applyImport(dir: string) {
+  const incoming = join(dir, 'lanemark-import.db')
+  if (existsSync(incoming)) {
+    const now = join(dir, 'lanemark.db')
+    for (const ext of ['', '-wal', '-shm']) if (existsSync(now + ext)) renameSync(now + ext, `${now}.before-import${ext}`)
+    renameSync(incoming, now)
+  }
+  const key = join(dir, 'secret-import.key')
+  if (existsSync(key)) {
+    const now = join(dir, 'secret.key')
+    if (existsSync(now)) renameSync(now, `${now}.before-import`)
+    renameSync(key, now)
+  }
+}
