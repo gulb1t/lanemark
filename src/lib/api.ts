@@ -1,8 +1,8 @@
 import { IS_APP } from '../native/platform'
 
 /**
- * Thin JSON client for the SwimTrack API. The web app talks to its own origin with its cookie. The phone app talks
- * to the live server (VITE_API_URL) with a bearer token instead, and says so with the X-SwimTrack-Client header.
+ * Thin JSON client for the Lanemark API. The web app talks to its own origin with its cookie. The phone app talks
+ * to the live server (VITE_API_URL) with a bearer token instead, and says so with the X-Lanemark-Client header.
  */
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? ''
 
@@ -27,7 +27,7 @@ export class NetworkError extends Error {
   constructor() {
     // Shown by forms (sign-in, sign-up, settings). Edits to classes and swimmers never see this: they save on the
     // device and the sync pill reports being offline.
-    super('Can’t reach SwimTrack right now. Check your connection and try again.')
+    super('Can’t reach Lanemark right now. Check your connection and try again.')
   }
 }
 
@@ -51,7 +51,7 @@ export async function api<T>(path: string, method: Method = 'GET', body?: unknow
   try {
     const headers: Record<string, string> = method === 'GET' ? { accept: 'application/json' } : { 'content-type': 'application/json', accept: 'application/json' }
     if (IS_APP) {
-      headers['x-swimtrack-client'] = 'android'
+      headers['x-lanemark-client'] = 'android'
       if (bearer) headers.authorization = `Bearer ${bearer}`
     }
     res = await fetch(`${BASE}/api${path}`, {

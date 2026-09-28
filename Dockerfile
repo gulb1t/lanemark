@@ -1,5 +1,5 @@
 # One image serves the API and the built site. The server runs TypeScript directly and uses node:sqlite, so it
-# needs a current Node; 26 is what SwimTrack is developed and tested on.
+# needs a current Node; 26 is what Lanemark is developed and tested on.
 FROM node:26-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./

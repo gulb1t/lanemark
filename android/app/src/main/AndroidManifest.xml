@@ -3,7 +3,7 @@
 
     <!--
       No cloud backup: the sign-in is sealed with keys that never leave this phone's secure hardware, so a restored copy
-      couldn't be read anyway. Classes and swimmers are kept on the SwimTrack server, not in the backup.
+      couldn't be read anyway. Classes and swimmers are kept on the Lanemark server, not in the backup.
     -->
     <application
         android:allowBackup="false"
@@ -29,7 +29,7 @@
             </intent-filter>
 
             <!--
-              App Links: pool invites and the links in SwimTrack's emails open here instead of the browser. Android checks
+              App Links: pool invites and the links in Lanemark's emails open here instead of the browser. Android checks
               https://swimtrack.fly.dev/.well-known/assetlinks.json to confirm the site and the app belong together.
             -->
             <intent-filter android:autoVerify="true">

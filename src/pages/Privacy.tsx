@@ -15,7 +15,7 @@ const GLANCE = [
 const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }[] = [
   {
     id: 'what',
-    title: 'What SwimTrack stores',
+    title: 'What Lanemark stores',
     icon: Database,
     body: (
       <>
@@ -23,7 +23,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         <Table
           rows={[
             ['Instructor account', 'Name, email address, a salted scrypt hash of the password (never the password itself), and the two-factor secret, encrypted with AES-256-GCM.'],
-            ['Swimmers', 'Name and optional notes. SwimTrack doesn’t keep photos of swimmers.'],
+            ['Swimmers', 'Name and optional notes. Lanemark doesn’t keep photos of swimmers.'],
             ['Classes', 'Level, session, schedule, lesson dates and topics, attendance marks, skill marks, report card comments and the recommended next level.'],
             ['Sessions', 'A hashed session token, the device’s browser name and a shortened IP address (the last part is dropped before saving), so you can see and sign out your devices. If you tick “don’t ask for a code on this device”, a hashed 30-day trusted-device mark is kept too.'],
             ['Emailed links', 'A hash of each confirm-email or reset-password link, deleted once it expires (24 hours or 30 minutes).'],
@@ -31,7 +31,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
           ]}
         />
         <p>
-          SwimTrack never asks for birthdays, addresses, parent contact details, health information or anything else a report card doesn’t need. Use first names and last
+          Lanemark never asks for birthdays, addresses, parent contact details, health information or anything else a report card doesn’t need. Use first names and last
           initials if your program prefers.
         </p>
       </>
@@ -44,13 +44,13 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
     body: (
       <>
         <p>
-          <b>On the server.</b> SwimTrack is one Node.js server with one database: a SQLite file on the server’s disk, or a MongoDB cluster. Whoever deploys it chooses the
+          <b>On the server.</b> Lanemark is one Node.js server with one database: a SQLite file on the server’s disk, or a MongoDB cluster. Whoever deploys it chooses the
           host and region. A municipality can run it on its own infrastructure or a Canadian cloud region, so records stay under its control.
         </p>
         <p>
           <b>On the instructor’s device.</b> So it works on deck without Wi-Fi, the app keeps a copy of that instructor’s classes in the browser’s storage and syncs changes
           when the connection returns. Signing out removes the copy from the device. The Android app also keeps its sign-in in the phone’s secure storage. With
-          fingerprint or face unlock on, the check happens on the phone: SwimTrack never receives your fingerprint or face.
+          fingerprint or face unlock on, the check happens on the phone: Lanemark never receives your fingerprint or face.
         </p>
         <p>
           <b>Nowhere else.</b> Fonts and code are served by the same server. There are no analytics, ad networks or crash reporters. The only outside services are the email provider for account email and, if it’s turned on, the assistant (see below).
@@ -101,7 +101,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
     icon: Mail,
     body: (
       <p>
-        SwimTrack only sends account email: confirming an address, password reset links and security alerts. No newsletters or marketing. Messages go through the SMTP
+        Lanemark only sends account email: confirming an address, password reset links and security alerts. No newsletters or marketing. Messages go through the SMTP
         provider the server is configured with.
       </p>
     ),
@@ -136,7 +136,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
     body: (
       <>
         <p>
-          The “Request a pilot” form in the pricing section sends your name, email, organisation, number of pools and message to the SwimTrack team’s inbox, so we can
+          The “Request a pilot” form in the pricing section sends your name, email, organisation, number of pools and message to the Lanemark team’s inbox, so we can
           reply. It isn’t saved in the app’s database, and nothing is emailed to the address you type in.
         </p>
       </>
@@ -184,7 +184,7 @@ export default function Privacy() {
     <div className="relative min-h-dvh">
       <div className="ambient" aria-hidden />
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
-        <Link to="/" className="flex items-center gap-2.5" aria-label="SwimTrack home">
+        <Link to="/" className="flex items-center gap-2.5" aria-label="Lanemark home">
           <Logo size={30} />
           <Wordmark />
         </Link>
@@ -203,7 +203,7 @@ export default function Privacy() {
             Kids’ records, <span className="accent">handled with care.</span>
           </h1>
           <p className="mt-4 text-[16.5px] leading-relaxed text-muted">
-            A plain-language summary for aquatics supervisors, privacy officers and IT teams: what SwimTrack keeps, where it’s kept, who can see it and how to remove it.
+            A plain-language summary for aquatics supervisors, privacy officers and IT teams: what Lanemark keeps, where it’s kept, who can see it and how to remove it.
           </p>
         </motion.div>
 
@@ -241,7 +241,7 @@ export default function Privacy() {
               </section>
             ))}
             <p className="border-t border-line pt-6 text-[13px] leading-relaxed text-dim">
-              This page describes how the software works. Each organisation that runs SwimTrack is responsible for its own privacy notices and obligations (in Ontario, for
+              This page describes how the software works. Each organisation that runs Lanemark is responsible for its own privacy notices and obligations (in Ontario, for
               example, MFIPPA for municipalities). It isn’t legal advice.
             </p>
           </div>

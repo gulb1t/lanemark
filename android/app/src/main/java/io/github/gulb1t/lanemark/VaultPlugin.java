@@ -1,4 +1,4 @@
-package io.github.gulb1t.swimtrack;
+package io.github.gulb1t.lanemark;
 
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -29,7 +29,7 @@ import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK;
 import static androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL;
 
 /**
- * Keeps short secrets (the SwimTrack sign-in) encrypted with AES keys that live in the phone's secure hardware
+ * Keeps short secrets (the Lanemark sign-in) encrypted with AES keys that live in the phone's secure hardware
  * (Android Keystore), so they can't be copied off the phone.
  *
  * A "locked" value needs a fingerprint, face or screen-lock check to read:
@@ -43,10 +43,10 @@ import static androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTI
 @CapacitorPlugin(name = "Vault")
 public class VaultPlugin extends Plugin {
 
-    private static final String PREFS = "swimtrack_vault";
+    private static final String PREFS = "lanemark_vault";
     private static final String KEYSTORE = "AndroidKeyStore";
-    private static final String PLAIN_KEY = "swimtrack.vault.plain";
-    private static final String BIO_KEY = "swimtrack.vault.bio";
+    private static final String PLAIN_KEY = "lanemark.vault.plain";
+    private static final String BIO_KEY = "lanemark.vault.bio";
     private static final String TRANSFORM = "AES/GCM/NoPadding";
 
     private interface Done {
@@ -250,7 +250,7 @@ public class VaultPlugin extends Plugin {
     private void prompt(PluginCall call, Cipher cipher, int authenticators, Done done) {
         getActivity().runOnUiThread(() -> {
             BiometricPrompt.PromptInfo.Builder info = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle(call.getString("title", "Unlock SwimTrack"))
+                .setTitle(call.getString("title", "Unlock Lanemark"))
                 .setSubtitle(call.getString("subtitle", "Use your fingerprint, face or screen lock"))
                 .setAllowedAuthenticators(authenticators)
                 .setConfirmationRequired(false);

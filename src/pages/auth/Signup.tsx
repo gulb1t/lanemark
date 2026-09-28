@@ -34,7 +34,7 @@ export default function Signup() {
     setError(null)
     try {
       await register(name.trim(), email, password)
-      toast(`Welcome to SwimTrack, ${name.trim().split(/\s+/)[0]}! Check ${email.trim()} for a link to confirm your email.`)
+      toast(`Welcome to Lanemark, ${name.trim().split(/\s+/)[0]}! Check ${email.trim()} for a link to confirm your email.`)
       navigate(next ? safeNext(next) : '/app?welcome=1', { replace: true })
     } catch (err) {
       setError(errorMessage(err))

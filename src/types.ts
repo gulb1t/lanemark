@@ -36,7 +36,7 @@ export type AttendanceStatus = 'present' | 'absent' | 'late'
 export interface Swimmer {
   id: string
   name: string
-  /** Only in data from older versions: SwimTrack no longer keeps swimmer photos (Settings → Data removes them). */
+  /** Only in data from older versions: Lanemark no longer keeps swimmer photos (Settings → Data removes them). */
   photo?: string
   notes: string
   createdAt: number

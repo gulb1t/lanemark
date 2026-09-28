@@ -56,4 +56,4 @@ const server = spawn(process.execPath, ['--env-file-if-exists=.env', 'server/ind
 children.push(server)
 server.on('exit', (code) => stop(code ?? 1))
 
-console.log(`\n  SwimTrack is live at ${url}\n  (the address can take a few seconds to start answering; Ctrl+C stops everything)\n`)
+console.log(`\n  Lanemark is live at ${url}\n  (the address can take a few seconds to start answering; Ctrl+C stops everything)\n`)

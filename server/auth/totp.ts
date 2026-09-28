@@ -76,7 +76,7 @@ export function verifyTotp(secret: string, code: string, lastUsedStep: number, m
   return null
 }
 
-export function otpauthUrl(secret: string, account: string, issuer = 'SwimTrack'): string {
+export function otpauthUrl(secret: string, account: string, issuer = 'Lanemark'): string {
   const label = `${encodeURIComponent(issuer)}:${encodeURIComponent(account)}`
   const params = new URLSearchParams({ secret, issuer, algorithm: 'SHA1', digits: String(DIGITS), period: String(STEP_SECONDS) })
   return `otpauth://totp/${label}?${params}`

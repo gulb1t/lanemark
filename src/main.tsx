@@ -7,10 +7,13 @@ import { preloadRoutes } from './routes'
 import './index.css'
 import { initEffects } from './lib/effects'
 import { initTextSize } from './lib/textSize'
+import { moveSavedSettings } from './lib/renamed'
 import { initTheme } from './lib/theme'
 import { IS_APP } from './native/platform'
 import { bootstrap } from './store/useSession'
 
+// First: settings saved under the app's old name (SwimTrack) move to the new one before anything reads them.
+moveSavedSettings()
 initTheme()
 initTextSize()
 initEffects()
@@ -38,7 +41,7 @@ if (!IS_APP && 'serviceWorker' in navigator) {
 }
 
 // Too old to draw the app (see public/old-browser.js): leave its note on screen.
-const tooOld = (window as Window & { __swimtrackTooOld?: boolean }).__swimtrackTooOld
+const tooOld = (window as Window & { __lanemarkTooOld?: boolean }).__lanemarkTooOld
 if (!tooOld) createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Motion>

@@ -7,13 +7,14 @@ import { createApp } from './app.ts'
 import { loadConfig } from './config.ts'
 import { openMongo } from './db/mongo.ts'
 import { openSqlite } from './db/sqlite.ts'
+import { dataFile } from './lib/dataFile.ts'
 import { outboxMailer, smtpMailer } from './lib/mailer.ts'
 
 const config = loadConfig()
 
 const repo = config.mongoUri
   ? await openMongo(config.mongoUri, config.mongoDb)
-  : openSqlite(join(config.dataDir, 'swimtrack.db'))
+  : openSqlite(dataFile(config.dataDir))
 
 if (config.production && config.mongoUri && !process.env.SECRET_KEY) {
   console.warn('⚠  Set SECRET_KEY in production. Without it, 2FA secrets can’t be decrypted after the data folder is wiped.')
@@ -59,7 +60,7 @@ sweep.unref()
 
 // HOST=127.0.0.1 keeps the server off the network, e.g. when a tunnel on the same machine is the only way in.
 const server = serve({ fetch: app.fetch, port: config.port, hostname: process.env.HOST || undefined }, (info) => {
-  console.log(`SwimTrack API on http://localhost:${info.port}  ·  storage: ${repo.kind}${config.production ? '  ·  production' : ''}`)
+  console.log(`Lanemark API on http://localhost:${info.port}  ·  storage: ${repo.kind}${config.production ? '  ·  production' : ''}`)
 })
 
 async function shutdown() {

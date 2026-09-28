@@ -118,7 +118,7 @@ describe('two-factor authentication', () => {
     await register(c)
     const setup = await c.post('/api/account/2fa/setup', { password: PASSWORD })
     expect(setup.status).toBe(200)
-    expect(setup.json.otpauthUrl).toMatch(/^otpauth:\/\/totp\/SwimTrack:coach%40example\.com\?secret=/)
+    expect(setup.json.otpauthUrl).toMatch(/^otpauth:\/\/totp\/Lanemark:coach%40example\.com\?secret=/)
     expect(setup.json.qrSvg).toContain('<svg')
     const secret: string = setup.json.secret
     const wrong = await c.post('/api/account/2fa/enable', { code: '000000' })

@@ -3,17 +3,17 @@ import { Vault, vaultError, type VaultError } from './platform'
 
 /**
  * The phone app's sign-in, kept in the Vault. With "Unlock with fingerprint" on, the saved token can only be read
- * after a fingerprint, face or screen-lock check, so a lost phone doesn't open SwimTrack. The app also locks again
+ * after a fingerprint, face or screen-lock check, so a lost phone doesn't open Lanemark. The app also locks again
  * after it has been away for a while (the "lock after" setting).
  */
 
 const SESSION = 'session'
 /** The trusted-device mark from a two-factor sign-in, so this phone can skip the code for 30 days. */
 const TRUST = 'trust'
-const PREF = 'swimtrack:app-lock'
-const AFTER = 'swimtrack:lock-after'
+const PREF = 'lanemark:app-lock'
+const AFTER = 'lanemark:lock-after'
 
-const PROMPT = { title: 'Unlock SwimTrack', subtitle: 'Use your fingerprint, face or screen lock' }
+const PROMPT = { title: 'Unlock Lanemark', subtitle: 'Use your fingerprint, face or screen lock' }
 
 function read(key: string) {
   try {
@@ -157,7 +157,7 @@ export function lockMessage(error: VaultError): string {
     case 'cancelled':
       return ''
     case 'invalidated':
-      return 'The fingerprints or face on this phone changed, so SwimTrack needs your password once.'
+      return 'The fingerprints or face on this phone changed, so Lanemark needs your password once.'
     case 'lockout':
       return 'Too many tries. Wait a moment, or sign in with your password.'
     case 'unavailable':

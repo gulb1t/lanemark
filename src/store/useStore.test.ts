@@ -170,7 +170,7 @@ describe('backup import', () => {
   })
 
   it('rejects files that are not backups', () => {
-    expect(() => parseBackup({ hello: 'world' })).toThrow(/not a SwimTrack backup/)
+    expect(() => parseBackup({ hello: 'world' })).toThrow(/not a Lanemark backup/)
     expect(() => parseBackup({ swimmers: [{ nope: 1 }], classes: [] })).toThrow(/damaged/)
     expect(parseBackup({ swimmers: [], classes: [] })).toEqual({ swimmers: [], classes: [] })
   })

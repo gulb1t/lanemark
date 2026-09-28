@@ -5,12 +5,12 @@ import type { CapacitorConfig } from '@capacitor/cli'
  * the APK (nothing loads from the website). It talks to the live API with a bearer token; see docs/MOBILE.md.
  */
 const config: CapacitorConfig = {
-  appId: 'io.github.gulb1t.swimtrack',
-  appName: 'SwimTrack',
+  appId: 'io.github.gulb1t.lanemark',
+  appName: 'Lanemark',
   webDir: 'dist-app',
   android: {
-    // Lets the server's sessions list say "SwimTrack app on Android".
-    appendUserAgent: 'SwimTrackApp/1.0',
+    // Lets the server's sessions list say "Lanemark app on Android".
+    appendUserAgent: 'LanemarkApp/1.0',
     backgroundColor: '#060709',
     // Only for testing against a server on your computer (APP_API_URL=http://10.0.2.2:8787 in the emulator).
     allowMixedContent: process.env.APP_API_URL?.startsWith('http:') ?? false,

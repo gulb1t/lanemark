@@ -23,7 +23,7 @@ interface Message {
   error?: boolean
 }
 
-const STORE_KEY = 'swimtrack:assistant'
+const STORE_KEY = 'lanemark:assistant'
 const SUGGESTIONS = ['What should I do today?', 'How do I write report cards?', 'What are the Swimmer 4 skills?', 'How do I turn on two-factor?']
 
 const setOpen = (open: boolean) => useAssistant.setState({ open })
@@ -155,7 +155,7 @@ export function Assistant() {
             exit={{ opacity: 0, scale: 0.8, y: 8 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setOpen(true)}
-            aria-label="Ask the SwimTrack assistant"
+            aria-label="Ask the Lanemark assistant"
             // Phones open it from the top bar instead, so nothing floats over lists and buttons.
             className="no-print btn-primary fixed bottom-6 right-6 z-40 hidden h-11 items-center justify-center gap-2 rounded-full px-4 md:flex"
             style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
@@ -170,7 +170,7 @@ export function Assistant() {
         {open && (
           <motion.section
             role="dialog"
-            aria-label="SwimTrack assistant"
+            aria-label="Lanemark assistant"
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -183,7 +183,7 @@ export function Assistant() {
                 <Sparkles size={16} />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-[15px] font-bold leading-tight">Ask SwimTrack</h2>
+                <h2 className="font-display text-[15px] font-bold leading-tight">Ask Lanemark</h2>
                 <p className="text-[12px] text-dim">Directions, curriculum and how-tos</p>
               </div>
               {messages.length > 0 && (
@@ -255,7 +255,7 @@ export function Assistant() {
                     }
                   }}
                   maxLength={2000}
-                  placeholder="Ask anything about SwimTrack…"
+                  placeholder="Ask anything about Lanemark…"
                   aria-label="Message the assistant"
                   className="max-h-32 min-h-9 flex-1 resize-none bg-transparent py-2 text-[14px] outline-none placeholder:text-dim"
                 />

@@ -321,7 +321,7 @@ function InviteButton({ pool }: { pool: Pool }) {
   if (!pool.inviteCode) return null
   const link = `${SITE_URL}/app/pool?code=${pool.inviteCode}`
   async function copy() {
-    const res = await shareOrCopy(IS_APP ? `Join ${pool.name} on SwimTrack: ${link}` : link, 'Send the invite')
+    const res = await shareOrCopy(IS_APP ? `Join ${pool.name} on Lanemark: ${link}` : link, 'Send the invite')
     if (res === 'copied') {
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)

@@ -42,13 +42,13 @@ export function Showcase() {
             <span className="size-3 rounded-full bg-[#ff5f57]" />
             <span className="size-3 rounded-full bg-[#febc2e]" />
             <span className="size-3 rounded-full bg-[#28c840]" />
-            <span className="mx-auto hidden rounded-lg bg-fg/[0.05] px-10 py-1 font-mono text-[11px] text-dim sm:block">swimtrack.app/app/classes/swimmer-3?tab={tab.id}</span>
+            <span className="mx-auto hidden rounded-lg bg-fg/[0.05] px-10 py-1 font-mono text-[11px] text-dim sm:block">lanemark.app/app/classes/swimmer-3?tab={tab.id}</span>
           </div>
           <div className="grid min-h-[25rem] overflow-hidden rounded-[1.25rem] border border-line bg-ink md:grid-cols-[13.5rem_1fr]">
             <aside className="hidden flex-col gap-5 border-r border-line bg-panel/60 p-3 md:flex" aria-hidden>
               <div className="flex items-center gap-2 px-1.5 pt-1">
                 <Logo size={22} />
-                <span className="font-display text-[14px] font-bold">SwimTrack</span>
+                <span className="font-display text-[14px] font-bold">Lanemark</span>
               </div>
               <div className="flex h-8 items-center gap-2 rounded-lg border border-line bg-fg/[0.03] px-2.5 text-[12px] text-dim">
                 <Search size={12} /> Search…

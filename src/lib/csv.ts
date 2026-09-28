@@ -45,5 +45,5 @@ export function classCsv(cls: SwimClass, swimmers: Map<string, Swimmer>): string
 export function csvFileName(cls: SwimClass): string {
   const base = [cls.name, cls.session].filter(Boolean).join(' - ')
   // Colons aren't allowed in Windows file names; "5:30" becomes "5.30".
-  return `${base.replace(/:/g, '.').replace(/[\\/*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() || 'SwimTrack class'}.csv`
+  return `${base.replace(/:/g, '.').replace(/[\\/*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Lanemark class'}.csv`
 }

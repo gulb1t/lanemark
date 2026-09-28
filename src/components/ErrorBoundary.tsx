@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
-const RELOADED = 'swimtrack:chunk-reload'
+const RELOADED = 'lanemark:chunk-reload'
 
 /** After a deploy, an open tab can ask for code files that no longer exist. One reload fixes that. */
 function isStaleChunk(error: unknown) {
@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
       <div role="alert" className="flex min-h-dvh items-center justify-center px-6">
         <div className="card max-w-md p-8 text-center">
           <img src="/logo.svg" alt="" width={44} height={44} className="mx-auto" />
-          <h1 className="page-title mt-5 !text-[1.8rem]">{stale ? 'SwimTrack was updated' : 'Something went wrong'}</h1>
+          <h1 className="page-title mt-5 !text-[1.8rem]">{stale ? 'Lanemark was updated' : 'Something went wrong'}</h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
             {stale
               ? 'A newer version is available. Reload to get it.'

@@ -58,7 +58,7 @@ export function LandingNav({ signedIn }: { signedIn: boolean }) {
         className={`relative w-full rounded-full transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${scrolled ? 'pill-nav' : 'border border-transparent'}`}
       >
         <div className="flex h-14 items-center gap-2 pl-4 pr-2">
-          <Link to="/" className="mr-2 flex shrink-0 items-center gap-2.5" aria-label="SwimTrack home">
+          <Link to="/" className="mr-2 flex shrink-0 items-center gap-2.5" aria-label="Lanemark home">
             <Logo size={28} />
             <Wordmark />
           </Link>

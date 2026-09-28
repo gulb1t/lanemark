@@ -1,9 +1,9 @@
-/* SwimTrack service worker. Generated at build time by the `service-worker` plugin in vite.config.ts. */
+/* Lanemark service worker. Generated at build time by the `service-worker` plugin in vite.config.ts. */
 /* global self, caches, fetch, URL, location, setTimeout */
 
 const VERSION = '__VERSION__'
 const PRECACHE = __ASSETS__
-const CACHE = `swimtrack-${VERSION}`
+const CACHE = `lanemark-${VERSION}`
 const SHELL = '/index.html'
 
 // Keep the app shell and this build's assets on the device so the app opens with no signal.
@@ -15,7 +15,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('swimtrack-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('lanemark-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   )
 })

@@ -36,7 +36,7 @@ function render({ to, subject, preview, heading, paragraphs, action, footnote }:
 <tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
     <tr><td style="padding:0 4px 18px;font-size:17px;font-weight:700;letter-spacing:-0.01em">
-      ${logo}SwimTrack
+      ${logo}Lanemark
     </td></tr>
     <tr><td style="background:#ffffff;border:1px solid #e4e8ee;border-radius:20px;padding:32px 32px 8px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -60,7 +60,7 @@ export const emails = {
   verify: (to: string, name: string, url: string) =>
     render({
       to,
-      subject: 'Confirm your email for SwimTrack',
+      subject: 'Confirm your email for Lanemark',
       preview: 'One tap to confirm your address.',
       heading: `Welcome, ${name.split(/\s+/)[0]}`,
       paragraphs: ['Confirm this is your email so you can reset your password and get security alerts about your account. The link works for 24 hours.'],
@@ -71,10 +71,10 @@ export const emails = {
   changeEmail: (to: string, url: string) =>
     render({
       to,
-      subject: 'Confirm your new SwimTrack email',
+      subject: 'Confirm your new Lanemark email',
       preview: 'Confirm the new address for your account.',
       heading: 'Confirm your new email',
-      paragraphs: ['Someone asked to move a SwimTrack account to this address. Confirm it to finish the change. The link works for 24 hours.'],
+      paragraphs: ['Someone asked to move a Lanemark account to this address. Confirm it to finish the change. The link works for 24 hours.'],
       action: { label: 'Confirm new email', url },
       footnote: IGNORE,
     }),
@@ -82,10 +82,10 @@ export const emails = {
   reset: (to: string, url: string) =>
     render({
       to,
-      subject: 'Reset your SwimTrack password',
+      subject: 'Reset your Lanemark password',
       preview: 'This link works for 30 minutes.',
       heading: 'Reset your password',
-      paragraphs: ['We got a request to reset the password for this SwimTrack account. The link works once, for 30 minutes. If two-factor authentication is on, you’ll still need your authenticator app to sign in.'],
+      paragraphs: ['We got a request to reset the password for this Lanemark account. The link works once, for 30 minutes. If two-factor authentication is on, you’ll still need your authenticator app to sign in.'],
       action: { label: 'Choose a new password', url },
       footnote: 'If you didn’t ask for this, you can ignore this email. Your password stays the same.',
     }),
@@ -103,7 +103,7 @@ export const emails = {
         ...(r.pools ? [`Pools: ${r.pools}`] : []),
         r.message ? `Message: ${r.message}` : 'No message.',
       ],
-      footnote: 'Sent from the pricing section on SwimTrack. Reply to this email to answer them directly.',
+      footnote: 'Sent from the pricing section on Lanemark. Reply to this email to answer them directly.',
     })
     return { ...mail, replyTo: r.email }
   },
@@ -116,6 +116,6 @@ export const emails = {
       heading,
       paragraphs: [body, 'If this wasn’t you, reset your password now. Resetting signs every device out, then review Settings → Security.'],
       action: { label: 'Reset my password', url: resetUrl },
-      footnote: 'You’re getting this because it’s a security change to your SwimTrack account.',
+      footnote: 'You’re getting this because it’s a security change to your Lanemark account.',
     }),
 }

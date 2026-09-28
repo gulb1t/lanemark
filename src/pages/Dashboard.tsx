@@ -20,7 +20,7 @@ import { openDialog, toast } from '../store/useUi'
 import type { Swimmer, SwimClass } from '../types'
 
 const DASHBOARD_TOUR: TourStep[] = [
-  { title: 'Welcome to SwimTrack', body: 'Here’s a quick look around. It takes about 30 seconds, and you can replay it any time from Help.' },
+  { title: 'Welcome to Lanemark', body: 'Here’s a quick look around. It takes about 30 seconds, and you can replay it any time from Help.' },
   { target: '[data-tour=onboarding]', title: 'Start here', body: 'Make your first class, or load two sample classes to try things out first.' },
   { target: '[data-tour=today]', title: 'Today’s classes', body: 'A class you teach today shows up first. Tap Take attendance when the lesson starts.' },
   {
@@ -79,7 +79,7 @@ export default function Dashboard() {
   useEffect(() => {
     const legacy = readLegacyData()
     if (!legacy) return
-    sonner('Found classes from the previous version of SwimTrack on this device.', {
+    sonner('Found classes from the previous version of Lanemark on this device.', {
       id: 'legacy-import',
       duration: Infinity,
       action: {

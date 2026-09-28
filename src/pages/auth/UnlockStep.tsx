@@ -35,7 +35,7 @@ export default function UnlockStep() {
 
   const Icon = biometrics === 'weak' ? ScanFace : Fingerprint
   return (
-    <AuthLayout title="One more thing" subtitle="Open SwimTrack with your fingerprint, face or screen lock next time, instead of your password.">
+    <AuthLayout title="One more thing" subtitle="Open Lanemark with your fingerprint, face or screen lock next time, instead of your password.">
       <div className="flex justify-center pb-8 pt-2">
         <span className="flex size-24 items-center justify-center rounded-full border border-aqua/30 bg-aqua/10 text-aqua">
           <Icon size={44} strokeWidth={1.5} />

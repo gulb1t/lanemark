@@ -4,17 +4,17 @@
  * Refuses to run in production. Safe to run twice (it skips an existing account).
  */
 import { randomUUID } from 'node:crypto'
-import { join } from 'node:path'
 import { buildDemoData } from '../src/lib/demo.ts'
 import { hashPassword } from './auth/password.ts'
 import { loadConfig } from './config.ts'
 import { openMongo } from './db/mongo.ts'
 import { openSqlite } from './db/sqlite.ts'
+import { dataFile } from './lib/dataFile.ts'
 import { monotonicClock } from './db/types.ts'
 
 export const DEV_ACCOUNT = {
   name: 'Dev Coach',
-  email: 'coach@swimtrack.test',
+  email: 'coach@lanemark.test',
   password: 'Lane-Lines-Forever-42',
 }
 
@@ -24,7 +24,7 @@ if (config.production) {
   process.exit(1)
 }
 
-const repo = config.mongoUri ? await openMongo(config.mongoUri, config.mongoDb) : openSqlite(join(config.dataDir, 'swimtrack.db'))
+const repo = config.mongoUri ? await openMongo(config.mongoUri, config.mongoDb) : openSqlite(dataFile(config.dataDir))
 
 if (await repo.getUserByEmail(DEV_ACCOUNT.email)) {
   console.log(`${DEV_ACCOUNT.email} already exists. Nothing to do.`)

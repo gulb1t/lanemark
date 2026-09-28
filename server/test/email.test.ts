@@ -18,7 +18,7 @@ describe('email verification', () => {
     await register(c)
     await tick()
     expect((await c.get('/api/me')).json.user.emailVerified).toBe(false)
-    expect(mailer.list()[0]).toMatchObject({ to: 'coach@example.com', subject: 'Confirm your email for SwimTrack' })
+    expect(mailer.list()[0]).toMatchObject({ to: 'coach@example.com', subject: 'Confirm your email for Lanemark' })
     expect(mailer.list()[0].html).toContain('http://localhost:5173/verify-email?token=')
     const token = linkToken(mailer)!
     // The link works from a device that isn't signed in.
@@ -65,7 +65,7 @@ describe('password reset', () => {
     expect(unknown.json).toEqual(known.json)
     await tick()
     expect(mailer.list().length).toBe(before + 1)
-    expect(mailer.list()[0].subject).toBe('Reset your SwimTrack password')
+    expect(mailer.list()[0].subject).toBe('Reset your Lanemark password')
   })
 
   it('resets the password once, signs out every device and verifies the email', async () => {
@@ -80,7 +80,7 @@ describe('password reset', () => {
     expect((await client(app).post('/api/auth/password/reset', { token, password: 'password123' })).json.error.code).toBe('weak_password')
     expect((await client(app).post('/api/auth/password/reset', { token, password: NEW_PASSWORD })).status).toBe(200)
     await tick()
-    expect(mailer.list()[0].subject).toBe('Your SwimTrack password was changed')
+    expect(mailer.list()[0].subject).toBe('Your Lanemark password was changed')
     expect((await c.get('/api/me')).status).toBe(401)
     expect((await client(app).post('/api/auth/password/reset', { token, password: 'another long passphrase' })).status).toBe(400)
     expect((await client(app).post('/api/auth/login', { email: 'coach@example.com', password: PASSWORD })).status).toBe(401)
@@ -126,7 +126,7 @@ describe('changing email', () => {
     expect(verify.json).toMatchObject({ ok: true, changed: true, email: 'new@example.com' })
     expect((await c.get('/api/me')).json.user).toMatchObject({ email: 'new@example.com', emailVerified: true })
     await tick()
-    expect(mailer.list()[0]).toMatchObject({ to: 'coach@example.com', subject: 'Your SwimTrack email was changed' })
+    expect(mailer.list()[0]).toMatchObject({ to: 'coach@example.com', subject: 'Your Lanemark email was changed' })
   })
 })
 
@@ -137,6 +137,6 @@ describe('dev outbox', () => {
     await tick()
     const res = await app.request('http://localhost/api/dev/outbox')
     expect(res.status).toBe(200)
-    expect(await res.text()).toContain('Confirm your email for SwimTrack')
+    expect(await res.text()).toContain('Confirm your email for Lanemark')
   })
 })

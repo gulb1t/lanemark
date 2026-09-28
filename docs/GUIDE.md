@@ -1,4 +1,4 @@
-# How to use SwimTrack
+# How to use Lanemark
 
 <!-- Generated from src/data/guide.ts by `npm run guide:md`. Edit that file, not this one. -->
 
@@ -39,7 +39,7 @@ _Today’s classes, what’s left to do, and all your classes in one place._
 
 ### Make a class
 
-_Pick the level and SwimTrack loads its skills for you._
+_Pick the level and Lanemark loads its skills for you._
 
 1. Press **New** at the top of the screen, then **New class**. (On a phone, press **New** next to your classes on the home screen.)
 2. Pick the **level**, for example Swimmer 3. Its skills from the Swim for Life manual are loaded in automatically.
@@ -66,7 +66,7 @@ _Add new swimmers, or put swimmers you already have into a class._
 3. **Tick** everyone you want in this class, then press **Add**. Nothing changes until you press it.
 4. Someone new? Press **New swimmer**, type their name and press **Add to class**.
 
-> 💡 To take a swimmer out of a class, press the person icon on their card. SwimTrack asks first and tells you what will be removed.
+> 💡 To take a swimmer out of a class, press the person icon on their card. Lanemark asks first and tells you what will be removed.
 >
 > 💡 A swimmer can be in more than one class. Their profile shows every class they’re in.
 
@@ -112,7 +112,7 @@ _Mark each skill as passed or not yet, for the whole class or one swimmer at a t
 1. Open the class and go to the **Skills** tab.
 2. **Everyone** shows a grid: skills down the side, swimmers across the top. Tap a box once for **passed** (✓), twice for **not yet** (–), three times to clear it.
 3. **One swimmer** shows a single swimmer with a **Passed** and a **Not yet** button for each skill. It’s easier on a phone.
-4. When a swimmer passes every skill, SwimTrack celebrates and their report card switches to the passing wording.
+4. When a swimmer passes every skill, Lanemark celebrates and their report card switches to the passing wording.
 
 > 💡 Tap a skill’s name in the One swimmer view to see what the manual says to look for.
 
@@ -145,7 +145,7 @@ _A topic, date and notes for each lesson._
 
 ## Report cards
 
-At the end of the session. SwimTrack writes the comments from the manual; you check them.
+At the end of the session. Lanemark writes the comments from the manual; you check them.
 
 <a id="write-reports"></a>
 
@@ -155,7 +155,7 @@ _One swimmer at a time, in three steps._
 
 1. Open the class, go to the **Report cards** tab and press **Start writing**.
 2. **Step 1, skills:** tap **Passed** or **Not yet** for each skill. (Already done in the Skills tab? It’s filled in here too.)
-3. **Step 2, the comment:** press **Write it for me**. SwimTrack writes it from the skills, in the report card manual’s own words. Read it and change anything you like.
+3. **Step 2, the comment:** press **Write it for me**. Lanemark writes it from the skills, in the report card manual’s own words. Read it and change anything you like.
 4. Want it to praise something else, or mention different things to work on? Press **Change what it says** and pick.
 5. **Step 3, next level:** already filled in. A swimmer moves up only when every skill is passed.
 6. Press **Next** to go to the next swimmer. Everything saves as you go.
@@ -194,10 +194,10 @@ _Letter-size report cards, one per page, or a spreadsheet of the whole class._
 
 ### Report card rules
 
-_What the report card manual asks for, and how SwimTrack helps._
+_What the report card manual asks for, and how Lanemark helps._
 
-1. Comment on **at least two** skills. SwimTrack warns you if a comment names fewer.
-2. Never mention **attendance or behaviour**. SwimTrack flags words like “absent” or “listening”.
+1. Comment on **at least two** skills. Lanemark warns you if a comment names fewer.
+2. Never mention **attendance or behaviour**. Lanemark flags words like “absent” or “listening”.
 3. A swimmer passes a level only when **every** skill is passed. Otherwise they register in the same level again.
 4. Keep it positive and specific: something they did well, then what to work on next.
 
@@ -252,9 +252,9 @@ _Everything saves on your device first._
 
 1. Keep working as normal. Every change saves on your phone, tablet or laptop straight away.
 2. The little status pill at the top says **Saved**, **Saving** or **Offline**.
-3. When you’re back online, SwimTrack syncs by itself, so your other devices catch up.
+3. When you’re back online, Lanemark syncs by itself, so your other devices catch up.
 
-> 💡 Open SwimTrack once on each device while you have signal. After that it opens even with none.
+> 💡 Open Lanemark once on each device while you have signal. After that it opens even with none.
 
 <a id="mistakes"></a>
 

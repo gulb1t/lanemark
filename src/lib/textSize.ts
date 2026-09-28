@@ -13,7 +13,7 @@ export const TEXT_SIZES = [
 ] as const
 export type TextSize = (typeof TEXT_SIZES)[number]['id']
 
-const KEY = 'swimtrack:text-size'
+const KEY = 'lanemark:text-size'
 
 function stored(): TextSize {
   try {
@@ -28,7 +28,7 @@ function stored(): TextSize {
 export const useTextSize = create<{ size: TextSize }>(() => ({ size: stored() }))
 
 /**
- * CSS zoom as SwimTrack uses it (sizes and positions scale together) arrived in Chrome 128. Older WebViews (Android 7
+ * CSS zoom as Lanemark uses it (sizes and positions scale together) arrived in Chrome 128. Older WebViews (Android 7
  * phones stop at Chrome 119) zoom differently and would misplace menus, so there the app stays at its normal size.
  */
 export function zoomWorks(): boolean {

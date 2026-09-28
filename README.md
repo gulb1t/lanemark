@@ -1,4 +1,4 @@
-# SwimTrack
+# Lanemark
 
 **Every length, logged.** Attendance, lesson plans, skill check-offs and report cards for swim instructors, built on the Lifesaving Society **Swim for Life** curriculum (Parent & Tot through Bronze Star, plus Teen/Adult: 21 levels, 265 skills with distances and must-see comments).
 
@@ -167,6 +167,6 @@ Levels are presets: every class gets its own editable copy of its skills.
 
 ## Android app
 
-SwimTrack is also an Android app with fingerprint or face unlock, printing, the share sheet and offline use.
+Lanemark is also an Android app with fingerprint or face unlock, printing, the share sheet and offline use.
 `npm run app` builds a test APK, and `npm run app -- --install` puts it on a phone plugged in by USB. See
 [docs/MOBILE.md](docs/MOBILE.md) for the release build, how the app signs in, and the iOS plan (planned).

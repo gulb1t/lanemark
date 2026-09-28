@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, ApiError, NetworkError, setAuthToken, type User } from '../lib/api'
 import { buildDemoData } from '../lib/demo'
+import { moveOfflineData } from '../lib/renamed'
 import { canLock, forgetSession, loadCapabilities, lockPref, readSession, saveTrustMark, savedSession, storeSession, trustMark, useLock } from '../native/lock'
 import { IS_APP, type VaultError } from '../native/platform'
 import { clearCache, hasCache, pendingChanges, startSync, stopSync, syncNow } from '../sync/engine'
@@ -18,8 +19,8 @@ interface SessionState {
 
 export const useSession = create<SessionState>(() => ({ status: 'loading', user: null, offline: false }))
 
-const LAST_USER = 'swimtrack:last-user'
-const DEMO_FLAG = 'swimtrack:demo'
+const LAST_USER = 'lanemark:last-user'
+const DEMO_FLAG = 'lanemark:demo'
 const DEMO_ID = 'demo'
 
 const storage = {
@@ -82,6 +83,8 @@ async function enter(user: User, offline = false) {
  * calls unlockAtStart().
  */
 export async function bootstrap() {
+  // The offline copy saved under the app's old name moves before sync reads it.
+  await moveOfflineData()
   if (IS_APP) await loadCapabilities()
   if (storage.get(DEMO_FLAG) === '1') {
     await enterDemo()
@@ -218,7 +221,7 @@ export async function enterDemo() {
   const fresh = !(await hasCache(DEMO_ID))
   useSession.setState({
     status: 'demo',
-    user: { id: DEMO_ID, email: 'demo@swimtrack.app', name: 'Demo Coach', twoFactor: false, recoveryCodesLeft: 0, createdAt: Date.now() },
+    user: { id: DEMO_ID, email: 'demo@lanemark.app', name: 'Demo Coach', twoFactor: false, recoveryCodesLeft: 0, createdAt: Date.now() },
     offline: false,
   })
   await startSync({ userId: DEMO_ID, remote: false })

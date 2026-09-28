@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer'
 
 const to = process.argv[2]
 const url = process.env.SMTP_URL
-const from = process.env.MAIL_FROM ?? 'SwimTrack <no-reply@swimtrack.local>'
+const from = process.env.MAIL_FROM ?? 'Lanemark <no-reply@lanemark.local>'
 
 if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
   console.error('Usage: npm run mail:test -- you@example.com')
@@ -33,8 +33,8 @@ try {
   const info = await transport.sendMail({
     from,
     to,
-    subject: 'SwimTrack email test',
-    text: 'If you can read this, SwimTrack can send email: sign-up confirmations, password resets and pilot requests will arrive.',
+    subject: 'Lanemark email test',
+    text: 'If you can read this, Lanemark can send email: sign-up confirmations, password resets and pilot requests will arrive.',
   })
   console.log(`Sent to ${to} from ${from} (message ${info.messageId}). Check the inbox, and the spam folder the first time.`)
 } catch (err) {

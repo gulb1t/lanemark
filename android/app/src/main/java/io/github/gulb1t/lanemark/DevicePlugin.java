@@ -1,4 +1,4 @@
-package io.github.gulb1t.swimtrack;
+package io.github.gulb1t.lanemark;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -25,7 +25,7 @@ public class DevicePlugin extends Plugin {
      */
     @PluginMethod
     public void print(PluginCall call) {
-        String name = call.getString("name", "SwimTrack");
+        String name = call.getString("name", "Lanemark");
         getActivity().runOnUiThread(() -> {
             try {
                 WebView web = getBridge().getWebView();
@@ -60,7 +60,7 @@ public class DevicePlugin extends Plugin {
         });
     }
 
-    /** Only while SwimTrack is on screen; Android clears it when the app goes to the background. */
+    /** Only while Lanemark is on screen; Android clears it when the app goes to the background. */
     @PluginMethod
     public void keepAwake(PluginCall call) {
         boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));

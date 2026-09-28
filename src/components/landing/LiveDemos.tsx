@@ -226,7 +226,7 @@ export function LiveTwoFactor() {
   return (
     <div ref={ref} className="flex h-full flex-col items-center justify-center gap-3">
       <div className="flex items-center gap-2 text-[12px] text-muted">
-        <ShieldCheck size={15} className="text-aqua" /> SwimTrack · coach@pool.ca
+        <ShieldCheck size={15} className="text-aqua" /> Lanemark · coach@pool.ca
       </div>
       <AnimatePresence mode="popLayout">
         <motion.div

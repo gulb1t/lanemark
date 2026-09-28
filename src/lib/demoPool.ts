@@ -195,7 +195,7 @@ const joined = (daysAgo: number, now: number) => now - daysAgo * 864e5
 /** The demo coach supervises a pool of made-up instructors. Everything is generated in the browser. */
 export function buildDemoPool(you: { id: string; name: string }, now = Date.now()): Pool {
   const members: PoolMember[] = [
-    { id: you.id, name: you.name, email: 'demo@swimtrack.app', role: 'supervisor', joinedAt: joined(40, now), you: true },
+    { id: you.id, name: you.name, email: 'demo@lanemark.app', role: 'supervisor', joinedAt: joined(40, now), you: true },
     ...COACHES.map((c, i) => ({ id: `demo-coach-${i}`, name: c.name, email: c.email, role: c.role, joinedAt: joined(38 - i * 3, now), you: false })),
   ]
   return {

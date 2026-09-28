@@ -21,7 +21,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /** Hides what isn't part of the screen being shown: the demo banner, the Ask button, toasts and the film grain. */
 const HIDE = `
-  .grain, [data-sonner-toaster], button[aria-label="Ask the SwimTrack assistant"] { display: none !important; }
+  .grain, [data-sonner-toaster], button[aria-label="Ask the Lanemark assistant"] { display: none !important; }
   nav[aria-label="Swimmers"] { display: none !important; }
   *, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; }
 `
@@ -59,7 +59,7 @@ const SHOTS = [
 
 async function browser(scheme) {
   const port = 9600 + Math.floor(Math.random() * 300)
-  const profile = mkdtempSync(join(tmpdir(), 'swimtrack-shots-'))
+  const profile = mkdtempSync(join(tmpdir(), 'lanemark-shots-'))
   const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run', '--hide-scrollbars', 'about:blank'], { stdio: 'ignore' })
   const stop = () => {
     chrome.kill('SIGKILL')
@@ -106,7 +106,7 @@ for (const scheme of ['light', 'dark']) {
   const b = await browser(scheme)
   // Skip the guided tours and start the demo from scratch.
   await b.go(`${BASE}/`)
-  await b.run(`localStorage.clear(); localStorage.setItem('swimtrack:tour:all', '1'); localStorage.setItem('swimtrack:theme', 'system')`)
+  await b.run(`localStorage.clear(); localStorage.setItem('lanemark:tour:all', '1'); localStorage.setItem('lanemark:theme', 'system')`)
   await b.go(`${BASE}/demo`)
   await sleep(1500)
   await b.run(`document.querySelector('button[aria-label="Hide"]')?.click()`)

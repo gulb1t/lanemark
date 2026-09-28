@@ -371,11 +371,11 @@ function pruneAttendance(e: Enrollment, lessons: Lesson[]): Enrollment {
   return { ...e, attendance: Object.fromEntries(Object.entries(e.attendance).filter(([id]) => keep.has(id))) }
 }
 
-/** Runtime check that parsed JSON has the shape of a SwimTrack backup. */
+/** Runtime check that parsed JSON has the shape of a Lanemark backup. */
 export function parseBackup(raw: unknown): PersistedData {
   const d = raw as Partial<PersistedData> | null
   if (!d || typeof d !== 'object' || !Array.isArray(d.swimmers) || !Array.isArray(d.classes)) {
-    throw new Error('This file is not a SwimTrack backup.')
+    throw new Error('This file is not a Lanemark backup.')
   }
   const okSwimmer = (w: Swimmer) => w && typeof w.id === 'string' && typeof w.name === 'string'
   const okClass = (c: SwimClass) =>

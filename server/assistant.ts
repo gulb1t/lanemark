@@ -2,7 +2,7 @@ import { LEVEL_BY_ID, LEVELS, PROGRAMS } from '../src/data/curriculum.ts'
 import type { Config } from './config.ts'
 
 /**
- * The in-app assistant. It answers "how do I…" questions about SwimTrack and the Swim for Life curriculum, and
+ * The in-app assistant. It answers "how do I…" questions about Lanemark and the Swim for Life curriculum, and
  * points people to the right screen with buttons. The model sees the user's question, the page they're on and a
  * summary of their classes (names, levels, counts). Never swimmer names, notes or comments.
  */
@@ -50,7 +50,7 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'navigate',
-      description: 'Show the user a button that opens a page in SwimTrack. Use whenever a page would help. Only paths listed in the guide.',
+      description: 'Show the user a button that opens a page in Lanemark. Use whenever a page would help. Only paths listed in the guide.',
       parameters: {
         type: 'object',
         properties: { path: { type: 'string', description: 'App path, e.g. /app/curriculum?level=sw4' }, label: { type: 'string', description: 'Short button text, e.g. "Open Swimmer 4 skills"' } },
@@ -100,7 +100,7 @@ function systemPrompt(ctx: AssistantContext) {
         )
         .join('\n')
     : '(no classes yet)'
-  return `You are the SwimTrack assistant, built into SwimTrack: an app swim instructors use on deck for attendance, skill check-offs, lesson plans and report cards, based on the Lifesaving Society's Swim for Life program and its report card guidelines.
+  return `You are the Lanemark assistant, built into Lanemark: an app swim instructors use on deck for attendance, skill check-offs, lesson plans and report cards, based on the Lifesaving Society's Swim for Life program and its report card guidelines.
 
 Style: friendly, brief, practical. 1–4 short sentences or a short list. Plain words, no jargon. Use **bold** sparingly. Never invent features. If you don't know, say so.
 
@@ -148,7 +148,7 @@ function runTool(name: string, args: Record<string, unknown>, ctx: AssistantCont
   if (name === 'navigate') {
     const path = String(args.path ?? '')
     const label = String(args.label ?? 'Open').slice(0, 60)
-    if (!safePath(path, ctx)) return 'Rejected: that is not a valid SwimTrack page. Use a path from the guide with a real class id.'
+    if (!safePath(path, ctx)) return 'Rejected: that is not a valid Lanemark page. Use a path from the guide with a real class id.'
     if (!actions.some((a) => a.target === path)) actions.push({ kind: 'navigate', label, target: path })
     return 'Button shown.'
   }

@@ -12,8 +12,8 @@ function phone(app: App, platform = 'android') {
       method,
       headers: {
         origin: 'https://localhost',
-        'x-swimtrack-client': platform,
-        'user-agent': 'Mozilla/5.0 (Linux; Android 16) Chrome/140.0 Mobile SwimTrackApp/1.0',
+        'x-lanemark-client': platform,
+        'user-agent': 'Mozilla/5.0 (Linux; Android 16) Chrome/140.0 Mobile LanemarkApp/1.0',
         ...(method !== 'GET' ? { 'content-type': 'application/json' } : {}),
         ...(token ? { authorization: `Bearer ${token}` } : {}),
         ...extra,
@@ -36,6 +36,20 @@ function phone(app: App, platform = 'android') {
 }
 
 describe('the phone app', () => {
+  it('still recognises app builds from before the rename (SwimTrack header)', async () => {
+    const { app } = setupApp()
+    const res = await app.request('http://localhost/api/auth/register', {
+      method: 'POST',
+      headers: { origin: 'https://localhost', 'content-type': 'application/json', 'x-swimtrack-client': 'android' },
+      body: JSON.stringify({ name: 'Casey Coach', email: 'old-app@example.com', password: PASSWORD }),
+    })
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as { token?: string }
+    // Treated as the app: a bearer token, no cookie.
+    expect(json.token).toMatch(/^[\w-]{40,}$/)
+    expect(res.headers.getSetCookie()).toEqual([])
+  })
+
   it('signs up and in with a bearer token and never gets cookies', async () => {
     const { app } = setupApp()
     const p = phone(app)
@@ -55,7 +69,7 @@ describe('the phone app', () => {
     // The sessions list names the app.
     p.token = login.json.token
     const sessions = await p.get('/api/account/sessions')
-    expect(sessions.json.sessions.find((s: any) => s.current).device).toBe('SwimTrack app on Android')
+    expect(sessions.json.sessions.find((s: any) => s.current).device).toBe('Lanemark app on Android')
 
     // Signing out ends that token only.
     expect((await p.post('/api/auth/logout')).status).toBe(200)
@@ -110,11 +124,11 @@ describe('the phone app', () => {
     const { app } = setupApp()
     const pre = await app.request('http://localhost/api/auth/login', {
       method: 'OPTIONS',
-      headers: { origin: 'https://localhost', 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type, x-swimtrack-client' },
+      headers: { origin: 'https://localhost', 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type, x-lanemark-client' },
     })
     expect(pre.status).toBe(204)
     expect(pre.headers.get('access-control-allow-origin')).toBe('https://localhost')
-    expect(pre.headers.get('access-control-allow-headers')).toContain('x-swimtrack-client')
+    expect(pre.headers.get('access-control-allow-headers')).toContain('x-lanemark-client')
     expect(pre.headers.get('access-control-allow-credentials')).toBeNull()
 
     const evil = await app.request('http://localhost/api/auth/login', { method: 'OPTIONS', headers: { origin: 'https://evil.example', 'access-control-request-method': 'POST' } })
@@ -132,7 +146,7 @@ describe('the phone app', () => {
     // A made-up client name isn't the app.
     const fake = await app.request('http://localhost/api/auth/login', {
       method: 'POST',
-      headers: { origin: 'https://evil.example', 'content-type': 'application/json', 'x-swimtrack-client': 'bot' },
+      headers: { origin: 'https://evil.example', 'content-type': 'application/json', 'x-lanemark-client': 'bot' },
       body: JSON.stringify({ email: 'coach@example.com', password: PASSWORD }),
     })
     expect(fake.status).toBe(403)
@@ -145,7 +159,7 @@ describe('the phone app', () => {
     expect(res.headers.get('content-type')).toContain('application/json')
     const body = (await res.json()) as any[]
     for (const entry of body) {
-      expect(entry.target.package_name).toBe('io.github.gulb1t.swimtrack')
+      expect(entry.target.package_name).toBe('io.github.gulb1t.lanemark')
       for (const f of entry.target.sha256_cert_fingerprints) expect(f).toMatch(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/)
     }
   })

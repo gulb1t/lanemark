@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Device, IS_APP } from './platform'
 
-const KEY = 'swimtrack:keep-awake'
+const KEY = 'lanemark:keep-awake'
 
 /** On unless turned off in Settings → This phone. */
 export function keepAwakePref(): boolean {

@@ -20,7 +20,7 @@ export function printReports() {
   document.body.dataset.printing = 'reports'
   if (IS_APP) {
     requestAnimationFrame(() => {
-      void Device.print({ name: 'SwimTrack report cards' })
+      void Device.print({ name: 'Lanemark report cards' })
         .catch(() => undefined)
         .finally(() => delete document.body.dataset.printing)
     })

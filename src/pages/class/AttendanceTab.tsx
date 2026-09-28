@@ -22,7 +22,7 @@ const STATUSES = Object.keys(LOOK) as AttendanceStatus[]
 const CYCLE: (AttendanceStatus | undefined)[] = [undefined, 'present', 'late', 'absent']
 const nextStatus = (s: AttendanceStatus | undefined) => CYCLE[(CYCLE.indexOf(s) + 1) % CYCLE.length]
 
-const MODE_KEY = 'swimtrack:attendance-mode'
+const MODE_KEY = 'lanemark:attendance-mode'
 
 export function AttendanceTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swimmer> }) {
   useKeepAwake(true)

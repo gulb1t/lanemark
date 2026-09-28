@@ -12,7 +12,7 @@ const docKey = (userId: string, kind: string, id: string) => `${userId}:${kind}:
 
 /** MongoDB storage (works with a free Atlas cluster). Selected when MONGODB_URI is set. */
 export async function openMongo(uri: string, dbName: string): Promise<Repo> {
-  const client = new MongoClient(uri, { appName: 'swimtrack', maxPoolSize: 10 })
+  const client = new MongoClient(uri, { appName: 'lanemark', maxPoolSize: 10 })
   await client.connect()
   const db = client.db(dbName)
   const users: Collection<UserDoc> = db.collection('users')

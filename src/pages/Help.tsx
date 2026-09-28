@@ -30,7 +30,7 @@ function rich(text: string): ReactNode {
 const QUICK = [
   { id: 'new-class', n: 1, title: 'Make a class', body: 'Pick the level. The skills load in for you.', icon: Plus },
   { id: 'attendance', n: 2, title: 'Take attendance', body: 'A few taps at the start of every lesson.', icon: CalendarCheck },
-  { id: 'write-reports', n: 3, title: 'Write report cards', body: 'Three steps per swimmer. SwimTrack writes the comment.', icon: FileText },
+  { id: 'write-reports', n: 3, title: 'Write report cards', body: 'Three steps per swimmer. Lanemark writes the comment.', icon: FileText },
 ]
 
 /** How-to guides with screenshots, a "Try it" for each, and a way to replay the in-app tours. */
@@ -60,7 +60,7 @@ export default function Help() {
     <div className="relative min-h-dvh">
       <div className="ambient" aria-hidden />
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-5">
-        <Link to={inApp ? '/app' : '/'} className="flex items-center gap-2.5" aria-label="SwimTrack home">
+        <Link to={inApp ? '/app' : '/'} className="flex items-center gap-2.5" aria-label="Lanemark home">
           <Logo size={30} />
           <Wordmark />
         </Link>
@@ -76,7 +76,7 @@ export default function Help() {
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="max-w-2xl">
           <p className="eyebrow mb-3">Help and guides</p>
           <h1 className="page-title !text-[clamp(2.2rem,6vw,3.4rem)]">
-            How to use <span className="accent">SwimTrack</span>
+            How to use <span className="accent">Lanemark</span>
           </h1>
           <p className="mt-4 text-[16.5px] leading-relaxed text-muted">
             Short guides with pictures. Every one has a <b className="font-semibold text-fg">Try it</b> button that opens the real screen{inApp ? '' : ' in the demo'}.

@@ -1,10 +1,10 @@
-name: SwimTrack Android
+name: Lanemark Android
 
 on:
   push:
     paths:
-      - 'SwimTrack/**'
-      - '.github/workflows/swimtrack-android.yml'
+      - 'Lanemark/**'
+      - '.github/workflows/lanemark-android.yml'
   workflow_dispatch:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: SwimTrack
+        working-directory: Lanemark
     steps:
       - uses: actions/checkout@v5
 
@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: SwimTrack/package-lock.json
+          cache-dependency-path: Lanemark/package-lock.json
 
       - uses: actions/setup-java@v5
         with:
@@ -36,6 +36,6 @@ jobs:
 
       - uses: actions/upload-artifact@v5
         with:
-          name: swimtrack-test-apk
-          path: SwimTrack/android/app/build/outputs/apk/debug/app-debug.apk
+          name: lanemark-test-apk
+          path: Lanemark/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

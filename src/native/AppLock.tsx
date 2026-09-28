@@ -8,7 +8,7 @@ import { lockMessage, useLock } from './lock'
 
 function lastName(): string {
   try {
-    const raw = localStorage.getItem('swimtrack:last-user')
+    const raw = localStorage.getItem('lanemark:last-user')
     return raw ? ((JSON.parse(raw) as { name?: string }).name?.split(' ')[0] ?? '') : ''
   } catch {
     return ''
@@ -52,14 +52,14 @@ export function AppLock() {
   const name = lastName()
   const Icon = biometrics === 'weak' ? ScanFace : Fingerprint
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-ink" role="dialog" aria-modal="true" aria-label="SwimTrack is locked">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-ink" role="dialog" aria-modal="true" aria-label="Lanemark is locked">
       <div className="ambient" aria-hidden />
       <div className="relative flex flex-1 flex-col items-center justify-center px-8 text-center">
         <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
           <Logo size={56} animated />
         </motion.div>
         <h1 className="mt-7 font-display text-[1.9rem] font-bold tracking-tight">{name ? `Welcome back, ${name}` : 'Welcome back'}</h1>
-        <p className="mt-2 max-w-xs text-[15px] text-muted">SwimTrack is locked. Unlock it to see your classes.</p>
+        <p className="mt-2 max-w-xs text-[15px] text-muted">Lanemark is locked. Unlock it to see your classes.</p>
         <button
           type="button"
           onClick={() => void tryUnlock()}

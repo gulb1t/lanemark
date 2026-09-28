@@ -59,11 +59,13 @@ const VERIFY_TTL = DAY
 const RESET_TTL = 30 * MINUTE
 
 /**
- * The phone app sends `X-SwimTrack-Client: android` (or `ios`) on every request and signs in with a bearer token
+ * The phone app sends `X-Lanemark-Client: android` (or `ios`) on every request and signs in with a bearer token
  * instead of cookies: sign-in answers carry the token, and the app keeps it in the phone's secure storage. Its pages
  * are served from these origins inside the app, so the API answers them over CORS (never with credentials).
  */
-const CLIENT_HEADER = 'x-swimtrack-client'
+const CLIENT_HEADER = 'x-lanemark-client'
+/** What app builds from before the rename send; still accepted so an installed older app keeps working. */
+const OLD_CLIENT_HEADER = 'x-swimtrack-client'
 const APP_ORIGINS = new Set(['https://localhost', 'capacitor://localhost'])
 
 type Vars = { user: UserRecord; session: SessionRecord }
@@ -161,7 +163,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   const browserCookie = { httpOnly: true, secure, sameSite: 'Lax', path: '/' } as const
 
   /** A request from the phone app (see CLIENT_HEADER). These never use cookies, in either direction. */
-  const isApp = (c: Ctx) => /^(android|ios)$/.test(c.req.header(CLIENT_HEADER) ?? '')
+  const isApp = (c: Ctx) => /^(android|ios)$/.test(c.req.header(CLIENT_HEADER) ?? c.req.header(OLD_CLIENT_HEADER) ?? '')
   /** The session token: the bearer token from the app, the cookie from a browser. */
   const sessionToken = (c: Ctx) => (isApp(c) ? c.req.header('authorization')?.match(/^Bearer ([\w-]{20,100})$/)?.[1] : getCookie(c, SESSION_COOKIE))
   /** What a sign-in answer adds for the app: the token it keeps. Browsers get a cookie instead. */
@@ -320,7 +322,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
       c.header('Vary', 'Origin')
       if (method === 'OPTIONS') {
         c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
-        c.header('Access-Control-Allow-Headers', `accept, authorization, content-type, ${CLIENT_HEADER}`)
+        c.header('Access-Control-Allow-Headers', `accept, authorization, content-type, ${CLIENT_HEADER}, ${OLD_CLIENT_HEADER}`)
         c.header('Access-Control-Max-Age', '600')
         return c.body(null, 204)
       }
@@ -524,7 +526,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
         throw err
       }
       await repo.deleteUserTokens(user.id, 'reset-password')
-      notice(user.email, 'Your SwimTrack email was changed', 'Your email was changed', `Your account now signs in with ${rec.email}. This address won’t get SwimTrack emails any more.`)
+      notice(user.email, 'Your Lanemark email was changed', 'Your email was changed', `Your account now signs in with ${rec.email}. This address won’t get Lanemark emails any more.`)
     } else {
       await repo.updateUser(user.id, { emailVerifiedAt: now(), updatedAt: now() })
     }
@@ -571,7 +573,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     // Using the link proves the address, so it also counts as verification.
     await repo.updateUser(user.id, { passwordHash: await hashPassword(data.password), emailVerifiedAt: user.emailVerifiedAt ?? now(), updatedAt: now() })
     await repo.deleteUserSessions(user.id)
-    notice(user.email, 'Your SwimTrack password was changed', 'Your password was changed', 'Your password was just reset from an emailed link, and every device was signed out.')
+    notice(user.email, 'Your Lanemark password was changed', 'Your password was changed', 'Your password was just reset from an emailed link, and every device was signed out.')
     return c.json({ ok: true })
   })
 
@@ -634,7 +636,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     await repo.updateUser(user.id, { passwordHash: await hashPassword(data.next), updatedAt: now() })
     // Anyone holding an old session is signed out; this device stays signed in.
     await repo.deleteUserSessions(user.id, c.get('session').id)
-    notice(user.email, 'Your SwimTrack password was changed', 'Your password was changed', 'Your password was changed from Settings, and your other devices were signed out.')
+    notice(user.email, 'Your Lanemark password was changed', 'Your password was changed', 'Your password was changed from Settings, and your other devices were signed out.')
     return c.json({ ok: true })
   })
 
@@ -1088,7 +1090,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
         .list()
         .map((m, i) => `<li><a href="/api/dev/outbox/${i}">${escapeHtml(m.subject)}</a><span>${escapeHtml(m.to)} · ${new Date(m.sentAt).toLocaleTimeString()}</span></li>`)
         .join('')
-      return c.html(`<!doctype html><meta charset="utf-8"><title>SwimTrack dev outbox</title><style>body{font:15px system-ui;max-width:640px;margin:40px auto;padding:0 16px;color:#0a1020}li{margin:0 0 12px;list-style:none;padding:12px 16px;border:1px solid #e4e8ee;border-radius:12px}li span{display:block;color:#667085;font-size:13px;margin-top:2px}a{color:#2657e0;font-weight:600}</style><h1>Dev outbox</h1><p>Emails the server would have sent. Set SMTP_URL to deliver real email.</p><ul style="padding:0">${rows || '<li>No emails yet.</li>'}</ul>`)
+      return c.html(`<!doctype html><meta charset="utf-8"><title>Lanemark dev outbox</title><style>body{font:15px system-ui;max-width:640px;margin:40px auto;padding:0 16px;color:#0a1020}li{margin:0 0 12px;list-style:none;padding:12px 16px;border:1px solid #e4e8ee;border-radius:12px}li span{display:block;color:#667085;font-size:13px;margin-top:2px}a{color:#2657e0;font-weight:600}</style><h1>Dev outbox</h1><p>Emails the server would have sent. Set SMTP_URL to deliver real email.</p><ul style="padding:0">${rows || '<li>No emails yet.</li>'}</ul>`)
     })
     app.get('/api/dev/outbox/:i', (c) => {
       const m = outbox.list()[Number(c.req.param('i'))]

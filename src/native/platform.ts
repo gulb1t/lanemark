@@ -30,7 +30,7 @@ export const Vault = registerPlugin<VaultPlugin>('Vault')
 export interface DevicePlugin {
   /** Prints the current page with Android's print dialog (which can also save a PDF). Resolves when it closes. */
   print(o: { name: string }): Promise<void>
-  /** Keeps the screen on while SwimTrack is open (attendance on deck). */
+  /** Keeps the screen on while Lanemark is open (attendance on deck). */
   keepAwake(o: { on: boolean }): Promise<void>
 }
 export const Device = registerPlugin<DevicePlugin>('Device')

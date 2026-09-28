@@ -3,7 +3,7 @@ export function describeUserAgent(ua: string): string {
   if (!ua) return 'Unknown device'
   // The phone app's web view also says "Chrome", so check for the app first.
   const browser =
-    /SwimTrackApp/.test(ua) ? 'SwimTrack app'
+    /LanemarkApp|SwimTrackApp/.test(ua) ? 'Lanemark app'
     : /Edg\//.test(ua) ? 'Edge'
     : /OPR\//.test(ua) ? 'Opera'
     : /Firefox\//.test(ua) ? 'Firefox'

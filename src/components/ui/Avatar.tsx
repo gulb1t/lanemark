@@ -7,7 +7,7 @@ function hueOf(name: string) {
   return h
 }
 
-/** Initials on a colour made from the name. Swimmers are children, so SwimTrack keeps no photos of them. */
+/** Initials on a colour made from the name. Swimmers are children, so Lanemark keeps no photos of them. */
 interface Props {
   name: string
   size?: number

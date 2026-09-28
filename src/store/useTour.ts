@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 /** Guided tours that have been finished or skipped, remembered per browser. */
-const PREFIX = 'swimtrack:tour:'
+const PREFIX = 'lanemark:tour:'
 
 /** Bumped when tours are reset, so mounted tours check again. */
 export const useTourVersion = create<{ version: number }>(() => ({ version: 0 }))

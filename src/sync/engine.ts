@@ -36,7 +36,7 @@ interface SyncState {
 
 export const useSync = create<SyncState>(() => ({ status: 'local', pending: 0, lastSyncedAt: null, error: null }))
 
-const cacheKey = (userId: string) => `swimtrack:cache:${userId}`
+const cacheKey = (userId: string) => `lanemark:cache:${userId}`
 const EMPTY: PersistedData = { swimmers: [], classes: [] }
 
 let userId: string | null = null
@@ -250,7 +250,7 @@ function splitKey(key: Key): ['class' | 'swimmer', string] {
 }
 
 // ── one-time import of data from the pre-account version ─────────────
-const LEGACY_KEY = 'swimtrack:v1'
+const LEGACY_KEY = 'lanemark:v1'
 
 export function readLegacyData(): PersistedData | null {
   try {

@@ -18,7 +18,7 @@ export function testConfig(over: Partial<Config> = {}): Config {
     trustProxy: false,
     staticDir: '/nonexistent',
     appUrl: 'http://localhost:5173',
-    mailFrom: 'SwimTrack <test@swimtrack.test>',
+    mailFrom: 'Lanemark <test@lanemark.test>',
     ai: { model: 'test-model', baseUrl: 'http://ai.test/v1' },
     ...over,
   }

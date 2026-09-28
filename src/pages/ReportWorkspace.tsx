@@ -56,7 +56,7 @@ const REPORT_TOUR: TourStep[] = [
 ]
 
 /**
- * Writing report cards, one swimmer at a time, in three steps: check the skills, write the comment (SwimTrack can
+ * Writing report cards, one swimmer at a time, in three steps: check the skills, write the comment (Lanemark can
  * write it), confirm the next level. The printed card is one tap away under Preview.
  */
 export default function ReportWorkspace() {
@@ -352,7 +352,7 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
   const box = useRef<HTMLTextAreaElement>(null)
   const first = firstName(swimmer.name)
 
-  // empty: nothing written yet · live: the text is exactly what SwimTrack wrote · manual: edited by hand.
+  // empty: nothing written yet · live: the text is exactly what Lanemark wrote · manual: edited by hand.
   const mode = !e.comment.trim() ? 'empty' : e.comment === lastWritten ? 'live' : 'manual'
   const warnings = reportWarnings(e, cls.skills, level)
   const commentIssues = warnings.filter((w) => ['items', 'conduct', 'template', 'length'].includes(w.id))
@@ -385,7 +385,7 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
   function onSkillChange(skillId: string, status: SkillStatus | undefined) {
     useStore.getState().setSkillStatus(cls.id, swimmer.id, skillId, status)
     if (mode !== 'live') return
-    // A comment SwimTrack wrote follows the skills; one the instructor edited is left alone.
+    // A comment Lanemark wrote follows the skills; one the instructor edited is left alone.
     const fresh = useStore
       .getState()
       .classes.find((c) => c.id === cls.id)
@@ -483,7 +483,7 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
         tour="report-comment"
         done={Boolean(e.comment.trim()) && !commentIssues.some((w) => w.level === 'warn')}
         hint={
-          mode === 'empty' ? 'SwimTrack can write it from the skills above, in the report card manual’s own words.' : 'Edit it as much as you like. It saves as you type.'
+          mode === 'empty' ? 'Lanemark can write it from the skills above, in the report card manual’s own words.' : 'Edit it as much as you like. It saves as you type.'
         }
       >
         {mode === 'empty' && !writingOwn ? (

@@ -44,6 +44,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     production,
     dataDir,
     mongoUri: env.MONGODB_URI || undefined,
+    // The database name from before the rename (Lanemark was SwimTrack), kept so existing MongoDB data stays found.
     mongoDb: env.MONGODB_DB ?? 'swimtrack',
     secretKey: loadSecretKey(env.SECRET_KEY, dataDir),
     origins: (env.APP_ORIGINS ?? (production ? '' : devOrigins))
@@ -54,8 +55,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     staticDir: resolve(env.STATIC_DIR ?? 'dist'),
     appUrl: appUrl(env.APP_URL, production),
     smtpUrl: env.SMTP_URL || undefined,
-    mailFrom: env.MAIL_FROM ?? 'SwimTrack <no-reply@swimtrack.local>',
-    contactEmail: env.CONTACT_EMAIL || (production || env.SMTP_URL ? undefined : 'pilots@swimtrack.local'),
+    mailFrom: env.MAIL_FROM ?? 'Lanemark <no-reply@lanemark.local>',
+    contactEmail: env.CONTACT_EMAIL || (production || env.SMTP_URL ? undefined : 'pilots@lanemark.local'),
     ai: {
       key: env.VOIDAI_API_KEY || env.AI_API_KEY || undefined,
       model: env.AI_MODEL || 'gpt-4.1-mini',
@@ -66,7 +67,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
 function appUrl(fromEnv: string | undefined, production: boolean) {
   const url = fromEnv ?? (production ? '' : 'http://localhost:5173')
-  if (!url) throw new Error('Set APP_URL to the public address of the app (for example https://swimtrack.example.ca). Emailed links point there.')
+  if (!url) throw new Error('Set APP_URL to the public address of the app (for example https://lanemark.example.ca). Emailed links point there.')
   return url.replace(/\/+$/, '')
 }
 

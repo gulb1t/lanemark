@@ -28,7 +28,7 @@ afterAll(async () => {
 
 const backends: [string, () => Promise<Repo | null>][] = [
   ['sqlite', async () => openSqlite(':memory:')],
-  ['mongo', async () => (mongo ? openMongo(mongo.getUri(), `swimtrack_test_${++dbCounter}`) : null)],
+  ['mongo', async () => (mongo ? openMongo(mongo.getUri(), `lanemark_test_${++dbCounter}`) : null)],
 ]
 
 const user = (id: string, email: string): UserRecord => ({

@@ -1,6 +1,6 @@
 # The Android app
 
-SwimTrack for Android is a real installed app, not a website in a frame. Its screens are this codebase's React app,
+Lanemark for Android is a real installed app, not a website in a frame. Its screens are this codebase's React app,
 built with `vite build --mode app` and shipped inside the APK. It opens on sign-in (or straight to your classes), works
 offline like the site, and talks to the live server with its own sign-in token.
 
@@ -13,7 +13,7 @@ script also finds them in `~/Android/jdk-21` and the usual SDK folders.
 | --- | --- |
 | `npm run app` | Builds a test APK: `android/app/build/outputs/apk/debug/app-debug.apk` |
 | `npm run app -- --install` | …and installs it on the phone plugged in by USB (USB debugging on), then opens it |
-| `npm run app:keystore` | Makes the release signing key, once. **Back up** `android/swimtrack-release.jks` and `android/keystore.properties`: every update must be signed with the same key |
+| `npm run app:keystore` | Makes the release signing key, once. **Back up** `android/lanemark-release.jks` and `android/keystore.properties`: every update must be signed with the same key |
 | `npm run app -- --release` | Builds the signed release APK and the `.aab` bundle for the Play Store |
 
 `APP_API_URL=https://… npm run app` points the app at another server. The default is https://swimtrack.fly.dev.
@@ -29,8 +29,8 @@ one installs over the last. The release APK uses your own key: to switch between
 
 ### Without Android Studio
 
-Every push that changes `SwimTrack/` builds the test APK on GitHub (the **SwimTrack Android** workflow). Open the run
-under the repo's **Actions** tab and download `swimtrack-test-apk` at the bottom: it's a zip with the APK inside.
+Every push that changes `Lanemark/` builds the test APK on GitHub (the **Lanemark Android** workflow). Open the run
+under the repo's **Actions** tab and download `lanemark-test-apk` at the bottom: it's a zip with the APK inside.
 
 ## What's in it
 
@@ -47,7 +47,7 @@ under the repo's **Actions** tab and download `swimtrack-test-apk` at the bottom
 
 ## How sign-in works
 
-Browsers use an httpOnly cookie. The app sends `X-SwimTrack-Client: android` on every request instead, and the server:
+Browsers use an httpOnly cookie. The app sends `X-Lanemark-Client: android` on every request instead, and the server:
 
 - answers sign-up, sign-in and the two-factor step with the session token in the body (plus the 2FA ticket, and the
   "trust this device" mark), and never sets cookies for the app;
@@ -68,13 +68,13 @@ release key's fingerprint; ship the site afterwards.
 ## Play Store (next)
 
 - `npm run app:keystore`, then `npm run app -- --release`, and upload the `.aab` in the Play Console.
-- Data safety form: the app stores swimmers' names and notes (minors; no photos), synced to the SwimTrack server. The
+- Data safety form: the app stores swimmers' names and notes (minors; no photos), synced to the Lanemark server. The
   privacy page already covers what's collected.
 - Bump `versionCode` and `versionName` in `android/app/build.gradle` for every upload.
 
 ## iOS (planned)
 
-`npx cap add ios`, then build in Xcode on a Mac. The server side is ready (`X-SwimTrack-Client: ios`); the Vault and
+`npx cap add ios`, then build in Xcode on a Mac. The server side is ready (`X-Lanemark-Client: ios`); the Vault and
 Device plugins need Swift versions (Keychain + Face ID, and UIPrintInteractionController).
 
 ## Curriculum sources

@@ -112,7 +112,7 @@ describe('reset link from settings', () => {
     const res = await c.post('/api/account/password/reset-link')
     expect(res.json).toEqual({ ok: true, email: 'coach@example.com' })
     await new Promise((r) => setTimeout(r, 5))
-    expect(mailer.list()[0].subject).toBe('Reset your SwimTrack password')
+    expect(mailer.list()[0].subject).toBe('Reset your Lanemark password')
     await c.post('/api/account/password/reset-link')
     await c.post('/api/account/password/reset-link')
     expect((await c.post('/api/account/password/reset-link')).status).toBe(429)

@@ -21,7 +21,7 @@ function picture(name: string, alt: string, shots: Shots): string {
 /** docs/GUIDE.md, from the same content as the Help page. */
 export function renderGuideMarkdown(guide: GuideSection[], shots: Shots): string {
   const out: string[] = [
-    '# How to use SwimTrack',
+    '# How to use Lanemark',
     '',
     '<!-- Generated from src/data/guide.ts by `npm run guide:md`. Edit that file, not this one. -->',
     '',

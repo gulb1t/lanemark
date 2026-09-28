@@ -39,7 +39,7 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
   async function draftMissing() {
     const ok = await confirm({
       title: `Write ${unwritten.length} comment${unwritten.length === 1 ? '' : 's'} for you?`,
-      body: `SwimTrack writes a comment for everyone who doesn’t have one yet, from their skills, in the manual’s words. Comments you’ve already written aren’t touched. Read them over before printing.`,
+      body: `Lanemark writes a comment for everyone who doesn’t have one yet, from their skills, in the manual’s words. Comments you’ve already written aren’t touched. Read them over before printing.`,
       confirmLabel: 'Write them',
     })
     if (!ok) return

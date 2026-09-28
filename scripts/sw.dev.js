@@ -1,7 +1,7 @@
-/* SwimTrack service worker for `npm run dev`: network first, falling back to whatever was loaded before. */
+/* Lanemark service worker for `npm run dev`: network first, falling back to whatever was loaded before. */
 /* global self, caches, fetch, URL, location, Response */
 
-const CACHE = 'swimtrack-dev'
+const CACHE = 'lanemark-dev'
 
 // The page that registered this worker loaded before it existed, so fetch the app shell now.
 self.addEventListener('install', (event) => {

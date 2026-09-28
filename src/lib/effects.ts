@@ -7,7 +7,7 @@ import { create } from 'zustand'
  */
 export type EffectsPref = 'auto' | 'full' | 'lite'
 
-const KEY = 'swimtrack:effects'
+const KEY = 'lanemark:effects'
 
 /** 4 or fewer CPU cores, or 4 GB of memory or less (Chrome rounds and caps what it reports). */
 export function weakDevice(): boolean {

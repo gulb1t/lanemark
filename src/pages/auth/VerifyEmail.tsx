@@ -35,7 +35,7 @@ export default function VerifyEmail() {
   const signedIn = status === 'signedIn'
   const next = (
     <ButtonLink to={signedIn ? '/app' : '/login'} variant="primary" size="lg" className="w-full">
-      {signedIn ? 'Open SwimTrack' : 'Sign in'} <ArrowRight size={16} />
+      {signedIn ? 'Open Lanemark' : 'Sign in'} <ArrowRight size={16} />
     </ButtonLink>
   )
 

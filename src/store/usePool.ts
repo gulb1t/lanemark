@@ -53,7 +53,7 @@ interface PoolState {
 
 export const usePool = create<PoolState>(() => ({ pool: null, status: 'idle' }))
 
-const cacheKey = (userId: string) => `swimtrack:pool:${userId}`
+const cacheKey = (userId: string) => `lanemark:pool:${userId}`
 
 /** Fetches the account's pool. Offline, the last copy seen on this device keeps the Pool tab where it was. */
 export async function loadPool(userId: string) {

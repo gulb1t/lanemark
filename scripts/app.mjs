@@ -86,24 +86,24 @@ function ask(question, { hidden = false } = {}) {
 // ── the release signing key ──────────────────────────────────────────
 if (mode === 'keystore') {
   const props = join(android, 'keystore.properties')
-  const store = join(android, 'swimtrack-release.jks')
-  if (existsSync(store)) fail('android/swimtrack-release.jks already exists.', 'Keep using it: every update must be signed with the same key.')
+  const store = join(android, 'lanemark-release.jks')
+  if (existsSync(store)) fail('android/lanemark-release.jks already exists.', 'Keep using it: every update must be signed with the same key.')
   if (!javaHome) fail('Java 21 wasn’t found.', 'Install Android Studio (it includes Java), or set JAVA_HOME.')
-  console.log(bold('Make the SwimTrack release key'))
+  console.log(bold('Make the Lanemark release key'))
   console.log('This key signs every version of the app you publish. Choose a strong password and keep it with the key.')
   const password = await ask('Password (at least 8 characters): ', { hidden: true })
   if (password.length < 8) fail('That password is too short.')
   if ((await ask('Type it again: ', { hidden: true })) !== password) fail('The passwords didn’t match.')
-  const name = (await ask('Your name or organisation (shown in the certificate): ')).trim() || 'SwimTrack'
-  const passEnv = { ...env, SWIMTRACK_KEY_PASS: password }
+  const name = (await ask('Your name or organisation (shown in the certificate): ')).trim() || 'Lanemark'
+  const passEnv = { ...env, LANEMARK_KEY_PASS: password }
   const gen = spawnSync(
     keytool,
-    ['-genkeypair', '-keystore', store, '-alias', 'swimtrack', '-keyalg', 'RSA', '-keysize', '4096', '-validity', '10000', '-dname', `CN=${name.replace(/[,=+<>#;"\\]/g, ' ')}`, '-storepass:env', 'SWIMTRACK_KEY_PASS', '-keypass:env', 'SWIMTRACK_KEY_PASS'],
+    ['-genkeypair', '-keystore', store, '-alias', 'lanemark', '-keyalg', 'RSA', '-keysize', '4096', '-validity', '10000', '-dname', `CN=${name.replace(/[,=+<>#;"\\]/g, ' ')}`, '-storepass:env', 'LANEMARK_KEY_PASS', '-keypass:env', 'LANEMARK_KEY_PASS'],
     { env: passEnv, stdio: 'inherit' },
   )
   if (gen.status !== 0) fail('keytool couldn’t make the key.')
-  writeFileSync(props, `storeFile=swimtrack-release.jks\nstorePassword=${password}\nkeyAlias=swimtrack\nkeyPassword=${password}\n`, { mode: 0o600 })
-  const list = spawnSync(keytool, ['-list', '-v', '-keystore', store, '-alias', 'swimtrack', '-storepass:env', 'SWIMTRACK_KEY_PASS'], { env: passEnv, encoding: 'utf8' })
+  writeFileSync(props, `storeFile=lanemark-release.jks\nstorePassword=${password}\nkeyAlias=lanemark\nkeyPassword=${password}\n`, { mode: 0o600 })
+  const list = spawnSync(keytool, ['-list', '-v', '-keystore', store, '-alias', 'lanemark', '-storepass:env', 'LANEMARK_KEY_PASS'], { env: passEnv, encoding: 'utf8' })
   const sha = list.stdout.match(/SHA256:\s*([0-9A-F:]{95})/)?.[1]
   if (sha) {
     const file = join(root, 'server', 'app-links.json')
@@ -112,7 +112,7 @@ if (mode === 'keystore') {
     writeFileSync(file, JSON.stringify(links, null, 2) + '\n')
     ok(`Added the key’s fingerprint to server/app-links.json (ship the site so links open the app)`)
   }
-  ok('Made android/swimtrack-release.jks and android/keystore.properties (both stay out of git)')
+  ok('Made android/lanemark-release.jks and android/keystore.properties (both stay out of git)')
   console.log(`\n${bold('Back up both files now')} (a password manager or a USB stick). If they're lost, the app can't be updated.`)
   process.exit(0)
 }
@@ -142,8 +142,8 @@ if (args.has('--install')) {
   step('4. Installing on your phone')
   const devices = run(adb, ['devices'], { quiet: true }).split('\n').slice(1).filter((l) => /\tdevice$/.test(l))
   if (!devices.length) fail('No phone found.', 'Plug it in by USB with USB debugging on (Settings → Developer options), or start an emulator.')
-  run(adb, ['install', '-r', apk], { quiet: true, hint: 'If it says the signatures don’t match, uninstall SwimTrack from the phone first.' })
-  run(adb, ['shell', 'monkey', '-p', 'io.github.gulb1t.swimtrack', '-c', 'android.intent.category.LAUNCHER', '1'], { quiet: true })
+  run(adb, ['install', '-r', apk], { quiet: true, hint: 'If it says the signatures don’t match, uninstall Lanemark from the phone first.' })
+  run(adb, ['shell', 'monkey', '-p', 'io.github.gulb1t.lanemark', '-c', 'android.intent.category.LAUNCHER', '1'], { quiet: true })
   ok('Installed and opened')
 }
 console.log(`\n${green('Done.')}`)

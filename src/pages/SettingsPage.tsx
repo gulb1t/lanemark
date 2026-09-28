@@ -200,7 +200,7 @@ function PhoneSection() {
     <>
       <Panel
         title={biometrics === 'weak' ? 'Unlock with your face' : 'Unlock with your fingerprint'}
-        description="SwimTrack opens with your fingerprint, face or screen lock instead of your password. Your sign-in is kept in this phone’s secure storage, and nobody can open the app without passing the check."
+        description="Lanemark opens with your fingerprint, face or screen lock instead of your password. Your sign-in is kept in this phone’s secure storage, and nobody can open the app without passing the check."
       >
         {available ? (
           <div className="space-y-5">
@@ -210,7 +210,7 @@ function PhoneSection() {
             </label>
             {locked && (
               <div>
-                <div className="mb-2 text-[13.5px] text-muted">Lock again when I leave SwimTrack</div>
+                <div className="mb-2 text-[13.5px] text-muted">Lock again when I leave Lanemark</div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {LOCK_AFTER.map((m) => (
                     <button
@@ -866,7 +866,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 }
 
 /**
- * Adding SwimTrack to an authenticator app. On a computer, scanning the QR code with a phone is quickest; on the phone
+ * Adding Lanemark to an authenticator app. On a computer, scanning the QR code with a phone is quickest; on the phone
  * itself there's nothing to scan with, so the app opens the authenticator directly (or the key is copied in).
  */
 function ScanStep({ setup, code, setCode, busy, error, onEnable, onCancel }: { setup: Setup; code: string; setCode: (v: string) => void; busy: boolean; error: boolean; onEnable: (v?: string) => void; onCancel: () => void }) {
@@ -882,7 +882,7 @@ function ScanStep({ setup, code, setCode, busy, error, onEnable, onCancel }: { s
       {!phone && qr}
       <div className="min-w-0 space-y-5">
         {phone ? (
-          <Step n={1} title="Add SwimTrack to your authenticator app">
+          <Step n={1} title="Add Lanemark to your authenticator app">
             <a href={setup.otpauthUrl} className="btn-glass flex h-11 w-full items-center justify-center gap-2 rounded-full text-[14px] font-medium">
               <KeyRound size={15} /> Open authenticator app
             </a>
@@ -942,9 +942,9 @@ function CopyValue({ value, raw }: { value: string; raw: string }) {
 
 function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void }) {
   const [saved, setSaved] = useState(false)
-  const text = `SwimTrack recovery codes\nEach code works once. Keep them somewhere safe.\n\n${codes.join('\n')}\n`
+  const text = `Lanemark recovery codes\nEach code works once. Keep them somewhere safe.\n\n${codes.join('\n')}\n`
   function download() {
-    void saveFile('swimtrack-recovery-codes.txt', text, 'text/plain').then((done) => done && setSaved(true))
+    void saveFile('lanemark-recovery-codes.txt', text, 'text/plain').then((done) => done && setSaved(true))
   }
   return (
     <div className="space-y-4">
@@ -1085,8 +1085,8 @@ function DataSection() {
 
   function exportBackup() {
     const { swimmers, classes } = useStore.getState()
-    const json = JSON.stringify({ app: 'swimtrack', version: 1, exportedAt: new Date().toISOString(), swimmers, classes }, null, 2)
-    void saveFile(`swimtrack-backup-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json').then((done) => done && !IS_APP && toast('Backup downloaded'))
+    const json = JSON.stringify({ app: 'lanemark', version: 1, exportedAt: new Date().toISOString(), swimmers, classes }, null, 2)
+    void saveFile(`lanemark-backup-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json').then((done) => done && !IS_APP && toast('Backup downloaded'))
   }
 
   async function onImport(file: File | undefined) {
@@ -1144,7 +1144,7 @@ function DataSection() {
           </Button>
         )}
       </Panel>
-      <Panel title="Backup" description={<>Download everything as a JSON file, or import one. Importing adds to what you have; nothing is overwritten. <Link to="/privacy" className="font-medium text-fg underline-offset-4 hover:underline">How SwimTrack handles data</Link></>}>
+      <Panel title="Backup" description={<>Download everything as a JSON file, or import one. Importing adds to what you have; nothing is overwritten. <Link to="/privacy" className="font-medium text-fg underline-offset-4 hover:underline">How Lanemark handles data</Link></>}>
         <div className="flex flex-wrap gap-2">
           <Button icon={<Download size={15} />} onClick={exportBackup}>
             Export backup
@@ -1158,7 +1158,7 @@ function DataSection() {
       {withPhotos > 0 && (
         <Panel
           title="Old swimmer photos"
-          description={`SwimTrack no longer shows or takes photos of swimmers, but ${withPhotos} swimmer${withPhotos === 1 ? ' still has one' : 's still have one'} saved from before. Remove them from this device and your account.`}
+          description={`Lanemark no longer shows or takes photos of swimmers, but ${withPhotos} swimmer${withPhotos === 1 ? ' still has one' : 's still have one'} saved from before. Remove them from this device and your account.`}
         >
           <Button icon={<Trash2 size={15} />} onClick={() => void removePhotos()}>
             Remove {withPhotos} photo{withPhotos === 1 ? '' : 's'}
@@ -1254,7 +1254,7 @@ function TextSizePanel() {
       title="Display size"
       description={
         zoomWorks()
-          ? 'Makes text, buttons and spacing bigger everywhere in SwimTrack, on this device.'
+          ? 'Makes text, buttons and spacing bigger everywhere in Lanemark, on this device.'
           : 'Needs a newer Android System WebView (Chrome 128 or later). Update it from the Play Store to use this; your phone’s own font size setting still works.'
       }
     >

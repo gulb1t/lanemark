@@ -139,7 +139,7 @@ function Hero({ signedIn }: { signedIn: boolean }) {
         className="pointer-events-none relative z-10 mt-9 flex flex-wrap items-center justify-center gap-3 [&>*]:pointer-events-auto"
       >
         <ButtonLink to={signedIn ? '/app' : '/signup'} variant="primary" size="lg">
-          {signedIn ? 'Open SwimTrack' : 'Start for free'} <ArrowRight size={17} />
+          {signedIn ? 'Open Lanemark' : 'Start for free'} <ArrowRight size={17} />
         </ButtonLink>
         <ButtonLink to="/demo" variant="outline" size="lg">
           <Sparkles size={16} className="text-aqua" /> Try the live demo
@@ -240,7 +240,7 @@ function SkillMarquee() {
   const all = LEVELS.flatMap((l) => l.skills.filter((s) => /crawl|kick|stroke|tread|dive|float|glide/i.test(s.name)).map((s) => s.name))
   const rows = [all.filter((_, i) => i % 2 === 0).slice(0, 26), all.filter((_, i) => i % 2 === 1).slice(0, 26)]
   return (
-    <section className="mask-fade-x mt-24 space-y-3 overflow-hidden" aria-label="Some of the skills SwimTrack tracks">
+    <section className="mask-fade-x mt-24 space-y-3 overflow-hidden" aria-label="Some of the skills Lanemark tracks">
       {rows.map((row, r) => (
         // The trailing padding matches the gap, so shifting by exactly half loops seamlessly.
         <div key={r} className={`flex w-max gap-3 pr-3 [--marquee-duration:70s] hover:[animation-play-state:paused] ${r ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
@@ -364,7 +364,7 @@ const STORY = [
   {
     when: 'Last week of the session',
     title: 'Report cards that follow the manual',
-    body: 'Tap what they nailed and what to work on. The comment writes itself, and SwimTrack flags anything the manual doesn’t allow.',
+    body: 'Tap what they nailed and what to work on. The comment writes itself, and Lanemark flags anything the manual doesn’t allow.',
     visual: 'rules',
   },
   {
@@ -501,7 +501,7 @@ function Security() {
       <div className="relative overflow-hidden rounded-[2rem] border border-line-2 bg-panel p-8 sm:p-12">
         <BorderBeam />
         <SectionTitle align="left" icon={<ShieldCheck size={22} />} title={<>Kids’ info deserves <Serif>real protection.</Serif></>}>
-          Swimmer names and notes are sensitive. SwimTrack treats them that way.
+          Swimmer names and notes are sensitive. Lanemark treats them that way.
         </SectionTitle>
         <div className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(([Icon, title, body]) => (
@@ -536,15 +536,15 @@ function BorderBeam() {
 }
 
 const FAQ = [
-  ['Is SwimTrack free?', 'Yes, for instructors: create an account and use every feature. Pools and cities can add setup, class-list imports, priority support and their own server (see Pricing). You can also self-host it: it’s a single Node server with a built-in SQLite database.'],
-  ['Does it work without Wi-Fi?', 'Yes. Once you’ve opened SwimTrack on a device, the app itself is kept on it, so it opens with no signal. Every edit saves on the device first and syncs when you’re back online. The sync pill in the top bar always shows where things stand.'],
-  ['Where is swimmer data stored?', 'On the server and database whoever runs SwimTrack chooses (a city can host it itself, in Canada), plus an offline copy on the instructor’s own device. Swimmer records never go to a third party. The privacy page has the details.'],
+  ['Is Lanemark free?', 'Yes, for instructors: create an account and use every feature. Pools and cities can add setup, class-list imports, priority support and their own server (see Pricing). You can also self-host it: it’s a single Node server with a built-in SQLite database.'],
+  ['Does it work without Wi-Fi?', 'Yes. Once you’ve opened Lanemark on a device, the app itself is kept on it, so it opens with no signal. Every edit saves on the device first and syncs when you’re back online. The sync pill in the top bar always shows where things stand.'],
+  ['Where is swimmer data stored?', 'On the server and database whoever runs Lanemark chooses (a city can host it itself, in Canada), plus an offline copy on the instructor’s own device. Swimmer records never go to a third party. The privacy page has the details.'],
   ['Can a supervisor see every class?', 'Yes, with a pool. Instructors join with an invite code, and supervisors get an overview of every class’s attendance, skills assessed and report cards done, plus rankings of which classes and instructors are most caught up. They can open any class to check attendance, skill marks and comments, or print its report cards, but only the instructor can change it. Swimmers are never ranked.'],
-  ['Does it follow the report card manual?', 'Comments are built from the manual’s passing and not-yet-passing templates and must-sees, incomplete items are highlighted like the paper card, and SwimTrack warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
+  ['Does it follow the report card manual?', 'Comments are built from the manual’s passing and not-yet-passing templates and must-sees, incomplete items are highlighted like the paper card, and Lanemark warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
   ['Which programs does it cover?', `The Lifesaving Society’s Swim for Life levels (Parent & Tot, Preschool 1–5, Swimmer 1–6), Swim Patrol (Rookie, Ranger, Star), Bronze Star and Teen/Adult 1–3: ${LEVELS.length} levels in total.`],
   ['Can I change the skills?', 'Every class gets its own editable copy of its level’s skills. Rename, reorder, add or remove them without touching the presets.'],
-  ['How do report cards work?', 'SwimTrack follows the manual’s passing and failing templates. Pick what the swimmer excelled at and what to work on, and it writes the comment from the official must-sees. Edit freely, then print the whole class.'],
-  ['Is there a phone app?', 'You can add SwimTrack to your home screen today and it runs like an app, offline included. An Android app with fingerprint unlock is being tested before it goes on the Play Store. An iPhone app is planned.'],
+  ['How do report cards work?', 'Lanemark follows the manual’s passing and failing templates. Pick what the swimmer excelled at and what to work on, and it writes the comment from the official must-sees. Edit freely, then print the whole class.'],
+  ['Is there a phone app?', 'You can add Lanemark to your home screen today and it runs like an app, offline included. An Android app with fingerprint unlock is being tested before it goes on the Play Store. An iPhone app is planned.'],
 ]
 
 function Faq() {
@@ -601,7 +601,7 @@ function FinalCta({ signedIn }: { signedIn: boolean }) {
         <p className="mx-auto mt-5 max-w-md text-[16px] leading-relaxed text-muted">Free to try. Your first class takes about a minute to set up.</p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <ButtonLink to={signedIn ? '/app' : '/signup'} variant="primary" size="lg">
-            {signedIn ? 'Open SwimTrack' : 'Create your free account'} <ArrowRight size={17} />
+            {signedIn ? 'Open Lanemark' : 'Create your free account'} <ArrowRight size={17} />
           </ButtonLink>
           <ButtonLink to="/demo" variant="outline" size="lg">
             Try the demo
@@ -618,7 +618,7 @@ const FOOTER: [string, [string, string][]][] = [
 ]
 
 function Footer({ signedIn }: { signedIn: boolean }) {
-  const account: [string, string][] = signedIn ? [['Open SwimTrack', '/app']] : [['Sign in', '/login'], ['Create an account', '/signup'], ['Try the demo', '/demo']]
+  const account: [string, string][] = signedIn ? [['Open Lanemark', '/app']] : [['Sign in', '/login'], ['Create an account', '/signup'], ['Try the demo', '/demo']]
   const link = ([label, to]: [string, string]) => (
     <li key={label}>
       {to.startsWith('#') ? (
@@ -637,7 +637,7 @@ function Footer({ signedIn }: { signedIn: boolean }) {
       <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-aqua/45 to-transparent" />
       <div className="grid grid-cols-3 gap-x-4 gap-y-10 pt-14 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div className="col-span-3 md:col-span-1">
-          <Link to="/" className="inline-flex items-center gap-2.5" aria-label="SwimTrack home">
+          <Link to="/" className="inline-flex items-center gap-2.5" aria-label="Lanemark home">
             <Logo size={30} />
             <Wordmark size={17} />
           </Link>

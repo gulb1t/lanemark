@@ -47,7 +47,7 @@ export const GUIDE: GuideSection[] = [
       {
         id: 'new-class',
         title: 'Make a class',
-        summary: 'Pick the level and SwimTrack loads its skills for you.',
+        summary: 'Pick the level and Lanemark loads its skills for you.',
         shot: 'new-class',
         steps: [
           'Press **New** at the top of the screen, then **New class**. (On a phone, press **New** next to your classes on the home screen.)',
@@ -70,7 +70,7 @@ export const GUIDE: GuideSection[] = [
           'Someone new? Press **New swimmer**, type their name and press **Add to class**.',
         ],
         tips: [
-          'To take a swimmer out of a class, press the person icon on their card. SwimTrack asks first and tells you what will be removed.',
+          'To take a swimmer out of a class, press the person icon on their card. Lanemark asks first and tells you what will be removed.',
           'A swimmer can be in more than one class. Their profile shows every class they’re in.',
         ],
         tryIt: 'swimmers-tab',
@@ -105,7 +105,7 @@ export const GUIDE: GuideSection[] = [
           'Open the class and go to the **Skills** tab.',
           '**Everyone** shows a grid: skills down the side, swimmers across the top. Tap a box once for **passed** (✓), twice for **not yet** (–), three times to clear it.',
           '**One swimmer** shows a single swimmer with a **Passed** and a **Not yet** button for each skill. It’s easier on a phone.',
-          'When a swimmer passes every skill, SwimTrack celebrates and their report card switches to the passing wording.',
+          'When a swimmer passes every skill, Lanemark celebrates and their report card switches to the passing wording.',
         ],
         tips: ['Tap a skill’s name in the One swimmer view to see what the manual says to look for.'],
         tryIt: 'skills',
@@ -129,7 +129,7 @@ export const GUIDE: GuideSection[] = [
   {
     id: 'reports',
     title: 'Report cards',
-    intro: 'At the end of the session. SwimTrack writes the comments from the manual; you check them.',
+    intro: 'At the end of the session. Lanemark writes the comments from the manual; you check them.',
     topics: [
       {
         id: 'write-reports',
@@ -139,7 +139,7 @@ export const GUIDE: GuideSection[] = [
         steps: [
           'Open the class, go to the **Report cards** tab and press **Start writing**.',
           '**Step 1, skills:** tap **Passed** or **Not yet** for each skill. (Already done in the Skills tab? It’s filled in here too.)',
-          '**Step 2, the comment:** press **Write it for me**. SwimTrack writes it from the skills, in the report card manual’s own words. Read it and change anything you like.',
+          '**Step 2, the comment:** press **Write it for me**. Lanemark writes it from the skills, in the report card manual’s own words. Read it and change anything you like.',
           'Want it to praise something else, or mention different things to work on? Press **Change what it says** and pick.',
           '**Step 3, next level:** already filled in. A swimmer moves up only when every skill is passed.',
           'Press **Next** to go to the next swimmer. Everything saves as you go.',
@@ -166,10 +166,10 @@ export const GUIDE: GuideSection[] = [
       {
         id: 'manual-rules',
         title: 'Report card rules',
-        summary: 'What the report card manual asks for, and how SwimTrack helps.',
+        summary: 'What the report card manual asks for, and how Lanemark helps.',
         steps: [
-          'Comment on **at least two** skills. SwimTrack warns you if a comment names fewer.',
-          'Never mention **attendance or behaviour**. SwimTrack flags words like “absent” or “listening”.',
+          'Comment on **at least two** skills. Lanemark warns you if a comment names fewer.',
+          'Never mention **attendance or behaviour**. Lanemark flags words like “absent” or “listening”.',
           'A swimmer passes a level only when **every** skill is passed. Otherwise they register in the same level again.',
           'Keep it positive and specific: something they did well, then what to work on next.',
         ],
@@ -224,9 +224,9 @@ export const GUIDE: GuideSection[] = [
         steps: [
           'Keep working as normal. Every change saves on your phone, tablet or laptop straight away.',
           'The little status pill at the top says **Saved**, **Saving** or **Offline**.',
-          'When you’re back online, SwimTrack syncs by itself, so your other devices catch up.',
+          'When you’re back online, Lanemark syncs by itself, so your other devices catch up.',
         ],
-        tips: ['Open SwimTrack once on each device while you have signal. After that it opens even with none.'],
+        tips: ['Open Lanemark once on each device while you have signal. After that it opens even with none.'],
       },
       {
         id: 'mistakes',

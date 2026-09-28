@@ -1,6 +1,6 @@
 {
-  "name": "SwimTrack",
-  "short_name": "SwimTrack",
+  "name": "Lanemark",
+  "short_name": "Lanemark",
   "description": "Attendance, lesson plans, skill check-offs and report cards for swim instructors.",
   "start_url": "/app",
   "scope": "/",

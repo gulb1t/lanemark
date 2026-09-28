@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * One command to bring SwimTrack up to date and publish it, on Linux, macOS and Windows:
+ * One command to bring Lanemark up to date and publish it, on Linux, macOS and Windows:
  *
  *   1. pull the latest from GitHub
  *   2. install packages if they changed
@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url'
 const HELP = `
 Usage: ./ship.sh [options]        (Windows: ship [options])
 
-Pulls, checks, commits, pushes and deploys SwimTrack in one go.
+Pulls, checks, commits, pushes and deploys Lanemark in one go.
 
 Options
   -m, --message "text"   Commit message for your changes (otherwise it asks)
@@ -143,12 +143,12 @@ function findFly() {
 
 // ── 0. can this computer ship? ──────────────────────────────────────
 const major = Number(process.versions.node.split('.')[0])
-if (major < 24) fail(`SwimTrack needs Node 24 or newer (this is ${process.versions.node}).`, 'Install it from https://nodejs.org and run this again.')
+if (major < 24) fail(`Lanemark needs Node 24 or newer (this is ${process.versions.node}).`, 'Install it from https://nodejs.org and run this again.')
 if (read('git', ['--version']) === null) fail('Git isn’t installed.', 'Install it from https://git-scm.com and run this again.')
 const top = read('git', ['rev-parse', '--show-toplevel'])
-if (!top) fail('This folder isn’t a Git repository.', 'Clone SwimTrack from GitHub, then run this from inside it.')
+if (!top) fail('This folder isn’t a Git repository.', 'Clone Lanemark from GitHub, then run this from inside it.')
 const branch = read('git', ['rev-parse', '--abbrev-ref', 'HEAD'])
-console.log(bold(`Shipping SwimTrack`) + dim(`  ·  branch ${branch}  ·  ${new Date().toLocaleString()}`))
+console.log(bold(`Shipping Lanemark`) + dim(`  ·  branch ${branch}  ·  ${new Date().toLocaleString()}`))
 if (opts.dry) note('Dry run: nothing will be committed, pushed or deployed.')
 
 // ── 1. pull ─────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { lessMotion } from './effects'
 export type ThemePref = 'system' | 'dark' | 'light'
 type Resolved = 'dark' | 'light'
 
-const KEY = 'swimtrack:theme'
+const KEY = 'lanemark:theme'
 const media = () => window.matchMedia('(prefers-color-scheme: light)')
 
 function readPref(): ThemePref {

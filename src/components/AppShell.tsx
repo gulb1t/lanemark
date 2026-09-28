@@ -191,7 +191,7 @@ function DesktopNav() {
       <div
         className={`flex h-14 items-center gap-1 rounded-full pl-4 pr-2 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${scrolled ? 'pill-nav' : 'border border-transparent'}`}
       >
-        <Link to="/app" className="flex shrink-0 items-center gap-2.5" aria-label="SwimTrack home">
+        <Link to="/app" className="flex shrink-0 items-center gap-2.5" aria-label="Lanemark home">
           <Logo size={28} />
           <span className="max-lg:hidden">
             <Wordmark />
@@ -289,13 +289,13 @@ function MobileBar() {
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="flex h-14 items-center gap-2 px-4">
-        <Link to="/app" className="flex items-center gap-2" aria-label="SwimTrack home">
+        <Link to="/app" className="flex items-center gap-2" aria-label="Lanemark home">
           <Logo size={28} />
           <Wordmark />
         </Link>
         <div className="flex-1" />
         {assistant && (
-          <button type="button" onClick={openAssistant} aria-label="Ask the SwimTrack assistant" className="inline-flex size-9 items-center justify-center rounded-full text-aqua transition-colors hover:bg-fg/[0.07]">
+          <button type="button" onClick={openAssistant} aria-label="Ask the Lanemark assistant" className="inline-flex size-9 items-center justify-center rounded-full text-aqua transition-colors hover:bg-fg/[0.07]">
             <Sparkles size={18} />
           </button>
         )}

@@ -66,7 +66,7 @@ const PLANS: Plan[] = [
     blurb: 'For aquatics departments running several pools.',
     items: [
       ['Everything in Pool, at every pool'],
-      ['Your own SwimTrack server and database, hosted where you choose'],
+      ['Your own Lanemark server and database, hosted where you choose'],
       ['Your web address, with sign-in emails from your domain'],
       ['Volume pricing across pools'],
       ['Single sign-on with staff accounts', true],
@@ -124,7 +124,7 @@ export function Pricing({ signedIn, heading }: { signedIn: boolean; heading: Rea
               <div className="mt-8">
                 {p.id === 'instructor' ? (
                   <ButtonLink to={signedIn ? '/app' : '/signup'} variant="outline" size="lg" className="w-full">
-                    {signedIn ? 'Open SwimTrack' : 'Create a free account'}
+                    {signedIn ? 'Open Lanemark' : 'Create a free account'}
                   </ButtonLink>
                 ) : (
                   <Button
@@ -152,7 +152,7 @@ export function Pricing({ signedIn, heading }: { signedIn: boolean; heading: Rea
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/** "Request a pilot": emailed to the SwimTrack team by the server, never saved in the app. */
+/** "Request a pilot": emailed to the Lanemark team by the server, never saved in the app. */
 function PilotDialog({ plan, onClose }: { plan: Paid | null; onClose: () => void }) {
   const [form, setForm] = useState({
     name: '',
@@ -257,7 +257,7 @@ function PilotDialog({ plan, onClose }: { plan: Paid | null; onClose: () => void
           </Field>
           {/* Hidden from people; bots fill it in and their request is dropped. */}
           <input tabIndex={-1} autoComplete="off" aria-hidden className="sr-only" value={form.website} onChange={set('website')} name="website" />
-          <p className="text-[12.5px] leading-relaxed text-dim">This is emailed to the SwimTrack team so we can reply. It isn’t saved in the app.</p>
+          <p className="text-[12.5px] leading-relaxed text-dim">This is emailed to the Lanemark team so we can reply. It isn’t saved in the app.</p>
           <Button variant="primary" size="lg" type="submit" className="w-full" loading={state === 'busy'} disabled={!ready}>
             Send request
           </Button>
