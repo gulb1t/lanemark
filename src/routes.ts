@@ -4,6 +4,7 @@ export const load = {
   login: () => import('./pages/auth/Login'),
   signup: () => import('./pages/auth/Signup'),
   verify: () => import('./pages/auth/Verify'),
+  unlockStep: () => import('./pages/auth/UnlockStep'),
   forgot: () => import('./pages/auth/ForgotPassword'),
   reset: () => import('./pages/auth/ResetPassword'),
   verifyEmail: () => import('./pages/auth/VerifyEmail'),

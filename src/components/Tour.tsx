@@ -4,6 +4,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties
 import { createPortal } from 'react-dom'
 import { useReducedMotion } from '../lib/hooks'
 import { useTheme } from '../lib/theme'
+import { useLock } from '../native/lock'
 import { markTourSeen, tourSeen, useTourVersion } from '../store/useTour'
 
 export interface TourStep {
@@ -58,14 +59,16 @@ export function Tour({ id, steps, when = true }: { id: string; steps: TourStep[]
   })
 
   // Start a moment after the page settles, with only the steps that have something to point at.
+  // Never over the lock screen (the phone app asks for a fingerprint when it opens).
+  const locked = useLock((s) => s.locked)
   useEffect(() => {
-    if (!when || tourSeen(id)) return
+    if (!when || locked || tourSeen(id)) return
     const t = setTimeout(() => {
       const live = latest.current.filter((s) => !s.target || findVisible(s.target))
       if (live.length) setRun({ steps: live, index: 0 })
     }, 700)
     return () => clearTimeout(t)
-  }, [id, when, version])
+  }, [id, when, locked, version])
 
   const current = run ? run.steps[run.index] : null
 

@@ -5,7 +5,8 @@ import { Splash } from './components/Splash'
 import { Overlays } from './components/ui/Overlays'
 import { guidePath, isGuideTarget } from './lib/guideLinks'
 import { useSpotlight } from './lib/hooks'
-import { AppLock, UnlockOffer } from './native/AppLock'
+import { AppLock } from './native/AppLock'
+import { useLock } from './native/lock'
 import { IS_APP } from './native/platform'
 import { useNativeApp } from './native/useNativeApp'
 import { load } from './routes'
@@ -20,6 +21,7 @@ const AuthPages = {
   Forgot: lazy(load.forgot),
   Reset: lazy(load.reset),
   VerifyEmail: lazy(load.verifyEmail),
+  UnlockStep: lazy(load.unlockStep),
 }
 const AppShell = lazy(load.shell)
 const Dashboard = lazy(load.dashboard)
@@ -37,9 +39,12 @@ const NotFound = lazy(load.notFound)
 
 function RequireSession() {
   const status = useSession((s) => s.status)
+  const offer = useLock((s) => s.offer)
   const location = useLocation()
   if (status === 'loading') return <Splash />
   if (status === 'signedOut') return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
+  // First sign-in on a phone: finish signing in (the fingerprint question) before the app and its tours appear.
+  if (offer) return <AuthPages.UnlockStep />
   return <Outlet />
 }
 
@@ -115,12 +120,7 @@ export default function App() {
       </Suspense>
       </ErrorBoundary>
       <Overlays />
-      {IS_APP && (
-        <>
-          <UnlockOffer />
-          <AppLock />
-        </>
-      )}
+      {IS_APP && <AppLock />}
       <div className="grain" aria-hidden />
     </>
   )

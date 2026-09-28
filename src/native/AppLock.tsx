@@ -2,11 +2,9 @@ import { motion } from 'motion/react'
 import { Fingerprint, ScanFace } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Logo } from '../components/Logo'
-import { Button } from '../components/ui/Button'
-import { Modal } from '../components/ui/Modal'
-import { currentAppToken, switchToPassword, unlock } from '../store/useSession'
+import { switchToPassword, unlock } from '../store/useSession'
 import { toast } from '../store/useUi'
-import { declineLock, lockMessage, setLockPref, useLock } from './lock'
+import { lockMessage, useLock } from './lock'
 
 function lastName(): string {
   try {
@@ -84,56 +82,5 @@ export function AppLock() {
         </button>
       </div>
     </div>
-  )
-}
-
-/** Asked once, after the first sign-in on this phone. */
-export function UnlockOffer() {
-  const open = useLock((s) => s.offer)
-  const biometrics = useLock((s) => s.biometrics)
-  const [busy, setBusy] = useState(false)
-  const close = () => useLock.setState({ offer: false })
-
-  function notNow() {
-    declineLock()
-    close()
-  }
-
-  async function turnOn() {
-    const token = currentAppToken()
-    if (!token) return close()
-    setBusy(true)
-    const res = await setLockPref(true, token)
-    setBusy(false)
-    close()
-    if (res.ok) toast('Fingerprint unlock is on')
-    else if (res.error !== 'cancelled') toast(lockMessage(res.error), 'error')
-  }
-
-  const Icon = biometrics === 'weak' ? ScanFace : Fingerprint
-  return (
-    <Modal
-      open={open}
-      onClose={notNow}
-      title="Unlock with your fingerprint?"
-      description="Next time, open SwimTrack with your fingerprint, face or screen lock instead of your password. You can change this in Settings."
-      size="sm"
-      footer={
-        <>
-          <Button variant="ghost" onClick={notNow}>
-            Not now
-          </Button>
-          <Button variant="primary" icon={<Icon size={16} />} loading={busy} onClick={() => void turnOn()}>
-            Turn on
-          </Button>
-        </>
-      }
-    >
-      <div className="flex justify-center py-4">
-        <span className="flex size-20 items-center justify-center rounded-full bg-aqua/10 text-aqua">
-          <Icon size={38} strokeWidth={1.5} />
-        </span>
-      </div>
-    </Modal>
   )
 }
