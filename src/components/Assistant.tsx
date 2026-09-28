@@ -175,7 +175,7 @@ export function Assistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            className="no-print pill-nav fixed inset-x-2 bottom-2 top-16 z-50 flex origin-bottom-right flex-col overflow-hidden rounded-[1.75rem] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[min(640px,calc(100dvh-7rem))] sm:w-[400px]"
+            className="no-print pill-nav fixed inset-x-2 bottom-2 top-16 z-50 flex origin-bottom-right flex-col overflow-hidden rounded-[1.75rem] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[min(640px,calc(100dvh/var(--ui-zoom,1)-7rem))] sm:w-[400px]"
             style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
           >
             <header className="flex items-center gap-3 border-b border-line px-4 py-3">

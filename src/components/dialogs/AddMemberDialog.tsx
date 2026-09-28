@@ -74,7 +74,7 @@ export function AddMemberDialog({ cls, onClose, onCreateNew }: Props) {
             <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-dim" />
             <input className="input pl-9" placeholder="Search your swimmers" value={q} onChange={(e) => setQ(e.target.value)} autoFocus />
           </div>
-          <ul className="max-h-[50vh] divide-y divide-line overflow-y-auto rounded-xl border border-line">
+          <ul className="max-h-[calc(50vh/var(--ui-zoom,1))] divide-y divide-line overflow-y-auto rounded-xl border border-line">
             {available.map((w) => {
               const on = picked.has(w.id)
               return (

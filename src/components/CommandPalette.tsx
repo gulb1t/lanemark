@@ -74,7 +74,7 @@ function PaletteBody() {
                 />
                 <Kbd>Esc</Kbd>
               </div>
-              <Command.List className="max-h-[min(60vh,440px)] overflow-y-auto overscroll-contain p-1.5">
+              <Command.List className="max-h-[min(calc(60vh/var(--ui-zoom,1)),440px)] overflow-y-auto overscroll-contain p-1.5">
                 <Command.Empty className="px-4 py-10 text-center text-sm text-muted">No results for “{q}”.</Command.Empty>
 
                 <Command.Group heading="Actions">

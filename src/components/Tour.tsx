@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useReducedMotion } from '../lib/hooks'
+import { uiZoom } from '../lib/textSize'
 import { useTheme } from '../lib/theme'
 import { useLock } from '../native/lock'
 import { markTourSeen, tourSeen, useTourVersion } from '../store/useTour'
@@ -120,10 +121,12 @@ export function Tour({ id, steps, when = true }: { id: string; steps: TourStep[]
 
   if (!run || !current) return null
 
-  const vw = window.innerWidth
-  const vh = window.innerHeight
+  // Screen measurements, turned into the page's (zoomed) pixels: see Display size.
+  const z = uiZoom()
+  const vw = window.innerWidth / z
+  const vh = window.innerHeight / z
   const width = Math.min(360, vw - 32)
-  const hole = current.target && rect ? { top: rect.top - PAD, left: rect.left - PAD, width: rect.width + PAD * 2, height: rect.height + PAD * 2 } : null
+  const hole = current.target && rect ? { top: rect.top / z - PAD, left: rect.left / z - PAD, width: rect.width / z + PAD * 2, height: rect.height / z + PAD * 2 } : null
   let card: CSSProperties = { width, left: (vw - width) / 2, top: '50%', transform: 'translateY(-50%)' }
   if (hole) {
     const left = Math.min(Math.max(16, hole.left + hole.width / 2 - width / 2), vw - width - 16)

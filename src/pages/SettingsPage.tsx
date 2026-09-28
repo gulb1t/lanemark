@@ -34,6 +34,7 @@ import { Field, Spinner, Switch } from '../components/ui/bits'
 import { api, errorMessage, type User } from '../lib/api'
 import { timeAgo, useNow, usePhoneLayout } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
+import { setTextSize, TEXT_SIZES, useTextSize } from '../lib/textSize'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
 import { usePool } from '../store/usePool'
 import { currentAppToken, forgetAccount, resetDemo, setUser, useSession } from '../store/useSession'
@@ -62,7 +63,7 @@ export default function SettingsPage() {
         ] as const)
       : []),
     { id: 'data', label: 'Data', hint: 'Sync, backup, erase', icon: <Database size={16} /> },
-    { id: 'appearance', label: 'Appearance', hint: 'Light or dark', icon: <Palette size={16} /> },
+    { id: 'appearance', label: 'Appearance', hint: 'Light or dark, display size', icon: <Palette size={16} /> },
   ]
   const requested = params.get('s') as Section | null
   const found = sections.find((s) => s.id === requested)
@@ -1181,8 +1182,9 @@ function AppearanceSection() {
     { value: 'dark', label: 'Dark', icon: <Moon size={16} /> },
   ]
   return (
+    <>
     <Panel title="Theme" description="Dark is easier on the eyes at an indoor pool; light reads better in direct sun.">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {options.map((o) => {
           const active = pref === o.value
           return (
@@ -1197,11 +1199,41 @@ function AppearanceSection() {
               className={`group overflow-hidden rounded-2xl border text-left transition-colors ${active ? 'border-aqua/60 shadow-[var(--glow)]' : 'border-line-2 hover:border-dim/60'}`}
             >
               <ThemePreview kind={o.value} />
-              <div className="flex items-center gap-2 px-3.5 py-3 text-[14px] font-medium">
-                <span className={active ? 'text-aqua' : 'text-muted'}>{o.icon}</span>
+              <div className="flex items-center gap-2 px-3 py-2.5 text-[13.5px] font-medium sm:px-3.5 sm:py-3 sm:text-[14px]">
+                <span className={`max-sm:hidden ${active ? 'text-aqua' : 'text-muted'}`}>{o.icon}</span>
                 {o.label}
                 {active && <Check size={15} className="ml-auto text-aqua" />}
               </div>
+            </button>
+          )
+        })}
+      </div>
+    </Panel>
+    <TextSizePanel />
+    </>
+  )
+}
+
+function TextSizePanel() {
+  const size = useTextSize((s) => s.size)
+  return (
+    <Panel title="Display size" description="Makes text, buttons and spacing bigger or smaller everywhere in SwimTrack, on this device.">
+      <div role="radiogroup" aria-label="Display size" className="grid grid-cols-4 gap-2">
+        {TEXT_SIZES.map((t, i) => {
+          const active = t.id === size
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setTextSize(t.id)}
+              className={`flex flex-col items-center justify-end gap-1.5 rounded-2xl border px-1 pb-2.5 pt-3 transition-colors ${active ? 'border-aqua/60 bg-aqua/10' : 'border-line-2 hover:border-dim/60'}`}
+            >
+              <span className="font-display font-semibold leading-none" style={{ fontSize: 15 + i * 4 }}>
+                Aa
+              </span>
+              <span className={`text-[12px] ${active ? 'font-semibold text-fg' : 'text-muted'}`}>{t.label}</span>
             </button>
           )
         })}

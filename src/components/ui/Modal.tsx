@@ -57,7 +57,7 @@ function DesktopDialog({ open, onClose, title, description, size = 'md', childre
         onClose()
       }}
       onClick={(e) => e.target === ref.current && onClose()}
-      className={`m-auto w-[calc(100%-2rem)] ${WIDTH[size]} max-h-[88dvh] overflow-hidden rounded-3xl border border-line-2 bg-panel p-0 text-fg shadow-[var(--shadow-lg)] open:flex open:flex-col`}
+      className={`m-auto w-[calc(100%-2rem)] ${WIDTH[size]} max-h-[calc(88dvh/var(--ui-zoom,1))] overflow-hidden rounded-3xl border border-line-2 bg-panel p-0 text-fg shadow-[var(--shadow-lg)] open:flex open:flex-col`}
     >
       {open && (
         <>
@@ -75,12 +75,12 @@ function Sheet({ open, onClose, title, description, children, footer }: Props) {
     <Drawer.Root open={open} onOpenChange={(o) => !o && onClose()} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/55 backdrop-blur-[3px]" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col rounded-t-[28px] border-t border-line-2 bg-panel text-fg outline-none">
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(92dvh/var(--ui-zoom,1))] flex-col rounded-t-[28px] border-t border-line-2 bg-panel text-fg outline-none">
           <div className="mx-auto mt-2.5 h-1.5 w-11 shrink-0 rounded-full bg-fg/15" aria-hidden />
           <Drawer.Title className="sr-only">{title}</Drawer.Title>
           {description && <Drawer.Description className="sr-only">{description}</Drawer.Description>}
           <Header title={title} description={description} onClose={onClose} />
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-1">{children}</div>
+          <div className={`min-h-0 flex-1 overflow-y-auto px-5 pt-1 ${footer ? 'pb-5' : 'pb-[max(1.25rem,env(safe-area-inset-bottom))]'}`}>{children}</div>
           {footer && (
             <footer className="flex items-center justify-end gap-2 border-t border-line px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {footer}

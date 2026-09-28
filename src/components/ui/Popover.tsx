@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { uiZoom } from '../../lib/textSize'
 
 /**
  * Minimal anchored menu: click to toggle, closes on outside click, Esc or selection. The menu is rendered on the
@@ -56,17 +57,21 @@ export function Popover({
   useLayoutEffect(() => {
     if (!open) return
     const place = () => {
-      const anchor = ref.current?.getBoundingClientRect()
+      const box = ref.current?.getBoundingClientRect()
       const el = menu.current
-      if (!anchor || !el) return
+      if (!box || !el) return
+      // Measured on screen, placed in the page's (zoomed) pixels: see Display size.
+      const z = uiZoom()
+      const anchor = { top: box.top / z, bottom: box.bottom / z, left: box.left / z, right: box.right / z }
+      const vh = window.innerHeight / z
       const gap = 8
-      const below = window.innerHeight - anchor.bottom
+      const below = vh - anchor.bottom
       const fitsBelow = below >= el.offsetHeight + gap * 2
       const up = side === 'top' ? anchor.top >= el.offsetHeight + gap * 2 || anchor.top > below : !fitsBelow && anchor.top > below
       el.style.top = up ? '' : `${anchor.bottom + gap}px`
-      el.style.bottom = up ? `${window.innerHeight - anchor.top + gap}px` : ''
+      el.style.bottom = up ? `${vh - anchor.top + gap}px` : ''
       el.style.left = align === 'start' ? `${Math.max(gap, anchor.left)}px` : ''
-      el.style.right = align === 'end' ? `${Math.max(gap, document.documentElement.clientWidth - anchor.right)}px` : ''
+      el.style.right = align === 'end' ? `${Math.max(gap, document.documentElement.clientWidth / z - anchor.right)}px` : ''
       el.style.transformOrigin = `${up ? 'bottom' : 'top'} ${align === 'end' ? 'right' : 'left'}`
     }
     place()

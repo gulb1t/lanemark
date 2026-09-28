@@ -5,11 +5,13 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { preloadRoutes } from './routes'
 import './index.css'
+import { initTextSize } from './lib/textSize'
 import { initTheme } from './lib/theme'
 import { IS_APP } from './native/platform'
 import { bootstrap } from './store/useSession'
 
 initTheme()
+initTextSize()
 void bootstrap()
 // Lets the stylesheet go easier on heavy effects inside the phone app.
 if (IS_APP) document.documentElement.classList.add('in-app')
