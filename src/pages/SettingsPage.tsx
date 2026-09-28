@@ -34,18 +34,23 @@ import { timeAgo, useNow } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
 import { usePool } from '../store/usePool'
-import { forgetAccount, resetDemo, setUser, useSession } from '../store/useSession'
+import { currentAppToken, forgetAccount, resetDemo, setUser, useSession } from '../store/useSession'
 import { parseBackup, useStore } from '../store/useStore'
 import { confirm, toast, withUndo } from '../store/useUi'
+import { saveFile } from '../lib/files'
+import { keepAwakePref, setKeepAwakePref } from '../native/keepAwake'
+import { LOCK_AFTER, lockAfter, lockMessage, lockPref, setLockAfter, setLockPref, useLock, type LockAfter } from '../native/lock'
+import { IS_APP } from '../native/platform'
 import { syncNow, useSync } from '../sync/engine'
 
-type Section = 'account' | 'security' | 'devices' | 'data' | 'appearance'
+type Section = 'phone' | 'account' | 'security' | 'devices' | 'data' | 'appearance'
 
 export default function SettingsPage() {
   const status = useSession((s) => s.status)
   const demo = status === 'demo'
   const [params, setParams] = useSearchParams()
   const sections: { id: Section; label: string; icon: ReactNode }[] = [
+    ...(IS_APP && !demo ? ([{ id: 'phone', label: 'This phone', icon: <Smartphone size={16} /> }] as const) : []),
     ...(!demo
       ? ([
           { id: 'account', label: 'Account', icon: <UserRound size={16} /> },
@@ -99,6 +104,7 @@ export default function SettingsPage() {
         </nav>
 
         <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="min-w-0 space-y-5">
+          {section === 'phone' && <PhoneSection />}
           {section === 'account' && <AccountSection />}
           {section === 'security' && <SecuritySection />}
           {section === 'devices' && <DevicesSection />}
@@ -117,6 +123,83 @@ function Panel({ title, description, children, tone }: { title: string; descript
       {description && <p className="mt-1 text-[13.5px] leading-relaxed text-muted">{description}</p>}
       <div className="mt-5">{children}</div>
     </section>
+  )
+}
+
+// ── This phone (the Android app only) ────────────────────────────────
+function PhoneSection() {
+  const biometrics = useLock((s) => s.biometrics)
+  const available = useLock((s) => s.biometrics !== 'none' || s.screenLock)
+  const [locked, setLocked] = useState(lockPref() === true)
+  const [after, setAfter] = useState<LockAfter>(lockAfter())
+  const [busy, setBusy] = useState(false)
+  const [awake, setAwake] = useState(keepAwakePref())
+
+  async function toggle(on: boolean) {
+    const token = currentAppToken()
+    if (!token) return
+    setBusy(true)
+    const res = await setLockPref(on, token)
+    setBusy(false)
+    if (res.ok) {
+      setLocked(on)
+      toast(on ? 'Fingerprint unlock is on' : 'Fingerprint unlock is off')
+    } else if (res.error !== 'cancelled') toast(lockMessage(res.error), 'error')
+  }
+
+  const AFTER_LABEL: Record<LockAfter, string> = { 1: 'After 1 minute', 5: 'After 5 minutes', 30: 'After 30 minutes', 0: 'Only when it opens' }
+  return (
+    <>
+      <Panel
+        title={biometrics === 'weak' ? 'Unlock with your face' : 'Unlock with your fingerprint'}
+        description="SwimTrack opens with your fingerprint, face or screen lock instead of your password. Your sign-in is kept in this phone’s secure storage, and nobody can open the app without passing the check."
+      >
+        {available ? (
+          <div className="space-y-5">
+            <label className="flex items-center justify-between gap-4">
+              <span className="text-[14.5px] font-medium">Ask for my fingerprint or face</span>
+              <Switch checked={locked} onChange={(v) => void toggle(v)} disabled={busy} label="Unlock with fingerprint or face" />
+            </label>
+            {locked && (
+              <div>
+                <div className="mb-2 text-[13.5px] text-muted">Lock again when I leave SwimTrack</div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {LOCK_AFTER.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={after === m}
+                      onClick={() => {
+                        setLockAfter(m)
+                        setAfter(m)
+                      }}
+                      className={`rounded-xl border px-3 py-2.5 text-[13.5px] font-medium transition-colors ${after === m ? 'border-aqua/60 bg-aqua/10 text-fg' : 'border-line-2 text-muted hover:text-fg'}`}
+                    >
+                      {AFTER_LABEL[m]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-[14px] text-muted">This phone has no fingerprint, face or screen lock set up. Add one in your phone’s settings, then come back here.</p>
+        )}
+      </Panel>
+      <Panel title="On deck" description="Your phone won’t dim or lock itself while the attendance screen is open.">
+        <label className="flex items-center justify-between gap-4">
+          <span className="text-[14.5px] font-medium">Keep the screen on during attendance</span>
+          <Switch
+            checked={awake}
+            onChange={(v) => {
+              setKeepAwakePref(v)
+              setAwake(v)
+            }}
+            label="Keep the screen on during attendance"
+          />
+        </label>
+      </Panel>
+    </>
   )
 }
 
@@ -750,13 +833,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
   const [saved, setSaved] = useState(false)
   const text = `SwimTrack recovery codes\nEach code works once. Keep them somewhere safe.\n\n${codes.join('\n')}\n`
   function download() {
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'swimtrack-recovery-codes.txt'
-    a.click()
-    URL.revokeObjectURL(url)
-    setSaved(true)
+    void saveFile('swimtrack-recovery-codes.txt', text, 'text/plain').then((done) => done && setSaved(true))
   }
   return (
     <div className="space-y-4">
@@ -883,14 +960,8 @@ function DataSection() {
 
   function exportBackup() {
     const { swimmers, classes } = useStore.getState()
-    const blob = new Blob([JSON.stringify({ app: 'swimtrack', version: 1, exportedAt: new Date().toISOString(), swimmers, classes }, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `swimtrack-backup-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast('Backup downloaded')
+    const json = JSON.stringify({ app: 'swimtrack', version: 1, exportedAt: new Date().toISOString(), swimmers, classes }, null, 2)
+    void saveFile(`swimtrack-backup-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json').then((done) => done && !IS_APP && toast('Backup downloaded'))
   }
 
   async function onImport(file: File | undefined) {

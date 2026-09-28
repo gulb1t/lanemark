@@ -762,3 +762,28 @@ dialog::backdrop {
     animation: none;
   }
 }
+
+/*
+ * The phone app: the same look, cheaper to draw. Wide backdrop blurs are the most expensive thing here for a phone's
+ * GPU, so the glass keeps its tint over a smaller blur. No grey tap flash, no stretch glow at the ends of the page,
+ * and buttons don't select their text on a long press.
+ */
+.in-app {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+.in-app .pill-nav,
+.in-app .glass,
+.in-app .btn-glass {
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  backdrop-filter: blur(12px) saturate(1.5);
+}
+.in-app .backdrop-blur-xl {
+  --tw-backdrop-blur: blur(12px);
+}
+.in-app button,
+.in-app nav a,
+.in-app [role="tab"] {
+  -webkit-user-select: none;
+  user-select: none;
+}

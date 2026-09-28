@@ -15,6 +15,8 @@ import { isReportDone } from '../lib/reportRules'
 import { attendanceSummary, firstName, initials, passedLevel, pct, scheduleNote, skillProgress } from '../lib/stats'
 import { usePool } from '../store/usePool'
 import { toast } from '../store/useUi'
+import { saveFile } from '../lib/files'
+import { IS_APP } from '../native/platform'
 import type { AttendanceStatus, Enrollment, Swimmer, SwimClass } from '../types'
 import { useDemo } from './pool/data'
 
@@ -85,13 +87,8 @@ function ClassView({ detail, back }: { detail: Detail; back: ReactNode }) {
   const note = scheduleNote(cls)
 
   function downloadCsv() {
-    const url = URL.createObjectURL(new Blob([classCsv(cls, swimmers)], { type: 'text/csv;charset=utf-8' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = csvFileName(cls)
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-    toast(`Downloaded ${a.download}`)
+    const name = csvFileName(cls)
+    void saveFile(name, classCsv(cls, swimmers), 'text/csv;charset=utf-8').then((done) => done && !IS_APP && toast(`Downloaded ${name}`))
   }
 
   return (

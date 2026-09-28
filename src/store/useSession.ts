@@ -1,6 +1,8 @@
 import { create } from 'zustand'
-import { api, ApiError, NetworkError, type User } from '../lib/api'
+import { api, ApiError, NetworkError, setAuthToken, type User } from '../lib/api'
 import { buildDemoData } from '../lib/demo'
+import { canLock, forgetSession, loadCapabilities, lockPref, readSession, saveTrustMark, savedSession, storeSession, trustMark, useLock } from '../native/lock'
+import { IS_APP, type VaultError } from '../native/platform'
 import { clearCache, hasCache, pendingChanges, startSync, stopSync, syncNow } from '../sync/engine'
 import { resetPool } from './usePool'
 import { useStore } from './useStore'
@@ -38,8 +40,29 @@ const storage = {
   },
 }
 
+/** The phone app's token for this session, in memory while the app runs (and in the Vault between launches). */
+let appToken: string | null = null
+export const currentAppToken = () => appToken
+
+/** The app got a new session token: use it, save it, and offer fingerprint unlock the first time. */
+async function adopt(token: string | undefined) {
+  if (!IS_APP || !token) return
+  appToken = token
+  setAuthToken(token)
+  await storeSession(token).catch(() => undefined)
+  if (lockPref() === null && canLock()) useLock.setState({ offer: true })
+}
+
+async function dropAppToken() {
+  if (!IS_APP) return
+  appToken = null
+  setAuthToken(null)
+  await forgetSession()
+}
+
 /** The server ended this session (expired, or signed out everywhere). Unsynced edits stay cached for next sign-in. */
 export function expire() {
+  void dropAppToken()
   stopSync()
   resetPool()
   useStore.getState().hydrate({ swimmers: [], classes: [] })
@@ -53,12 +76,65 @@ async function enter(user: User, offline = false) {
   await startSync({ userId: user.id, remote: true, onUnauthorized: expire })
 }
 
-/** Works out who is signed in on app start. Falls back to the cached copy when the server is unreachable. */
+/**
+ * Works out who is signed in on app start. Falls back to the cached copy when the server is unreachable. In the phone
+ * app the session token comes from the Vault; when fingerprint unlock is on, this stops at the lock screen, which
+ * calls unlockAtStart().
+ */
 export async function bootstrap() {
+  if (IS_APP) await loadCapabilities()
   if (storage.get(DEMO_FLAG) === '1') {
     await enterDemo()
     return
   }
+  if (IS_APP) {
+    const saved = await savedSession()
+    if (!saved.exists) return useSession.setState({ status: 'signedOut', user: null })
+    if (saved.locked) return useLock.setState({ locked: true, reason: 'start' })
+    const token = await readSession().catch(() => null)
+    if (!token) return useSession.setState({ status: 'signedOut', user: null })
+    appToken = token
+    setAuthToken(token)
+  }
+  await signInFromSaved()
+}
+
+/** The lock screen passed its check. At start this loads the session; coming back it just hides the lock. */
+export async function unlock(): Promise<VaultError | null> {
+  try {
+    const token = await readSession()
+    if (!token) {
+      await switchToPassword()
+      return null
+    }
+    const { reason } = useLock.getState()
+    useLock.setState({ locked: false })
+    if (reason === 'start') {
+      appToken = token
+      setAuthToken(token)
+      await signInFromSaved()
+    }
+    return null
+  } catch (err) {
+    return err as VaultError
+  }
+}
+
+/** From the lock screen: forget the saved sign-in and go to the password form. */
+export async function switchToPassword() {
+  const { status } = useSession.getState()
+  useLock.setState({ locked: false })
+  if (status === 'signedIn') {
+    // Coming back to a running app: sign out properly (unsynced edits stay cached for the next sign-in).
+    await dropAppToken()
+    expire()
+  } else {
+    await dropAppToken()
+    useSession.setState({ status: 'signedOut', user: null, offline: false })
+  }
+}
+
+async function signInFromSaved() {
   try {
     const { user } = await api<{ user: User }>('/me')
     await enter(user)
@@ -70,28 +146,45 @@ export async function bootstrap() {
         await enter({ ...cached, twoFactor: false, recoveryCodesLeft: 0, createdAt: 0 }, true)
         return
       }
-    }
+    } else if (isAuthError(err)) await dropAppToken()
     useSession.setState({ status: 'signedOut', user: null })
   }
 }
 
 export type LoginResult = { twoFactor: true; trustAllowed: boolean } | { twoFactor: false; trustedDevice: boolean }
 
+/** The app's half-finished two-factor sign-in (a browser keeps it in a cookie). */
+let mfaTicket: string | undefined
+
 export async function login(email: string, password: string, remember = true): Promise<LoginResult> {
-  const res = await api<{ user?: User; twoFactor?: boolean; trustAllowed?: boolean; trustedDevice?: boolean }>('/auth/login', 'POST', { email, password, remember })
-  if (res.twoFactor) return { twoFactor: true, trustAllowed: res.trustAllowed !== false }
+  const trustToken = IS_APP ? await trustMark() : undefined
+  const res = await api<{ user?: User; twoFactor?: boolean; trustAllowed?: boolean; trustedDevice?: boolean; token?: string; ticket?: string }>('/auth/login', 'POST', {
+    email,
+    password,
+    remember,
+    trustToken,
+  })
+  if (res.twoFactor) {
+    mfaTicket = res.ticket
+    return { twoFactor: true, trustAllowed: res.trustAllowed !== false }
+  }
+  await adopt(res.token)
   await enter(res.user!)
   return { twoFactor: false, trustedDevice: Boolean(res.trustedDevice) }
 }
 
 export async function verifyLogin(code: string, trust = false): Promise<{ usedRecoveryCode: boolean }> {
-  const res = await api<{ user: User; usedRecoveryCode: boolean }>('/auth/login/verify', 'POST', { code, trust })
+  const res = await api<{ user: User; usedRecoveryCode: boolean; token?: string; trustToken?: string }>('/auth/login/verify', 'POST', { code, trust, ticket: mfaTicket })
+  mfaTicket = undefined
+  if (res.trustToken) await saveTrustMark(res.trustToken)
+  await adopt(res.token)
   await enter(res.user)
   return { usedRecoveryCode: res.usedRecoveryCode }
 }
 
 export async function register(name: string, email: string, password: string) {
-  const res = await api<{ user: User }>('/auth/register', 'POST', { name, email, password })
+  const res = await api<{ user: User; token?: string }>('/auth/register', 'POST', { name, email, password })
+  await adopt(res.token)
   await enter(res.user)
 }
 
@@ -110,6 +203,7 @@ export async function logout({ force = false } = {}): Promise<{ unsynced: number
   const unsynced = pendingChanges()
   if (unsynced && !force) return { unsynced }
   await api('/auth/logout', 'POST').catch(() => undefined)
+  await dropAppToken()
   stopSync()
   if (user) await clearCache(user.id)
   storage.set(LAST_USER, null)
@@ -146,6 +240,7 @@ export function setUser(user: User) {
 /** Called after the account is deleted server-side. */
 export async function forgetAccount() {
   const { user } = useSession.getState()
+  await dropAppToken()
   stopSync()
   resetPool()
   if (user) await clearCache(user.id)

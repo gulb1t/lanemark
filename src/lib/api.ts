@@ -1,8 +1,16 @@
+import { IS_APP } from '../native/platform'
+
 /**
- * Thin JSON client for the SwimTrack API. The web app talks to its own origin; a native build can point
- * VITE_API_URL at the deployed server instead.
+ * Thin JSON client for the SwimTrack API. The web app talks to its own origin with its cookie. The phone app talks
+ * to the live server (VITE_API_URL) with a bearer token instead, and says so with the X-SwimTrack-Client header.
  */
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? ''
+
+let bearer: string | null = null
+/** The phone app's session token (kept in the Vault between launches). */
+export function setAuthToken(token: string | null) {
+  bearer = token
+}
 
 export class ApiError extends Error {
   readonly status: number
@@ -41,10 +49,15 @@ type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 export async function api<T>(path: string, method: Method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
   let res: Response
   try {
+    const headers: Record<string, string> = method === 'GET' ? { accept: 'application/json' } : { 'content-type': 'application/json', accept: 'application/json' }
+    if (IS_APP) {
+      headers['x-swimtrack-client'] = 'android'
+      if (bearer) headers.authorization = `Bearer ${bearer}`
+    }
     res = await fetch(`${BASE}/api${path}`, {
       method,
-      credentials: BASE ? 'include' : 'same-origin',
-      headers: method === 'GET' ? { accept: 'application/json' } : { 'content-type': 'application/json', accept: 'application/json' },
+      credentials: IS_APP ? 'omit' : BASE ? 'include' : 'same-origin',
+      headers,
       body: method === 'GET' ? undefined : JSON.stringify(body ?? {}),
       signal,
     })

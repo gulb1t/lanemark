@@ -33,9 +33,19 @@ function serviceWorker(): Plugin {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss(), serviceWorker()],
+// `vite build --mode app` builds the Android app's screens into dist-app/: no service worker (the files are already
+// on the phone), and the API is the live server unless APP_API_URL says otherwise.
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), mode === 'app' ? null : serviceWorker()],
+  define:
+    mode === 'app'
+      ? {
+          'import.meta.env.VITE_APP': JSON.stringify('1'),
+          'import.meta.env.VITE_API_URL': JSON.stringify(process.env.APP_API_URL ?? 'https://swimtrack.fly.dev'),
+        }
+      : {},
+  build: mode === 'app' ? { outDir: 'dist-app', emptyOutDir: true } : {},
   // The API runs on :8787 in development; the browser only ever talks to the Vite origin.
   server: { proxy: { '/api': process.env.API_PROXY ?? 'http://localhost:8787' } },
   test: { environment: 'node', include: ['src/**/*.test.ts', 'server/**/*.test.ts'], testTimeout: 20000, setupFiles: ['src/test/setup.ts'] },
-})
+}))

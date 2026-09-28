@@ -14,6 +14,8 @@ import { attempt, useOverview, useUserId } from './pool/data'
 import { OverviewTab } from './pool/OverviewTab'
 import { RankingsTab } from './pool/RankingsTab'
 import { TeamTab } from './pool/TeamTab'
+import { shareOrCopy } from '../lib/files'
+import { IS_APP, SITE_URL } from '../native/platform'
 
 type Tab = 'overview' | 'rankings' | 'team'
 
@@ -317,15 +319,13 @@ function SupervisorView({ pool }: { pool: Pool }) {
 function InviteButton({ pool }: { pool: Pool }) {
   const [copied, setCopied] = useState(false)
   if (!pool.inviteCode) return null
-  const link = `${location.origin}/app/pool?code=${pool.inviteCode}`
+  const link = `${SITE_URL}/app/pool?code=${pool.inviteCode}`
   async function copy() {
-    try {
-      await navigator.clipboard.writeText(link)
+    const res = await shareOrCopy(IS_APP ? `Join ${pool.name} on SwimTrack: ${link}` : link, 'Send the invite')
+    if (res === 'copied') {
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)
-    } catch {
-      toast(`Invite code: ${formatCode(pool.inviteCode!)}`)
-    }
+    } else if (res === 'failed' && !IS_APP) toast(`Invite code: ${formatCode(pool.inviteCode!)}`)
   }
   return (
     <button

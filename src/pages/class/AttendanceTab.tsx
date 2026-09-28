@@ -8,6 +8,7 @@ import { Button, ButtonLink } from '../../components/ui/Button'
 import { EmptyState, Kbd, Segmented } from '../../components/ui/bits'
 import { formatDate, isoDate } from '../../lib/dates'
 import { attendanceSummary, lessonHeadcount, pct } from '../../lib/stats'
+import { useKeepAwake } from '../../native/keepAwake'
 import { useStore } from '../../store/useStore'
 import { confirm, withUndo } from '../../store/useUi'
 import type { AttendanceStatus, Swimmer, SwimClass } from '../../types'
@@ -24,6 +25,7 @@ const nextStatus = (s: AttendanceStatus | undefined) => CYCLE[(CYCLE.indexOf(s) 
 const MODE_KEY = 'swimtrack:attendance-mode'
 
 export function AttendanceTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swimmer> }) {
+  useKeepAwake(true)
   const [mode, setMode] = useState<'take' | 'grid'>(() => {
     try {
       return (localStorage.getItem(MODE_KEY) as 'take' | 'grid') || 'take'

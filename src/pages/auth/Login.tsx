@@ -6,6 +6,7 @@ import { Checkbox, Field } from '../../components/ui/bits'
 import { PasswordInput } from '../../components/ui/PasswordInput'
 import { errorMessage } from '../../lib/api'
 import { safeNext } from '../../lib/redirect'
+import { IS_APP } from '../../native/platform'
 import { login } from '../../store/useSession'
 import { toast } from '../../store/useUi'
 import { AuthLayout, FormError } from './AuthLayout'
@@ -56,15 +57,20 @@ export default function Login() {
       <form onSubmit={submit} className="space-y-4" noValidate>
         <FormError message={error} shakeKey={attempt} />
         <Field label="Email">
-          <input className="input h-11" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
+          <input className="input h-11" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus={!IS_APP} />
         </Field>
         <Field label="Password">
           <PasswordInput className="h-11" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         <div className="-mt-1 flex items-center justify-between gap-3">
-          <Checkbox checked={remember} onChange={setRemember}>
-            Remember me for 30 days
-          </Checkbox>
+          {/* The app stays signed in; fingerprint unlock keeps it private instead. */}
+          {IS_APP ? (
+            <span />
+          ) : (
+            <Checkbox checked={remember} onChange={setRemember}>
+              Remember me for 30 days
+            </Checkbox>
+          )}
           <Link to="/forgot-password" state={{ email }} className="text-[13px] font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
             Forgot password?
           </Link>

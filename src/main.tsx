@@ -6,14 +6,17 @@ import App from './App'
 import { preloadRoutes } from './routes'
 import './index.css'
 import { initTheme } from './lib/theme'
+import { IS_APP } from './native/platform'
 import { bootstrap } from './store/useSession'
 
 initTheme()
 void bootstrap()
+// Lets the stylesheet go easier on heavy effects inside the phone app.
+if (IS_APP) document.documentElement.classList.add('in-app')
 
 // Offline app shell. Once registered, every route is fetched in the background so it's on the device before the
-// Wi-Fi drops (service workers need HTTPS or localhost).
-if ('serviceWorker' in navigator) {
+// Wi-Fi drops (service workers need HTTPS or localhost). The phone app already has every file on the phone.
+if (!IS_APP && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker
       .register('/sw.js')

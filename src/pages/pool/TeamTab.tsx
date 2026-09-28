@@ -7,6 +7,8 @@ import { MenuItem, Popover } from '../../components/ui/Popover'
 import { api } from '../../lib/api'
 import { formatCode, setPool, type Pool, type PoolMember, type PoolRole } from '../../store/usePool'
 import { confirm, toast } from '../../store/useUi'
+import { shareOrCopy } from '../../lib/files'
+import { IS_APP, SITE_URL } from '../../native/platform'
 import { RoleChip } from './bits'
 import { attempt, useDemo, useUserId } from './data'
 
@@ -103,14 +105,11 @@ export function TeamTab({ pool }: { pool: Pool }) {
     }
   }
 
-  const link = pool.inviteCode ? `${location.origin}/app/pool?code=${pool.inviteCode}` : ''
+  const link = pool.inviteCode ? `${SITE_URL}/app/pool?code=${pool.inviteCode}` : ''
   const copy = async (text: string, what: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast(`${what} copied`)
-    } catch {
-      toast(text)
-    }
+    const res = await shareOrCopy(text, `Send the ${what.toLowerCase()}`)
+    if (res === 'copied') toast(`${what} copied`)
+    else if (res === 'failed' && !IS_APP) toast(text)
   }
 
   return (

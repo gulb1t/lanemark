@@ -1,4 +1,5 @@
 import { getLevel, LEVEL_BY_ID } from '../data/curriculum'
+import { Device, IS_APP } from '../native/platform'
 import type { Enrollment, SwimClass } from '../types'
 import { passedLevel } from './stats'
 
@@ -11,9 +12,20 @@ export function nextLevelLabel(cls: SwimClass, e: Enrollment): string {
   return (id && LEVEL_BY_ID[id]?.name) || '—'
 }
 
-/** Prints the report cards currently mounted by <PrintReports>. */
+/**
+ * Prints the report cards currently mounted by <PrintReports>. In the phone app this opens Android's print screen,
+ * which prints to any nearby printer or saves a PDF.
+ */
 export function printReports() {
   document.body.dataset.printing = 'reports'
+  if (IS_APP) {
+    requestAnimationFrame(() => {
+      void Device.print({ name: 'SwimTrack report cards' })
+        .catch(() => undefined)
+        .finally(() => delete document.body.dataset.printing)
+    })
+    return
+  }
   const done = () => {
     delete document.body.dataset.printing
     window.removeEventListener('afterprint', done)

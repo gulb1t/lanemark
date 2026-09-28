@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Caustics } from '../../components/fx/Caustics'
 import { Logo, Wordmark } from '../../components/Logo'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { IS_APP } from '../../native/platform'
 
 const POINTS = ['Attendance in two taps', 'Report cards that write themselves', 'Works offline on deck', 'Two-factor sign-in']
 
@@ -55,14 +56,19 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: React
       {/* Form */}
       <main className="relative flex flex-col">
         <div className="ambient lg:hidden" aria-hidden />
-        <div className="relative flex items-center justify-between p-4 sm:p-6">
-          <Link to="/" className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-fg">
-            <ArrowLeft size={15} />
-            <span className="lg:hidden">
-              <Wordmark size={14} />
-            </span>
-            <span className="hidden lg:inline">Back to home</span>
-          </Link>
+        <div className="relative flex items-center justify-between p-4 sm:p-6" style={IS_APP ? { paddingTop: 'max(1rem, env(safe-area-inset-top))' } : undefined}>
+          {IS_APP ? (
+            // The app has no home page to go back to.
+            <Wordmark size={14} />
+          ) : (
+            <Link to="/" className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-fg">
+              <ArrowLeft size={15} />
+              <span className="lg:hidden">
+                <Wordmark size={14} />
+              </span>
+              <span className="hidden lg:inline">Back to home</span>
+            </Link>
+          )}
           <ThemeToggle />
         </div>
         <div className="relative flex flex-1 items-center justify-center px-5 pb-16 pt-4">

@@ -5,6 +5,9 @@ import { Splash } from './components/Splash'
 import { Overlays } from './components/ui/Overlays'
 import { guidePath, isGuideTarget } from './lib/guideLinks'
 import { useSpotlight } from './lib/hooks'
+import { AppLock, UnlockOffer } from './native/AppLock'
+import { IS_APP } from './native/platform'
+import { useNativeApp } from './native/useNativeApp'
 import { load } from './routes'
 import { enterDemo, useSession } from './store/useSession'
 import { useStore } from './store/useStore'
@@ -47,6 +50,13 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return children
 }
 
+/** The phone app has no marketing page: it opens on your classes, or on sign-in. */
+function AppHome() {
+  const status = useSession((s) => s.status)
+  if (status === 'loading') return <Splash />
+  return <Navigate to={status === 'signedOut' ? '/login' : '/app'} replace />
+}
+
 function DemoEntry() {
   const navigate = useNavigate()
   const status = useSession((s) => s.status)
@@ -65,6 +75,7 @@ function DemoEntry() {
 
 export default function App() {
   useSpotlight()
+  useNativeApp()
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -75,7 +86,7 @@ export default function App() {
       <ErrorBoundary key={pathname}>
       <Suspense fallback={<Splash />}>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={IS_APP ? <AppHome /> : <Landing />} />
           <Route path="/login" element={<GuestOnly><AuthPages.Login /></GuestOnly>} />
           <Route path="/login/verify" element={<GuestOnly><AuthPages.Verify /></GuestOnly>} />
           <Route path="/signup" element={<GuestOnly><AuthPages.Signup /></GuestOnly>} />
@@ -104,6 +115,12 @@ export default function App() {
       </Suspense>
       </ErrorBoundary>
       <Overlays />
+      {IS_APP && (
+        <>
+          <UnlockOffer />
+          <AppLock />
+        </>
+      )}
       <div className="grain" aria-hidden />
     </>
   )

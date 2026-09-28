@@ -13,6 +13,8 @@ import { isReportDone } from '../../lib/reportRules'
 import { firstName, passedLevel, skillProgress } from '../../lib/stats'
 import { useSession } from '../../store/useSession'
 import { useStore } from '../../store/useStore'
+import { saveFile } from '../../lib/files'
+import { IS_APP } from '../../native/platform'
 import { confirm, toast, withUndo } from '../../store/useUi'
 import type { Enrollment, Swimmer, SwimClass } from '../../types'
 
@@ -50,13 +52,8 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
 
   /** The whole class as a spreadsheet, for supervisors and front-desk records. */
   function downloadCsv() {
-    const url = URL.createObjectURL(new Blob([classCsv(cls, swimmers)], { type: 'text/csv;charset=utf-8' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = csvFileName(cls)
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-    toast(`Downloaded ${a.download}`)
+    const name = csvFileName(cls)
+    void saveFile(name, classCsv(cls, swimmers), 'text/csv;charset=utf-8').then((done) => done && !IS_APP && toast(`Downloaded ${name}`))
   }
 
   function print() {
