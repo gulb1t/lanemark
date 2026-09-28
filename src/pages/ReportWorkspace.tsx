@@ -25,11 +25,13 @@ import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
 import { Select } from '../components/ui/Picker'
+import { SkillCycle } from '../components/ui/SkillCycle'
 import { LevelChip } from '../components/ui/bits'
 import { Modal } from '../components/ui/Modal'
 import { MenuItem, Popover } from '../components/ui/Popover'
 import { categoriesOf, getLevel, LEVEL_BY_ID, LEVELS } from '../data/curriculum'
 import { ELEMENT_LABEL } from '../data/mustSees'
+import { usePhoneLayout } from '../lib/hooks'
 import { printReports } from '../lib/print'
 import { availableElements, generateComment, plainSkillName, suggestReport, type FocusPick } from '../lib/report'
 import { isReportDone, reportWarnings } from '../lib/reportRules'
@@ -337,6 +339,7 @@ function Step({ n, title, hint, done, children, tour }: { n: number; title: stri
 }
 
 function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; row: Row; level: LevelDef | undefined; position: number; total: number }) {
+  const phone = usePhoneLayout()
   const { e, swimmer } = row
   const setComment = useStore((s) => s.setComment)
   const passed = passedLevel(e, cls.skills)
@@ -449,7 +452,15 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
         done={progress.unmarked === 0}
         hint={
           <>
-            Tap <b className="font-semibold text-fg">Passed</b> or <b className="font-semibold text-fg">Not yet</b> for each skill. Tap again to undo.
+            {phone ? (
+              <>
+                Tap a skill’s button once for <b className="font-semibold text-fg">Passed</b>, twice for <b className="font-semibold text-fg">Not yet</b>, again to clear.
+              </>
+            ) : (
+              <>
+                Tap <b className="font-semibold text-fg">Passed</b> or <b className="font-semibold text-fg">Not yet</b> for each skill. Tap again to undo.
+              </>
+            )}
           </>
         }
       >
@@ -769,6 +780,7 @@ function FocusChips({ cls, e, picks, onToggle }: { cls: SwimClass; e: Enrollment
 
 /** Each skill with two plain buttons: Passed and Not yet. Tapping the one that's on clears it. */
 function Checklist({ cls, e, onChange }: { cls: SwimClass; e: Enrollment; onChange: (skillId: string, s: SkillStatus | undefined) => void }) {
+  const phone = usePhoneLayout()
   return (
     <div className="space-y-4">
       {categoriesOf(cls.skills).map((cat) => (
@@ -780,8 +792,11 @@ function Checklist({ cls, e, onChange }: { cls: SwimClass; e: Enrollment; onChan
               .map((s) => {
                 const v = e.skills[s.id]
                 return (
-                  <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
+                  <li key={s.id} className="flex items-center gap-x-3 gap-y-2 py-2.5 sm:flex-wrap">
                     <span className={`min-w-0 flex-1 basis-48 text-[14.5px] ${v === undefined ? 'text-fg' : v === 'pass' ? 'text-muted' : 'text-fg'}`}>{s.name}</span>
+                    {phone ? (
+                      <SkillCycle name={s.name} value={v} onChange={(next) => onChange(s.id, next)} />
+                    ) : (
                     <div className="flex shrink-0 gap-1.5" role="group" aria-label={s.name}>
                       <button
                         type="button"
@@ -800,6 +815,7 @@ function Checklist({ cls, e, onChange }: { cls: SwimClass; e: Enrollment; onChan
                         Not yet
                       </button>
                     </div>
+                    )}
                   </li>
                 )
               })}

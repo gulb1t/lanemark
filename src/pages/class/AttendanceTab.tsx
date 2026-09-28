@@ -203,8 +203,8 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
             </div>
             <div className="truncate text-[13px] text-muted">{lesson.topic || 'No topic yet'}</div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="mr-1 text-[13px] tabular-nums text-muted">
+          <div className="flex items-center gap-2 max-sm:w-full max-sm:flex-wrap">
+            <span className="mr-1 text-[13px] tabular-nums text-muted max-sm:w-full">
               <span className="font-medium text-good">{head.present} present</span> · <span className="font-medium text-warn">{head.late} late</span> ·{' '}
               <span className="font-medium text-bad">{head.absent} absent</span>
               {unmarked > 0 && <span className="text-dim"> · {unmarked} left</span>}
@@ -233,6 +233,8 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
             <Button
               size="sm"
               variant={unmarked ? 'primary' : 'secondary'}
+              // Phones already show a big "Everyone's here" before the first mark.
+              className={unmarked === members.length && members.length > 1 ? 'max-sm:hidden' : 'max-sm:flex-1'}
               icon={<CheckCheck size={14} />}
               onClick={() =>
                 withUndo(`Everyone else marked present for lesson ${index + 1}`, () => {

@@ -118,8 +118,9 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
               <Link to={workspace(swimmer.id)} className="card spotlight group flex w-full items-start gap-3 p-4 text-left transition-transform active:scale-[0.99]">
                 <Avatar name={swimmer.name} size={42} />
                 <div className="relative min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-[15px] font-semibold">{swimmer.name}</span>
+                  {/* The status wraps under the name when both don't fit, so the name is never squeezed out. */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span className="min-w-0 max-w-full truncate text-[15px] font-semibold">{swimmer.name}</span>
                     {ok ? (
                       <span className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-semibold text-good">
                         <CircleCheck size={14} /> Done

@@ -1,13 +1,16 @@
 import { motion, Reorder, useDragControls } from 'motion/react'
-import { Check, CheckCheck, ChevronDown, GripVertical, Info, LayoutGrid, ListChecks, Minus, Pencil, Plus, RotateCcw, Trash2, UserRound } from 'lucide-react'
+import { Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Info, LayoutGrid, ListChecks, Minus, Pencil, Plus, RotateCcw, Trash2, UserRound } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 import { toast as sonner } from 'sonner'
 import { burstFrom } from '../../components/fx/bubbles'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button, IconButton } from '../../components/ui/Button'
 import { EmptyState, ProgressRing, Segmented } from '../../components/ui/bits'
+import { PickerSheet } from '../../components/ui/Picker'
+import { SkillCycle } from '../../components/ui/SkillCycle'
 import { categoriesOf, getLevel } from '../../data/curriculum'
 import { ELEMENT_LABEL } from '../../data/mustSees'
+import { usePhoneLayout } from '../../lib/hooks'
 import { firstName, passedLevel, skillProgress } from '../../lib/stats'
 import { useStore } from '../../store/useStore'
 import { confirm, toast, withUndo } from '../../store/useUi'
@@ -257,14 +260,45 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
   const members = cls.enrollments.filter((e) => swimmers.has(e.swimmerId))
   const [selected, setSelected] = useState(members[0]?.swimmerId)
   const [openSkill, setOpenSkill] = useState<string | null>(null)
+  const [choosing, setChoosing] = useState(false)
+  const phone = usePhoneLayout()
   const { mark, anchors } = useMark(cls, swimmers)
   const e = members.find((m) => m.swimmerId === selected) ?? members[0]
   const swimmer = swimmers.get(e.swimmerId)!
   const p = skillProgress(e, cls.skills)
   const done = passedLevel(e, cls.skills)
+  const i = members.indexOf(e)
 
   return (
     <div className="space-y-4">
+      {phone ? (
+        <div className="flex items-center gap-2">
+          <IconButton label="Previous swimmer" disabled={i <= 0} onClick={() => setSelected(members[i - 1].swimmerId)}>
+            <ChevronLeft size={18} />
+          </IconButton>
+          <button type="button" onClick={() => setChoosing(true)} className="input flex min-w-0 flex-1 items-center gap-2 text-left">
+            <span className="min-w-0 flex-1 truncate font-medium">{swimmer.name}</span>
+            <span className="shrink-0 text-[13px] text-dim tabular-nums">
+              {i + 1} of {members.length}
+            </span>
+            <ChevronDown size={16} className="shrink-0 text-dim" />
+          </button>
+          <IconButton label="Next swimmer" disabled={i >= members.length - 1} onClick={() => setSelected(members[i + 1].swimmerId)}>
+            <ChevronRight size={18} />
+          </IconButton>
+          <PickerSheet
+            open={choosing}
+            onClose={() => setChoosing(false)}
+            title="Swimmer"
+            value={e.swimmerId}
+            onPick={setSelected}
+            options={members.map((m) => {
+              const pr = skillProgress(m, cls.skills)
+              return { value: m.swimmerId, label: swimmers.get(m.swimmerId)!.name, hint: passedLevel(m, cls.skills) ? 'Every skill passed' : `${pr.pass} of ${pr.total} passed${pr.unmarked ? ` · ${pr.unmarked} to assess` : ''}` }
+            })}
+          />
+        </div>
+      ) : (
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 no-scrollbar sm:mx-0 sm:px-0">
         {members.map((m) => {
           const w = swimmers.get(m.swimmerId)!
@@ -286,13 +320,14 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
           )
         })}
       </div>
+      )}
 
       <div className="card overflow-hidden">
         <div className="flex items-center gap-3 border-b border-line px-4 py-3.5" ref={(el) => void anchors.set(e.swimmerId, el)}>
           <Avatar name={swimmer.name} size={40} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[15px] font-semibold">{swimmer.name}</div>
-            <div className={`font-mono text-xs ${done ? 'text-good' : 'text-muted'}`}>
+            <div className={`text-[12.5px] ${done ? 'text-good' : 'text-muted'}`}>
               {done ? 'Every skill passed' : `${p.pass} passed · ${p.incomplete} incomplete · ${p.unmarked} to assess`}
             </div>
           </div>
@@ -323,6 +358,9 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
                           {skill.mustSees && <ChevronDown size={14} className={`mt-0.5 shrink-0 text-dim transition-transform ${expanded ? 'rotate-180' : ''}`} />}
                           <span>{skill.name}</span>
                         </button>
+                        {phone ? (
+                          <SkillCycle name={skill.name} value={v} onChange={(next) => mark(e.swimmerId, skill.id, next)} />
+                        ) : (
                         <div className="flex gap-1.5">
                           {(['pass', 'incomplete'] as const).map((s) => {
                             const on = v === s
@@ -347,6 +385,7 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
                             )
                           })}
                         </div>
+                        )}
                       </div>
                       {expanded && skill.mustSees && (
                         <motion.dl
