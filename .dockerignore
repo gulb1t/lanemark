@@ -7,3 +7,5 @@ data
 .git
 .claude
 *.log
+android
+dist-app

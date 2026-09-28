@@ -13,6 +13,7 @@ import { classProgress, summarize } from '../src/lib/overview.ts'
 import type { Swimmer, SwimClass } from '../src/types.ts'
 import { EmailTakenError, monotonicClock, type DocRecord, type MemberRecord, type PoolRecord, type Repo, type SessionRecord, type TokenPurpose, type UserRecord } from './db/types.ts'
 import { askAssistant, AssistantError } from './assistant.ts'
+import appLinks from './app-links.json' with { type: 'json' }
 import { emails } from './lib/emails.ts'
 import { outboxMailer, type Mail, type Mailer } from './lib/mailer.ts'
 import { decrypt, encrypt, inviteCode, normalizeInviteCode, randomToken, sha256 } from './lib/crypto.ts'
@@ -374,6 +375,21 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   // ── public ────────────────────────────────────────────────────────
   app.get('/api/health', (c) => c.json({ ok: true, db: repo.kind }))
+
+  // Android checks this before letting the app open swimtrack.fly.dev links (invites, email links). It lists the
+  // certificates the app is signed with; `npm run app:keystore` adds the release one to server/app-links.json.
+  app.get('/.well-known/assetlinks.json', (c) =>
+    c.json(
+      appLinks.fingerprints.length
+        ? [
+            {
+              relation: ['delegate_permission/common.handle_all_urls'],
+              target: { namespace: 'android_app', package_name: appLinks.package, sha256_cert_fingerprints: appLinks.fingerprints },
+            },
+          ]
+        : [],
+    ),
+  )
 
   app.post('/api/auth/register', async (c) => {
     const data = await body(c, RegisterBody)

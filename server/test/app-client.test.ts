@@ -137,4 +137,16 @@ describe('the phone app', () => {
     })
     expect(fake.status).toBe(403)
   })
+
+  it('publishes the app-link file Android checks', async () => {
+    const { app } = setupApp()
+    const res = await app.request('http://localhost/.well-known/assetlinks.json')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('application/json')
+    const body = (await res.json()) as any[]
+    for (const entry of body) {
+      expect(entry.target.package_name).toBe('io.github.gulb1t.swimtrack')
+      for (const f of entry.target.sha256_cert_fingerprints) expect(f).toMatch(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/)
+    }
+  })
 })
