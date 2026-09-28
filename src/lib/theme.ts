@@ -67,15 +67,21 @@ export function setTheme(pref: ThemePref, origin?: { x: number; y: number }) {
     change()
     return
   }
-  const x = origin?.x ?? window.innerWidth / 2
+  const w = window.innerWidth
+  const h = window.innerHeight
+  const x = origin?.x ?? w / 2
   const y = origin?.y ?? 0
-  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y))
+  // In percent of the screen, not pixels: the circle then reaches every corner at any display size (zoom) or screen
+  // size. A circle's % radius is measured against the screen's diagonal ÷ √2.
+  const reach = Math.hypot(Math.max(x, w - x), Math.max(y, h - y))
+  const radius = (reach / (Math.hypot(w, h) / Math.SQRT2)) * 100 + 2
+  const at = `at ${(x / w) * 100}% ${(y / h) * 100}%`
   const transition = document.startViewTransition(() => flushSync(change))
   transition.ready
     .then(() =>
       document.documentElement.animate(
-        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-        { duration: 700, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' },
+        { clipPath: [`circle(0% ${at})`, `circle(${radius}% ${at})`] },
+        { duration: 550, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' },
       ),
     )
     .catch(() => undefined)
