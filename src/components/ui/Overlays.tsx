@@ -38,7 +38,9 @@ export function Overlays() {
       <Toaster
         theme={theme}
         position={phone ? 'top-center' : 'bottom-right'}
-        offset={phone ? 16 : 24}
+        offset={phone ? { top: 'calc(env(safe-area-inset-top) + 12px)' } : 24}
+        // Sonner's own layout under 600px: keep toasts below the phone's status bar.
+        mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 12px)', left: 12, right: 12 }}
         gap={10}
         toastOptions={{
           classNames: {
