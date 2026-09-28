@@ -24,6 +24,7 @@ import { PrintReports, ReportSheet } from '../components/PrintReports'
 import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
+import { Select } from '../components/ui/Picker'
 import { LevelChip } from '../components/ui/bits'
 import { Modal } from '../components/ui/Modal'
 import { MenuItem, Popover } from '../components/ui/Popover'
@@ -628,15 +629,16 @@ function NextLevelStep({
             </button>
           ) : (
             <div className="flex items-center gap-2">
-              <select className="input h-10 w-auto" value={chosen} onChange={(ev) => setNextLevel(cls.id, swimmer.id, ev.target.value)} aria-label="Next level" autoFocus>
-                <option value="none">No next level (program complete)</option>
-                {LEVELS.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                    {l.id === suggested ? '  (suggested)' : ''}
-                  </option>
-                ))}
-              </select>
+              <Select
+                className="h-10 w-auto max-sm:flex-1"
+                label="Next level"
+                value={chosen}
+                onChange={(v) => setNextLevel(cls.id, swimmer.id, v)}
+                options={[
+                  { value: 'none', label: 'No next level (program complete)' },
+                  ...LEVELS.map((l) => ({ value: l.id, label: l.name + (l.id === suggested ? '  (suggested)' : ''), hint: l.id === suggested ? 'Suggested from the skills passed' : undefined })),
+                ]}
+              />
               <button
                 type="button"
                 onClick={() => setChanging(false)}

@@ -1,9 +1,13 @@
 import { motion } from 'motion/react'
-import { CalendarRange, Minus, Plus, Trash2 } from 'lucide-react'
+import { CalendarRange, ChevronDown, ChevronRight, Minus, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button, IconButton } from '../../components/ui/Button'
+import { Modal } from '../../components/ui/Modal'
+import { PickerSheet, Select } from '../../components/ui/Picker'
+import { Field } from '../../components/ui/bits'
 import { Popover } from '../../components/ui/Popover'
 import { addDays, formatDate, isoDate } from '../../lib/dates'
+import { usePhoneLayout } from '../../lib/hooks'
 import { lessonHeadcount } from '../../lib/stats'
 import { MAX_LESSONS, useStore } from '../../store/useStore'
 import { confirm, withUndo } from '../../store/useUi'
@@ -15,6 +19,9 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
   const updateLesson = useStore((s) => s.updateLesson)
   const setLessonCount = useStore((s) => s.setLessonCount)
   const today = isoDate()
+  const phone = usePhoneLayout()
+  const [editing, setEditing] = useState<string | null>(null)
+  const [picking, setPicking] = useState(false)
 
   /** What deleting a lesson would lose, in words, or null when it's empty. */
   function loses(l: Lesson) {
@@ -50,6 +57,106 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
     })
   }
 
+  const stepper = (
+    <div className="flex items-center rounded-xl border border-line-2 bg-panel">
+      <IconButton label="Remove last lesson" onClick={removeLast} disabled={cls.lessons.length <= 1}>
+        <Minus size={15} />
+      </IconButton>
+      <span className="w-9 text-center text-sm font-medium tabular-nums" aria-live="polite">
+        {cls.lessons.length}
+      </span>
+      <IconButton label="Add a lesson" onClick={() => addLesson(cls.id)} disabled={cls.lessons.length >= MAX_LESSONS}>
+        <Plus size={15} />
+      </IconButton>
+    </div>
+  )
+
+  // Phones: one line per lesson; tapping one opens it in a sheet instead of three fields per lesson on the page.
+  if (phone) {
+    const open = cls.lessons.find((l) => l.id === editing)
+    const n = open ? cls.lessons.indexOf(open) + 1 : 0
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <DateFiller onFill={fillDates} firstDate={cls.lessons[0]?.date} />
+          {stepper}
+        </div>
+        <ol className="card divide-y divide-line overflow-hidden">
+          {cls.lessons.map((l, i) => {
+            const h = lessonHeadcount(cls, l.id)
+            const isToday = l.date === today
+            return (
+              <li key={l.id}>
+                <button type="button" onClick={() => setEditing(l.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-fg/[0.05] ${isToday ? 'bg-aqua/[0.06]' : ''}`}>
+                  <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl border text-[14px] font-semibold tabular-nums ${isToday ? 'border-aqua/50 bg-aqua/15 text-aqua' : 'border-line-2 bg-panel-2 text-muted'}`}>{i + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-[13px] text-muted">
+                      {l.date ? formatDate(l.date, { weekday: 'short', month: 'short', day: 'numeric' }) : 'No date'}
+                      {isToday && <span className="rounded-full bg-aqua/20 px-1.5 text-[11px] font-semibold text-aqua">Today</span>}
+                    </span>
+                    <span className={`block truncate text-[15px] ${l.topic ? 'font-medium' : 'text-dim'}`}>{l.topic || 'No topic yet'}</span>
+                  </span>
+                  {h.marked > 0 && <span className="shrink-0 text-[12.5px] tabular-nums text-dim">{h.present + h.late}/{h.marked} in</span>}
+                  <ChevronRight size={17} className="shrink-0 text-dim" />
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+        {cls.lessons.length < MAX_LESSONS && (
+          <Button variant="ghost" icon={<Plus size={15} />} onClick={() => addLesson(cls.id)}>
+            Add lesson
+          </Button>
+        )}
+        <Modal
+          open={Boolean(open)}
+          onClose={() => setEditing(null)}
+          title={`Lesson ${n}`}
+          footer={
+            open && (
+              <>
+                <Button variant="ghost" className="mr-auto !text-bad" icon={<Trash2 size={15} />} disabled={cls.lessons.length <= 1} onClick={() => { const l = open; setEditing(null); void remove(l, n) }}>
+                  Delete
+                </Button>
+                <Button variant="primary" onClick={() => setEditing(null)}>
+                  Done
+                </Button>
+              </>
+            )
+          }
+        >
+          {open && (
+            <div className="space-y-4">
+              <Field label="Date">
+                <input type="date" className="input" value={open.date} onChange={(e) => updateLesson(cls.id, open.id, { date: e.target.value })} />
+              </Field>
+              <Field label="Topic">
+                <button type="button" onClick={() => setPicking(true)} className="input flex items-center gap-2 text-left">
+                  <span className={`min-w-0 flex-1 truncate ${open.topic ? '' : 'text-dim'}`}>{open.topic || 'Choose a skill or type your own'}</span>
+                  <ChevronDown size={16} className="shrink-0 text-dim" />
+                </button>
+              </Field>
+              <Field label="Notes">
+                <textarea className="input min-h-24 resize-y" placeholder="Equipment, games, reminders…" value={open.notes} maxLength={2000} onChange={(e) => updateLesson(cls.id, open.id, { notes: e.target.value })} />
+              </Field>
+            </div>
+          )}
+        </Modal>
+        {open && (
+          <PickerSheet
+            open={picking}
+            onClose={() => setPicking(false)}
+            title="Lesson topic"
+            custom="Search skills or type a topic"
+            value={open.topic}
+            options={cls.skills.map((sk) => ({ value: sk.name, label: sk.name, group: sk.category }))}
+            onPick={(v) => updateLesson(cls.id, open.id, { topic: v })}
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <datalist id="lesson-topic-suggestions">
@@ -62,21 +169,7 @@ export function LessonsTab({ cls }: { cls: SwimClass }) {
         <p className="text-[13px] text-muted">Plan each lesson. Topic suggestions come from this class’s skills.</p>
         <div className="flex items-center gap-2">
           <DateFiller onFill={fillDates} firstDate={cls.lessons[0]?.date} />
-          <div className="flex items-center rounded-xl border border-line-2 bg-panel">
-            <IconButton
-              label="Remove last lesson"
-              onClick={removeLast}
-              disabled={cls.lessons.length <= 1}
-            >
-              <Minus size={15} />
-            </IconButton>
-            <span className="w-9 text-center font-mono text-sm tabular-nums" aria-live="polite">
-              {cls.lessons.length}
-            </span>
-            <IconButton label="Add a lesson" onClick={() => addLesson(cls.id)} disabled={cls.lessons.length >= MAX_LESSONS}>
-              <Plus size={15} />
-            </IconButton>
-          </div>
+          {stepper}
         </div>
       </div>
 
@@ -175,13 +268,18 @@ function DateFiller({ onFill, firstDate }: { onFill: (start: string, every: numb
           </label>
           <label className="block">
             <span className="mb-1 block text-xs text-muted">Repeat</span>
-            <select className="input" value={every} onChange={(e) => setEvery(Number(e.target.value))}>
-              <option value={7}>Weekly</option>
-              <option value={1}>Daily (camps, intensives)</option>
-              <option value={2}>Every 2 days</option>
-              <option value={3}>Every 3 days</option>
-              <option value={14}>Every 2 weeks</option>
-            </select>
+            <Select
+              label="Repeat"
+              value={String(every)}
+              onChange={(v) => setEvery(Number(v))}
+              options={[
+                { value: '7', label: 'Weekly' },
+                { value: '1', label: 'Daily (camps, intensives)' },
+                { value: '2', label: 'Every 2 days' },
+                { value: '3', label: 'Every 3 days' },
+                { value: '14', label: 'Every 2 weeks' },
+              ]}
+            />
           </label>
           <Button type="submit" variant="primary" size="sm" className="w-full">
             Fill dates

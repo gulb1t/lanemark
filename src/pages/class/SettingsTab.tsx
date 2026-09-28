@@ -2,6 +2,7 @@ import { Archive, ArchiveRestore, Copy, RotateCcw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Picker'
 import { Field } from '../../components/ui/bits'
 import { LEVELS, PROGRAMS, LEVEL_BY_ID } from '../../data/curriculum'
 import { MAX_LESSONS, useStore } from '../../store/useStore'
@@ -102,17 +103,12 @@ export function SettingsTab({ cls }: { cls: SwimClass }) {
             <input className="input" value={cls.name} maxLength={120} onChange={(e) => updateClass(cls.id, { name: e.target.value })} />
           </Field>
           <Field label="Level preset">
-            <select className="input" value={cls.levelId} onChange={(e) => changeLevel(e.target.value)}>
-              {PROGRAM_IDS.map((p) => (
-                <optgroup key={p} label={PROGRAMS[p].label}>
-                  {LEVELS.filter((l) => l.program === p).map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <Select
+              label="Level preset"
+              value={cls.levelId}
+              onChange={changeLevel}
+              options={PROGRAM_IDS.flatMap((p) => LEVELS.filter((l) => l.program === p).map((l) => ({ value: l.id, label: l.name, group: PROGRAMS[p].label })))}
+            />
           </Field>
           <Field label="Session">
             <input className="input" value={cls.session} maxLength={60} onChange={(e) => updateClass(cls.id, { session: e.target.value })} placeholder="Spring 2026" />

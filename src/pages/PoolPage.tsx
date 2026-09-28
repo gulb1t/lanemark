@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Tour, type TourStep } from '../components/Tour'
 import { Avatar } from '../components/ui/Avatar'
 import { Button } from '../components/ui/Button'
+import { Select } from '../components/ui/Picker'
 import { Field, Segmented, Spinner } from '../components/ui/bits'
 import { api } from '../lib/api'
 import { timeAgo, useNow } from '../lib/hooks'
@@ -281,14 +282,13 @@ function SupervisorView({ pool }: { pool: Pool }) {
         {tab !== 'team' && (
           <div className="flex items-center gap-2 text-[12.5px] text-dim">
             {sessions.length > 1 && (
-              <select className="input h-8 w-auto py-0 pr-8 text-[13px]" value={session} onChange={(e) => setSession(e.target.value)} aria-label="Session">
-                <option value="all">All sessions</option>
-                {sessions.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+              <Select
+                className="h-8 w-auto py-0 pr-8 text-[13px]"
+                label="Session"
+                value={session}
+                onChange={setSession}
+                options={[{ value: 'all', label: 'All sessions' }, ...sessions.map((s) => ({ value: s, label: s }))]}
+              />
             )}
             {overview.at && <span className="max-sm:hidden">Updated {timeAgo(overview.at, now)}</span>}
             <button
