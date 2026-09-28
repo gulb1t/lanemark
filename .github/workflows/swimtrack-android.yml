@@ -1,0 +1,40 @@
+name: SwimTrack Android
+
+on:
+  push:
+    paths:
+      - 'SwimTrack/**'
+      - '.github/workflows/swimtrack-android.yml'
+  workflow_dispatch:
+
+jobs:
+  apk:
+    name: Build test APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SwimTrack
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: SwimTrack/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - run: npm ci
+
+      - run: npm run app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swimtrack-test-apk
+          path: SwimTrack/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
