@@ -35,7 +35,7 @@ import { api, errorMessage, type User } from '../lib/api'
 import { timeAgo, useNow, usePhoneLayout } from '../lib/hooks'
 import { passwordProblem } from '../lib/passwordPolicy'
 import { setEffectsPref, useEffectsPref, weakDevice, type EffectsPref } from '../lib/effects'
-import { setTextSize, TEXT_SIZES, useTextSize } from '../lib/textSize'
+import { setTextSize, TEXT_SIZES, useTextSize, zoomWorks } from '../lib/textSize'
 import { setTheme, useTheme, type ThemePref } from '../lib/theme'
 import { usePool } from '../store/usePool'
 import { currentAppToken, forgetAccount, resetDemo, setUser, useSession } from '../store/useSession'
@@ -1250,8 +1250,15 @@ function EffectsPanel() {
 function TextSizePanel() {
   const size = useTextSize((s) => s.size)
   return (
-    <Panel title="Display size" description="Makes text, buttons and spacing bigger everywhere in SwimTrack, on this device.">
-      <div role="radiogroup" aria-label="Display size" className="grid grid-cols-4 gap-2">
+    <Panel
+      title="Display size"
+      description={
+        zoomWorks()
+          ? 'Makes text, buttons and spacing bigger everywhere in SwimTrack, on this device.'
+          : 'Needs a newer Android System WebView (Chrome 128 or later). Update it from the Play Store to use this; your phone’s own font size setting still works.'
+      }
+    >
+      <div role="radiogroup" aria-label="Display size" className={`grid grid-cols-4 gap-2 ${zoomWorks() ? '' : 'pointer-events-none opacity-45'}`}>
         {TEXT_SIZES.map((t, i) => {
           const active = t.id === size
           return (

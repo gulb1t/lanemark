@@ -37,7 +37,9 @@ if (!IS_APP && 'serviceWorker' in navigator) {
   })
 }
 
-createRoot(document.getElementById('root')!).render(
+// Too old to draw the app (see public/old-browser.js): leave its note on screen.
+const tooOld = (window as Window & { __swimtrackTooOld?: boolean }).__swimtrackTooOld
+if (!tooOld) createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Motion>
       <BrowserRouter>

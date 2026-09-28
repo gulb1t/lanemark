@@ -28,10 +28,19 @@ function stored(): TextSize {
 export const useTextSize = create<{ size: TextSize }>(() => ({ size: stored() }))
 
 /**
+ * CSS zoom as SwimTrack uses it (sizes and positions scale together) arrived in Chrome 128. Older WebViews (Android 7
+ * phones stop at Chrome 119) zoom differently and would misplace menus, so there the app stays at its normal size.
+ */
+export function zoomWorks(): boolean {
+  return typeof Element !== 'undefined' && 'currentCSSZoom' in Element.prototype
+}
+
+/**
  * The app's current zoom factor. Phones start a notch smaller than the design (0.9), so more fits on screen; computers
  * start at 1. Each size up adds 10%.
  */
 export function uiZoom(): number {
+  if (!zoomWorks()) return 1
   const base = matchMedia('(max-width: 767px)').matches ? 0.9 : 1
   const step = TEXT_SIZES.find((s) => s.id === useTextSize.getState().size)?.step ?? 0
   return Math.round((base + step * 0.1) * 100) / 100
