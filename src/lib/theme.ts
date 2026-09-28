@@ -72,16 +72,17 @@ export function setTheme(pref: ThemePref, origin?: { x: number; y: number }) {
   const x = origin?.x ?? w / 2
   const y = origin?.y ?? 0
   // In percent of the screen, never pixels, so it works at any screen size and display size (zoom). A circle's % radius
-  // is measured against the screen's diagonal ÷ √2, so no corner is ever farther than √2 × 100% ≈ 141% from any point
-  // on screen: ending at 150% always covers everything, from wherever it starts.
-  const radius = 150
+  // is measured against the screen's diagonal ÷ √2. It ends just past the farthest corner, so the whole animation is
+  // spent revealing the page rather than growing off screen.
+  const reach = Math.hypot(Math.max(x, w - x), Math.max(y, h - y))
+  const radius = (reach / (Math.hypot(w, h) / Math.SQRT2)) * 100 + 3
   const at = `at ${(x / w) * 100}% ${(y / h) * 100}%`
   const transition = document.startViewTransition(() => flushSync(change))
   transition.ready
     .then(() =>
       document.documentElement.animate(
         { clipPath: [`circle(0% ${at})`, `circle(${radius}% ${at})`] },
-        { duration: 550, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' },
+        { duration: 750, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', pseudoElement: '::view-transition-new(root)' },
       ),
     )
     .catch(() => undefined)
