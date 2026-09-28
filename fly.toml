@@ -15,9 +15,11 @@ primary_region = "yyz"       # Toronto
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "off"   # stays awake, so a demo never waits on a cold start
+  # Sleeps when nobody is using it (costs almost nothing idle) and wakes in a couple of seconds on the next visit.
+  # Before a pitch, set auto_stop_machines = "off" and min_machines_running = 1 so there's no wake-up pause.
+  auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 1
+  min_machines_running = 0
 
   [[http_service.checks]]
     interval = "30s"
