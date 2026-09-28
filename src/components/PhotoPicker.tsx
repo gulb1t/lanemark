@@ -1,7 +1,9 @@
 import { Camera, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { fileToAvatar } from '../lib/image'
+import { endExcuse, excuseNextTrip } from '../native/lock'
 import { IS_APP } from '../native/platform'
+import { clearPhotoDraft, savePhotoDraft, type PhotoDraft } from '../native/photoDraft'
 import { toast } from '../store/useUi'
 import { Avatar } from './ui/Avatar'
 import { Button } from './ui/Button'
@@ -10,15 +12,19 @@ interface Props {
   name: string
   photo?: string
   onChange: (photo: string | undefined) => void
+  /** What's in the form, kept while the camera is open in case Android closes SwimTrack meanwhile. */
+  draft?: () => PhotoDraft
 }
 
-export function PhotoPicker({ name, photo, onChange }: Props) {
+export function PhotoPicker({ name, photo, onChange, draft }: Props) {
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
 
   /** The app asks the phone: take a photo, or pick one (Android's photo picker, no storage permission needed). */
   async function fromPhone() {
     const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
+    excuseNextTrip()
+    if (draft) savePhotoDraft(draft())
     try {
       const photo = await Camera.getPhoto({
         source: CameraSource.Prompt,
@@ -36,6 +42,9 @@ export function PhotoPicker({ name, photo, onChange }: Props) {
       await onFile(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }))
     } catch {
       /* closed without choosing */
+    } finally {
+      endExcuse()
+      clearPhotoDraft()
     }
   }
 

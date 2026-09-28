@@ -11,9 +11,11 @@ import { logout, useSession } from '../store/useSession'
 import { openDialog, setPaletteOpen, toast, useUi } from '../store/useUi'
 import { openAssistant, useAssistant } from '../store/useAssistant'
 import { loadPool, setPool, usePool } from '../store/usePool'
+import { IS_APP } from '../native/platform'
 import { Assistant } from './Assistant'
 import { CommandPalette } from './CommandPalette'
 import { NewClassDialog } from './dialogs/NewClassDialog'
+import { PhotoRestore } from './PhotoRestore'
 import { SwimmerDialog } from './dialogs/SwimmerDialog'
 import { Logo, Wordmark } from './Logo'
 import { SyncIndicator } from './SyncIndicator'
@@ -146,6 +148,7 @@ export default function AppShell() {
 
       <CommandPalette />
       <Assistant />
+      {IS_APP && <PhotoRestore />}
       {shortcuts && <ShortcutsDialog onClose={() => setShortcuts(false)} />}
       <AnimatePresence>{dialog === 'newClass' && <NewClassDialog onClose={closeDialog} />}</AnimatePresence>
       {dialog === 'newSwimmer' && (
