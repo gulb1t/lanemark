@@ -421,7 +421,7 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
   return (
     <div className="space-y-4">
       <section className="flex items-center gap-4 px-1">
-        <Avatar name={swimmer.name} photo={swimmer.photo} size={56} />
+        <Avatar name={swimmer.name} size={56} />
         <div className="min-w-0 flex-1">
           <div className="text-[12.5px] font-medium text-dim">
             Card {position} of {total}

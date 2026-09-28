@@ -41,7 +41,6 @@ under the repo's **Actions** tab and download `swimtrack-test-apk` at the bottom
 | **Printing report cards** | Android's print screen: any nearby printer, or Save as PDF (`DevicePlugin.java`). |
 | **Spreadsheets, backups, recovery codes** | The share sheet: save to Files or Drive, email, open in Sheets. |
 | **Invites** | The share sheet, with a link that opens the app on phones that have it (App Links). |
-| **Swimmer photos** | Take a photo, or pick one with Android's photo picker (no storage permission). |
 | **On deck** | The screen stays on while the attendance screen is open (can be turned off), and a small buzz on each mark. |
 | **Back button** | Closes the open sheet, menu or tour first, then goes back, then leaves the app from the home screen. |
 | **Look** | Same design as the site, with lighter blurs so older phones stay smooth. The status bar follows the theme. The icon (adaptive, and themed on Android 13+) and splash come from the logo. |
@@ -69,7 +68,7 @@ release key's fingerprint; ship the site afterwards.
 ## Play Store (next)
 
 - `npm run app:keystore`, then `npm run app -- --release`, and upload the `.aab` in the Play Console.
-- Data safety form: the app stores swimmers' names, notes and photos (minors), synced to the SwimTrack server. The
+- Data safety form: the app stores swimmers' names and notes (minors; no photos), synced to the SwimTrack server. The
   privacy page already covers what's collected.
 - Bump `versionCode` and `versionName` in `android/app/build.gradle` for every upload.
 

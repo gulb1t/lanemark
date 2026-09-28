@@ -192,7 +192,7 @@ function SkillMatrix({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, 
                   <th key={e.swimmerId} className="min-w-20 px-2 py-3 text-center font-normal">
                     <div className="flex flex-col items-center gap-1" ref={(el) => void anchors.set(e.swimmerId, el)}>
                       <ProgressRing value={p.ratio} size={38} stroke={2.5} color={done ? 'var(--color-good)' : 'var(--color-aqua)'}>
-                        <Avatar name={swimmer.name} photo={swimmer.photo} size={30} />
+                        <Avatar name={swimmer.name} size={30} />
                       </ProgressRing>
                       <span className="max-w-20 truncate text-xs font-medium text-fg">{firstName(swimmer.name)}</span>
                       <span className={`font-mono text-[10px] ${done ? 'text-good' : 'text-dim'}`}>
@@ -279,7 +279,7 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
               className={`flex shrink-0 flex-col items-center gap-1.5 rounded-2xl border px-3 py-2.5 transition-colors ${active ? 'border-aqua/50 bg-aqua/10' : 'border-line bg-panel hover:border-line-2'}`}
             >
               <ProgressRing value={pr.ratio} size={42} stroke={2.5} color={passedLevel(m, cls.skills) ? 'var(--color-good)' : 'var(--color-aqua)'}>
-                <Avatar name={w.name} photo={w.photo} size={34} />
+                <Avatar name={w.name} size={34} />
               </ProgressRing>
               <span className={`max-w-16 truncate text-xs font-medium ${active ? 'text-fg' : 'text-muted'}`}>{firstName(w.name)}</span>
             </button>
@@ -289,7 +289,7 @@ function BySwimmer({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Sw
 
       <div className="card overflow-hidden">
         <div className="flex items-center gap-3 border-b border-line px-4 py-3.5" ref={(el) => void anchors.set(e.swimmerId, el)}>
-          <Avatar name={swimmer.name} photo={swimmer.photo} size={40} />
+          <Avatar name={swimmer.name} size={40} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[15px] font-semibold">{swimmer.name}</div>
             <div className={`font-mono text-xs ${done ? 'text-good' : 'text-muted'}`}>

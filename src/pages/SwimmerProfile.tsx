@@ -56,7 +56,7 @@ export default function SwimmerProfile() {
       <section className="card relative overflow-hidden p-6 sm:p-8">
         <div className="relative flex flex-wrap items-center gap-4 sm:gap-6">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
-            <Avatar name={swimmer.name} photo={swimmer.photo} size={mobile ? 64 : 96} className="shadow-[var(--glow)]" />
+            <Avatar name={swimmer.name} size={mobile ? 64 : 96} className="shadow-[var(--glow)]" />
           </motion.div>
           {/* basis-48: on phones the buttons wrap below instead of crushing the name into a sliver. */}
           <div className="min-w-0 flex-1 basis-48">

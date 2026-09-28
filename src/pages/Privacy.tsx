@@ -23,7 +23,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         <Table
           rows={[
             ['Instructor account', 'Name, email address, a salted scrypt hash of the password (never the password itself), and the two-factor secret, encrypted with AES-256-GCM.'],
-            ['Swimmers', 'Name, optional photo (shrunk on the device before upload), optional notes.'],
+            ['Swimmers', 'Name and optional notes. SwimTrack doesn’t keep photos of swimmers.'],
             ['Classes', 'Level, session, schedule, lesson dates and topics, attendance marks, skill marks, report card comments and the recommended next level.'],
             ['Sessions', 'A hashed session token, the device’s browser name and a shortened IP address (the last part is dropped before saving), so you can see and sign out your devices. If you tick “don’t ask for a code on this device”, a hashed 30-day trusted-device mark is kept too.'],
             ['Emailed links', 'A hash of each confirm-email or reset-password link, deleted once it expires (24 hours or 30 minutes).'],
@@ -67,7 +67,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
         <p>Each instructor account only ever reads and writes its own classes and swimmers. There is no public page and no search.</p>
         <p>
           <b>Pools.</b> An instructor can join their facility’s pool with an invite code from a supervisor, and the join screen says what that shares. The pool’s
-          supervisors can then view that instructor’s classes: swimmers’ names, photos and notes, attendance, skill marks, report card comments and next levels, and
+          supervisors can then view that instructor’s classes: swimmers’ names and notes, attendance, skill marks, report card comments and next levels, and
           they can print the report cards or download a class as a spreadsheet. They can’t change anything. Supervisors also see members’ names and email addresses.
           Other instructors in the pool never see each other’s classes; if a supervisor turns on the leaderboard, they see names and caught-up scores only. Swimmers are
           never ranked. Leaving the pool, or being removed from it, ends a supervisor’s access straight away.
@@ -122,7 +122,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
             are done.
           </li>
           <li>
-            <b>What it never sends:</b> swimmer names, photos, notes, attendance, skill marks or report card comments.
+            <b>What it never sends:</b> swimmer names, notes, attendance, skill marks or report card comments.
           </li>
           <li>Anything you type is sent as written, so leave swimmers’ personal details out of your questions.</li>
         </ul>

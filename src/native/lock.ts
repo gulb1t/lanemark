@@ -169,16 +169,6 @@ export function lockMessage(error: VaultError): string {
 
 // ── locking again after time away ────────────────────────────────────
 let awaySince = 0
-let excused = false
-/** The app is about to open the camera or a picker: coming back from it isn't time away. */
-export function excuseNextTrip() {
-  excused = true
-}
-/** Back from the camera (or it was cancelled before leaving): later trips count again. */
-export function endExcuse() {
-  // The resume event can land just after the photo does, so give it a moment.
-  setTimeout(() => (excused = false), 2000)
-}
 /** Call when the app goes to the background or comes back. `signedIn` gates it to real sessions. */
 export function onAppState(active: boolean, signedIn: boolean) {
   if (!active) {
@@ -186,11 +176,6 @@ export function onAppState(active: boolean, signedIn: boolean) {
     return
   }
   const after = lockAfter()
-  if (excused) {
-    excused = false
-    awaySince = 0
-    return
-  }
   if (!signedIn || lockPref() !== true || !after || !awaySince) return
   if (Date.now() - awaySince >= after * 60_000) useLock.setState({ locked: true, reason: 'resume' })
   awaySince = 0

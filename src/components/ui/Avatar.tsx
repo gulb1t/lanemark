@@ -7,25 +7,15 @@ function hueOf(name: string) {
   return h
 }
 
+/** Initials on a colour made from the name. Swimmers are children, so SwimTrack keeps no photos of them. */
 interface Props {
   name: string
-  photo?: string
   size?: number
   className?: string
 }
 
-export function Avatar({ name, photo, size = 40, className = '' }: Props) {
+export function Avatar({ name, size = 40, className = '' }: Props) {
   const style = { width: size, height: size, fontSize: Math.max(10, size * 0.36) }
-  if (photo) {
-    return (
-      <img
-        src={photo}
-        alt={name}
-        style={style}
-        className={`shrink-0 rounded-full border border-fg/10 object-cover ${className}`}
-      />
-    )
-  }
   const h = hueOf(name)
   return (
     <span

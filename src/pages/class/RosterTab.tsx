@@ -54,7 +54,7 @@ export function RosterTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<str
                 <div className="relative flex items-start gap-3">
                   <Link to={`/app/swimmers/${swimmer.id}`} className="rounded-full" aria-label={`Open ${swimmer.name}`}>
                     <ProgressRing value={prog.ratio} size={62} stroke={3} color={passed ? 'var(--color-good)' : 'var(--color-aqua)'}>
-                      <Avatar name={swimmer.name} photo={swimmer.photo} size={50} />
+                      <Avatar name={swimmer.name} size={50} />
                     </ProgressRing>
                   </Link>
                   <div className="min-w-0 flex-1 pt-1">

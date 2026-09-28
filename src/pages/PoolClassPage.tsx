@@ -179,7 +179,7 @@ function SwimmerCards({ cls, rows }: { cls: SwimClass; rows: Rows }) {
         const ok = isReportDone(e, cls.skills)
         return (
           <li key={swimmer.id} className="card flex items-start gap-3 p-4">
-            <Avatar name={swimmer.name} photo={swimmer.photo} size={42} />
+            <Avatar name={swimmer.name} size={42} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="truncate text-[15px] font-semibold">{swimmer.name}</span>

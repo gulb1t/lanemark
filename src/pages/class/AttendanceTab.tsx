@@ -310,7 +310,7 @@ function TakeMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
                 onKeyDown={(ev) => onKey(ev, i, e.swimmerId)}
                 className="flex items-center gap-3 px-4 py-3 outline-none transition-colors focus-visible:bg-aqua/[0.06] focus-visible:outline-none"
               >
-                <Avatar name={swimmer.name} photo={swimmer.photo} size={40} />
+                <Avatar name={swimmer.name} size={40} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[15px] font-medium">{swimmer.name}</div>
                   <div className="text-[12.5px] text-dim">{pct(attendanceSummary(e, cls.lessons).rate)} attendance</div>
@@ -377,7 +377,7 @@ function GridMode({ cls, swimmers }: { cls: SwimClass; swimmers: Map<string, Swi
               <tr key={e.swimmerId} className="border-b border-line/60 last:border-0 hover:bg-fg/[0.02]">
                 <td className="sticky left-0 z-10 bg-panel px-4 py-2">
                   <div className="flex items-center gap-2.5">
-                    <Avatar name={swimmer.name} photo={swimmer.photo} size={28} />
+                    <Avatar name={swimmer.name} size={28} />
                     <span className="truncate font-medium">{swimmer.name}</span>
                   </div>
                 </td>

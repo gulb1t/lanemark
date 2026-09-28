@@ -52,7 +52,7 @@ interface Actions {
   reorderSkills: (classId: string, category: string, orderedIds: string[]) => void
   resetSkills: (classId: string) => void
   // swimmers & roster
-  addSwimmer: (input: { name: string; photo?: string; notes?: string }, classId?: string) => string
+  addSwimmer: (input: { name: string; notes?: string }, classId?: string) => string
   updateSwimmer: (id: string, patch: Partial<Pick<Swimmer, 'name' | 'photo' | 'notes'>>) => void
   deleteSwimmer: (id: string) => void
   enroll: (classId: string, swimmerId: string) => void
@@ -261,9 +261,9 @@ export const useStore = create<State>()((set, get) => ({
     })),
 
   // ── swimmers & roster ──────────────────────────────────────
-  addSwimmer: ({ name, photo, notes }, classId) => {
+  addSwimmer: ({ name, notes }, classId) => {
     const id = uid()
-    const swimmer: Swimmer = { id, name: name.trim() || 'New swimmer', photo, notes: notes ?? '', createdAt: Date.now() }
+    const swimmer: Swimmer = { id, name: name.trim() || 'New swimmer', notes: notes ?? '', createdAt: Date.now() }
     set((s) => ({
       swimmers: [...s.swimmers, swimmer],
       classes: classId

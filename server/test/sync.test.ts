@@ -79,7 +79,6 @@ describe('sync', () => {
     const c = client(app)
     await register(c)
     const cases = [
-      { kind: 'swimmer', id: 's1', op: 'put', data: { ...swimmer('s1'), photo: 'javascript:alert(1)' } },
       { kind: 'swimmer', id: 's1', op: 'put', data: { ...swimmer('s2') } }, // id mismatch
       { kind: 'swimmer', id: '../etc', op: 'put', data: swimmer('../etc') },
       { kind: 'class', id: 'c1', op: 'put', data: { ...cls('c1'), lessons: [{ id: 'l1', topic: '', date: 'yesterday', notes: '' }] } },
@@ -89,11 +88,19 @@ describe('sync', () => {
       const res = await c.post('/api/sync', { cursor: 0, changes: [change] })
       expect(res.status, JSON.stringify(change).slice(0, 80)).toBe(400)
     }
-    const ok = await c.post('/api/sync', {
-      cursor: 0,
-      changes: [{ kind: 'swimmer', id: 's1', op: 'put', data: { ...swimmer('s1'), photo: 'data:image/jpeg;base64,/9j/4AAQ' } }],
-    })
+    const ok = await c.post('/api/sync', { cursor: 0, changes: [{ kind: 'swimmer', id: 's1', op: 'put', data: swimmer('s1') }] })
     expect(ok.status).toBe(200)
+  })
+
+  it('drops swimmer photos (older apps may still send them)', async () => {
+    const { app } = setupApp()
+    const c = client(app)
+    await register(c)
+    for (const photo of ['data:image/jpeg;base64,/9j/4AAQ', 'javascript:alert(1)']) {
+      const res = await c.post('/api/sync', { cursor: 0, changes: [{ kind: 'swimmer', id: 's1', op: 'put', data: { ...swimmer('s1'), photo } }] })
+      expect(res.status).toBe(200)
+      expect(res.json.docs.find((d: { id: string }) => d.id === 's1').data.photo).toBeUndefined()
+    }
   })
 
   it('strips unknown fields instead of storing them', async () => {

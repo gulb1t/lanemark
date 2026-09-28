@@ -86,7 +86,7 @@ export function AddMemberDialog({ cls, onClose, onCreateNew }: Props) {
                     >
                       {on && <Check size={13} strokeWidth={3} />}
                     </span>
-                    <Avatar name={w.name} photo={w.photo} size={34} />
+                    <Avatar name={w.name} size={34} />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">{w.name}</span>
                   </label>
                 </li>

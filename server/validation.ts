@@ -98,11 +98,11 @@ const MustSees = z
 export const SwimmerDoc = z.object({
   id: Id,
   name: text(120),
+  // Swimmers are children: photos are no longer kept. Older app versions may still send one, so it's accepted and dropped.
   photo: z
-    .string()
-    .max(400_000)
-    .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, 'Photo must be an image data URL')
-    .optional(),
+    .unknown()
+    .optional()
+    .transform(() => undefined),
   notes: text(4000),
   createdAt: z.number(),
 })

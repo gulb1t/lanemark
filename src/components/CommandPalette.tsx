@@ -114,7 +114,7 @@ function PaletteBody() {
                   <Command.Group heading="Swimmers">
                     {swimmers.map((w) => (
                       <Command.Item key={w.id} value={`swimmer ${w.name} ${w.notes}`} onSelect={() => go(`/app/swimmers/${w.id}`)} className={ITEM}>
-                        <Avatar name={w.name} photo={w.photo} size={22} />
+                        <Avatar name={w.name} size={22} />
                         <span className="flex-1 truncate">{w.name}</span>
                       </Command.Item>
                     ))}

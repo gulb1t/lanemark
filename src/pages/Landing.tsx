@@ -501,7 +501,7 @@ function Security() {
       <div className="relative overflow-hidden rounded-[2rem] border border-line-2 bg-panel p-8 sm:p-12">
         <BorderBeam />
         <SectionTitle align="left" icon={<ShieldCheck size={22} />} title={<>Kids’ info deserves <Serif>real protection.</Serif></>}>
-          Swimmer names, photos and notes are sensitive. SwimTrack treats them that way.
+          Swimmer names and notes are sensitive. SwimTrack treats them that way.
         </SectionTitle>
         <div className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(([Icon, title, body]) => (

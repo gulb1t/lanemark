@@ -1001,6 +1001,20 @@ function DataSection() {
   const status = useSession((s) => s.status)
   const sync = useSync()
   const counts = { classes: useStore((s) => s.classes.length), swimmers: useStore((s) => s.swimmers.length) }
+  const withPhotos = useStore((s) => s.swimmers.filter((w) => w.photo).length)
+
+  async function removePhotos() {
+    const ok = await confirm({
+      title: `Remove ${withPhotos} swimmer photo${withPhotos === 1 ? '' : 's'}?`,
+      body: 'They’re deleted from this device and, once it syncs, from your account. Names and everything else stay.',
+      confirmLabel: 'Remove photos',
+      danger: true,
+    })
+    if (!ok) return
+    const { swimmers, updateSwimmer } = useStore.getState()
+    for (const w of swimmers) if (w.photo) updateSwimmer(w.id, { photo: undefined })
+    toast('Photos removed')
+  }
   const input = useRef<HTMLInputElement>(null)
   const now = useNow()
 
@@ -1076,6 +1090,16 @@ function DataSection() {
           <input ref={input} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImport(e.target.files?.[0])} />
         </div>
       </Panel>
+      {withPhotos > 0 && (
+        <Panel
+          title="Old swimmer photos"
+          description={`SwimTrack no longer shows or takes photos of swimmers, but ${withPhotos} swimmer${withPhotos === 1 ? ' still has one' : 's still have one'} saved from before. Remove them from this device and your account.`}
+        >
+          <Button icon={<Trash2 size={15} />} onClick={() => void removePhotos()}>
+            Remove {withPhotos} photo{withPhotos === 1 ? '' : 's'}
+          </Button>
+        </Panel>
+      )}
       <Panel tone="danger" title={status === 'demo' ? 'Reset demo' : 'Erase all data'} description="Removes every class and swimmer. Your account stays.">
         <Button variant="danger" icon={<Trash2 size={15} />} onClick={() => void erase()}>
           {status === 'demo' ? 'Reset demo' : 'Erase all data'}

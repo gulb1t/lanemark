@@ -253,7 +253,7 @@ function TodayCard({ cls, lessonIndex, swimmers }: { cls: SwimClass; lessonIndex
       <div className="relative mt-5 flex items-center justify-between gap-3">
         <div className="flex -space-x-2">
           {members.slice(0, 6).map((w) => (
-            <Avatar key={w.id} name={w.name} photo={w.photo} size={30} className="ring-2 ring-panel" />
+            <Avatar key={w.id} name={w.name} size={30} className="ring-2 ring-panel" />
           ))}
           {members.length > 6 && (
             <span className="inline-flex size-[30px] items-center justify-center rounded-full bg-panel-2 text-[11px] text-muted ring-2 ring-panel">
@@ -563,7 +563,7 @@ function ClassCard({ cls, swimmers }: { cls: SwimClass; swimmers: Swimmer[] }) {
       <div className="relative mt-5 flex items-center justify-between border-t border-line pt-4">
         <div className="flex -space-x-2">
           {members.slice(0, 5).map((w) => (
-            <Avatar key={w.id} name={w.name} photo={w.photo} size={28} className="ring-2 ring-panel" />
+            <Avatar key={w.id} name={w.name} size={28} className="ring-2 ring-panel" />
           ))}
           {members.length > 5 && (
             <span className="inline-flex size-7 items-center justify-center rounded-full bg-panel-2 font-mono text-[10px] text-muted ring-2 ring-panel">

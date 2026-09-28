@@ -61,7 +61,7 @@ export default function SwimmersPage() {
             {rows.map(({ w, in: inClasses }, i) => (
               <motion.li key={w.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 12) * 0.025 }}>
                 <Link to={`/app/swimmers/${w.id}`} className="card spotlight flex h-full items-start gap-3.5 p-4 transition-transform active:scale-[0.99] max-sm:items-center max-sm:gap-3 max-sm:p-3">
-                  <Avatar name={w.name} photo={w.photo} size={mobile ? 42 : 52} />
+                  <Avatar name={w.name} size={mobile ? 42 : 52} />
                   <div className="relative min-w-0 flex-1">
                     <h3 className="truncate text-[15px] font-semibold">{w.name}</h3>
                     {w.notes && <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{w.notes}</p>}

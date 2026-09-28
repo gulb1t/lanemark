@@ -4,7 +4,7 @@ import type { Config } from './config.ts'
 /**
  * The in-app assistant. It answers "how do I…" questions about SwimTrack and the Swim for Life curriculum, and
  * points people to the right screen with buttons. The model sees the user's question, the page they're on and a
- * summary of their classes (names, levels, counts). Never swimmer names, photos, notes or comments.
+ * summary of their classes (names, levels, counts). Never swimmer names, notes or comments.
  */
 
 export interface AssistantContext {

@@ -116,7 +116,7 @@ export function ReportsTab({ cls, swimmers }: { cls: SwimClass; swimmers: Map<st
           return (
             <motion.li key={swimmer.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 10) * 0.03 }}>
               <Link to={workspace(swimmer.id)} className="card spotlight group flex w-full items-start gap-3 p-4 text-left transition-transform active:scale-[0.99]">
-                <Avatar name={swimmer.name} photo={swimmer.photo} size={42} />
+                <Avatar name={swimmer.name} size={42} />
                 <div className="relative min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate text-[15px] font-semibold">{swimmer.name}</span>
