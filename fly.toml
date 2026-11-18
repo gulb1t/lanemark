@@ -16,7 +16,7 @@ primary_region = "yyz"       # Toronto
   internal_port = 8080
   force_https = true
   # Sleeps when nobody is using it (costs almost nothing idle) and wakes in a couple of seconds on the next visit.
-  # Before a pitch, set auto_stop_machines = "off" and min_machines_running = 1 so there's no wake-up pause.
+  # Before a demo, set auto_stop_machines = "off" and min_machines_running = 1 so there's no wake-up pause.
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0

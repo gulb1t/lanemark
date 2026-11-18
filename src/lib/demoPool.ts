@@ -198,7 +198,7 @@ export function buildDemoPool(you: { id: string; name: string }, now = Date.now(
   ]
   return {
     id: 'demo-pool',
-    name: 'Maple Community Centre',
+    name: 'Riverside Community Centre',
     role: 'supervisor',
     shareLeaderboard: false,
     createdAt: joined(40, now),

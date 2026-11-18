@@ -149,7 +149,7 @@ function NoPool() {
             <p className="mt-1 text-[13.5px] text-muted">For supervisors and head instructors. You’ll get a code to share with your staff.</p>
             <div className="mt-4 flex-1">
               <Field label="Pool or facility name">
-                <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Maple Community Centre" maxLength={80} required />
+                <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Riverside Community Centre" maxLength={80} required />
               </Field>
             </div>
             <Button type="submit" className="mt-4 self-start" loading={busy === 'start'} disabled={name.trim().length < 2}>

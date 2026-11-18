@@ -31,7 +31,7 @@ async function team() {
   const coach = client(env.app)
   await register(boss, 'boss@example.com', 'Sam Supervisor')
   await register(coach, 'coach@example.com', 'Casey Coach')
-  const created = await boss.post('/api/pool', { name: 'Maple Community Centre' })
+  const created = await boss.post('/api/pool', { name: 'Riverside Community Centre' })
   expect(created.status).toBe(201)
   const code: string = created.json.pool.inviteCode
   env.clock.t += 60_000
@@ -49,9 +49,9 @@ describe('pools', () => {
     const c = client(app)
     await register(c)
     expect((await c.get('/api/pool')).json).toEqual({ pool: null })
-    const res = await c.post('/api/pool', { name: 'Maple CC' })
+    const res = await c.post('/api/pool', { name: 'Riverside CC' })
     expect(res.status).toBe(201)
-    expect(res.json.pool).toMatchObject({ name: 'Maple CC', role: 'supervisor', shareLeaderboard: false, memberCount: 1 })
+    expect(res.json.pool).toMatchObject({ name: 'Riverside CC', role: 'supervisor', shareLeaderboard: false, memberCount: 1 })
     expect(res.json.pool.inviteCode).toMatch(/^[A-HJKMNP-Z2-9]{8}$/)
     expect((await c.post('/api/pool', { name: 'Second' })).status).toBe(409)
   })
@@ -59,7 +59,7 @@ describe('pools', () => {
   it('lets instructors join with the code, typed any way, and shows each side only what it should', async () => {
     const { boss, coach } = await team()
     const mine = (await coach.get('/api/pool')).json.pool
-    expect(mine).toMatchObject({ role: 'instructor', memberCount: 2, name: 'Maple Community Centre' })
+    expect(mine).toMatchObject({ role: 'instructor', memberCount: 2, name: 'Riverside Community Centre' })
     expect(mine.inviteCode).toBeUndefined()
     // Instructors see who supervises them, without email addresses.
     expect(mine.members.map((m: { name: string; email?: string }) => [m.name, m.email])).toEqual([

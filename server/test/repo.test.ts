@@ -151,14 +151,14 @@ describe.each(backends)('%s repository', (name, open) => {
   })
 
   test('pools: codes, members in join order, and removal with the pool or the user', async () => {
-    const pool = (id: string, inviteCode: string) => ({ id, name: 'Maple', inviteCode, shareLeaderboard: false, createdBy: 'p1', createdAt: 1, updatedAt: 1 })
+    const pool = (id: string, inviteCode: string) => ({ id, name: 'Riverside', inviteCode, shareLeaderboard: false, createdBy: 'p1', createdAt: 1, updatedAt: 1 })
     for (const id of ['p1', 'p2', 'p3']) await r().createUser(user(id, `${id}@example.com`))
     await r().createPool(pool('pool1', 'AAAA2222'))
     await r().createPool(pool('pool2', 'BBBB3333'))
     expect((await r().getPoolByCode('AAAA2222'))?.id).toBe('pool1')
     await r().updatePool('pool1', { inviteCode: 'CCCC4444', shareLeaderboard: true })
     expect(await r().getPoolByCode('AAAA2222')).toBeNull()
-    expect(await r().getPool('pool1')).toMatchObject({ inviteCode: 'CCCC4444', shareLeaderboard: true, name: 'Maple' })
+    expect(await r().getPool('pool1')).toMatchObject({ inviteCode: 'CCCC4444', shareLeaderboard: true, name: 'Riverside' })
 
     await r().putMember({ userId: 'p2', poolId: 'pool1', role: 'instructor', joinedAt: 20 })
     await r().putMember({ userId: 'p1', poolId: 'pool1', role: 'supervisor', joinedAt: 10 })

@@ -5,12 +5,12 @@ Lanemark is one Node process that serves both the site and the API, with its dat
 
 | Option | Where the data lives | Effort | Good for |
 |---|---|---|---|
-| **A. Fly.io** | Toronto (Canada) | ~15 minutes, command line | The pitch and a real pilot |
-| **B. Railway** | US or EU | ~10 minutes, all in the browser | The quickest always-on demo |
+| **A. Fly.io** | Toronto (Canada) | ~15 minutes, command line | A real pilot |
+| **B. Railway** | US, Europe or Asia | ~10 minutes, all in the browser | The quickest always-on demo |
 | **C. Your laptop + `npm run tunnel`** | Your laptop | 1 command | Showing it for an afternoon |
 
-For a real pilot, **A** is the one to use: the privacy page and FAQ say a city can keep swimmer data
-in Canada, and this does.
+If swimmer data has to stay in Canada (a city or school board will usually ask), use **A**: the privacy page and
+FAQ promise that, and this keeps it.
 
 ## Settings you'll set on any host
 
@@ -35,7 +35,7 @@ aren't delivered; they're only written to the server log, so set up email before
    ```
 
 2. In `fly.toml`, change `app = "lanemark"` to a unique name, e.g. `my-lanemark`. Then, from the
-   `Lanemark` folder:
+   project folder:
 
    ```bash
    fly apps create my-lanemark
@@ -48,7 +48,7 @@ aren't delivered; they're only written to the server log, so set up email before
 
 3. Open `https://my-lanemark.fly.dev`. `fly logs` shows the server log.
 
-**Updating it later:** run `./ship.sh` (Windows: `ship`) from the `Lanemark` folder. It pulls, checks, commits,
+**Updating it later:** run `./ship.sh` (Windows: `ship`) from the project folder. It pulls, checks, commits,
 pushes, deploys and checks the live site in one go. See "Updating the live site" in the README for its options.
 
 **Backups:** `fly ssh sftp get /data/lanemark.db` downloads the whole database. Each instructor can also
@@ -59,8 +59,8 @@ download their own data from Settings → Data → Backup.
 
 ## B. Railway
 
-1. On railway.com: **New project → Deploy from GitHub repo** and pick this repository. Set the root directory
-   to `Lanemark`. Railway finds the Dockerfile and builds it.
+1. On railway.com: **New project → Deploy from GitHub repo** and pick this repository (if the app sits in a
+   subfolder, set that as the root directory). Railway finds the Dockerfile and builds it.
 2. Add a **Volume** to the service, mounted at `/data`.
 3. **Settings → Networking → Generate domain**, then under **Variables** set `APP_URL` to that address, plus
    `SECRET_KEY`, `TRUST_PROXY=1` and the email and assistant variables above.
@@ -87,7 +87,7 @@ Any SMTP provider works. The quickest is a Gmail account:
 3. Set `SMTP_URL=smtps://you%40gmail.com:the-app-password@smtp.gmail.com:465` (the `@` in the address is
    written as `%40`) and `MAIL_FROM=Lanemark <you@gmail.com>`.
 
-Your own domain's mailbox works the same way, e.g. `smtps://contact%40gulb.it:password@mail.gulb.it:465`.
+Your own domain's mailbox works the same way, e.g. `smtps://you%40yourdomain.ca:password@mail.yourdomain.ca:465`.
 To check the settings, run `npm run mail:test -- you@example.com` (locally), or `fly ssh console -C "node server/mailtest.ts you@example.com"` on Fly.
 
 For a city deployment, use an address on your own domain through a provider like Resend or Postmark, so emails
