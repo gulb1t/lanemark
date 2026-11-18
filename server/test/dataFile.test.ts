@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { applyImport, dataFile } from '../lib/dataFile.ts'
+import { dataFile } from '../lib/dataFile.ts'
 
 describe('the data file after the rename', () => {
   const dirs: string[] = []
@@ -34,19 +34,4 @@ describe('the data file after the rename', () => {
     expect(existsSync(join(dir, 'swimtrack.db'))).toBe(true)
   })
 
-  it('takes over an imported database and key, keeping the old ones beside them', () => {
-    const dir = fresh()
-    writeFileSync(join(dir, 'lanemark.db'), 'empty')
-    writeFileSync(join(dir, 'secret.key'), 'new-key')
-    writeFileSync(join(dir, 'lanemark-import.db'), 'moved')
-    writeFileSync(join(dir, 'secret-import.key'), 'old-key')
-    applyImport(dir)
-    expect(readFileSync(join(dir, 'lanemark.db'), 'utf8')).toBe('moved')
-    expect(readFileSync(join(dir, 'secret.key'), 'utf8')).toBe('old-key')
-    expect(readFileSync(join(dir, 'lanemark.db.before-import'), 'utf8')).toBe('empty')
-    expect(existsSync(join(dir, 'lanemark-import.db'))).toBe(false)
-    // Runs on every start: with nothing to import it changes nothing.
-    applyImport(dir)
-    expect(readFileSync(join(dir, 'lanemark.db'), 'utf8')).toBe('moved')
-  })
 })

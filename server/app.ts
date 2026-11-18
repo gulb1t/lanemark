@@ -112,18 +112,6 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   const MFA_COOKIE = secure ? '__Host-st_mfa' : 'st_mfa'
   const TRUST_COOKIE = secure ? '__Host-st_trust' : 'st_trust'
 
-  // A server that has moved to a new address: pages go there, the API says so (health stays up for Fly's checks).
-  if (config.movedTo) {
-    const target = config.movedTo
-    app.use('*', async (c, next) => {
-      const url = new URL(c.req.url)
-      if (url.pathname === '/api/health') return next()
-      if (url.pathname.startsWith('/api/'))
-        return c.json({ error: { code: 'moved', message: `Lanemark has moved to ${target}. Update the app to keep syncing.` } }, 410)
-      return c.redirect(target + url.pathname + url.search, 301)
-    })
-  }
-
   // ── helpers ───────────────────────────────────────────────────────
   const fail = (c: Ctx, status: 400 | 401 | 403 | 404 | 409 | 413 | 415 | 429, code: string, message: string) =>
     c.json({ error: { code, message } }, status)
