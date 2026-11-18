@@ -1,9 +1,9 @@
 export type ProgramId = 'parent-tot' | 'preschool' | 'swimmer' | 'patrol' | 'bronze' | 'teen-adult'
 
-/** The parts of a stroke the report card manual writes comments about. `note` is a single free comment. */
+/** The parts of a stroke a report card comments on. `note` is a single free comment. */
 export type Element = 'arms' | 'legs' | 'breathing' | 'body' | 'note'
 
-/** "Must sees" from the report card manual: the phrase to use when a swimmer misses that part of a skill. */
+/** "Must sees": the coaching cue to use when a swimmer misses that part of a skill. */
 export type MustSees = Partial<Record<Element, string>>
 
 export interface Skill {

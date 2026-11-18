@@ -2,18 +2,14 @@ import type { Element, Skill } from '../types.ts'
 import { firstName } from './stats.ts'
 
 /**
- * Report card comment generator following the report card guide's two templates:
+ * Report card comment generator. A comment has a fixed shape:
  *
- *  Passing: "Great job this session, [name]. Great job on your [skill they excelled at]. For the next level,
- *            continue to work on [must see] when doing [skill]. For your [another skill] be sure to focus on
- *            [must see]. Best of luck next session!"
- *  Failing: "Good effort this session, [name]. When doing your [failed item], be sure to [must see]. Also, for
- *            your [failed item], remember to [must see]. Great job with your [item they passed]. Best of luck
- *            next session, you were a pleasure to teach!"
+ *  Passing: opening with the swimmer's name, praise for one skill, then one or two things to keep working on at the
+ *           next level, and a sign-off.
+ *  Not yet: opening with the swimmer's name, one or two skills to work on with what to fix, praise for a skill they
+ *           did pass, and a warmer sign-off.
  *
- * The manual's must-sees are written as full instructions ("Make sure your arms…"), so they are lower-cased and
- * dropped in after the skill instead of being prefixed with "be sure to". The failing sign-off's comma splice is
- * split into two sentences.
+ * Must-sees are full instructions ("Keep your arms…"), so they are lower-cased and dropped in after the skill name.
  */
 
 export interface FocusPick {
@@ -158,7 +154,7 @@ function sentence(s: string): string {
   return /[.!?]$/.test(t) ? t : `${t}.`
 }
 
-/** Elements a skill has a must-see for, in the manual's column order. */
+/** Elements a skill has a must-see for, in report card column order. */
 export function availableElements(skill: Skill): Element[] {
   const order: Element[] = ['arms', 'legs', 'breathing', 'body', 'note']
   return order.filter((e) => skill.mustSees?.[e])
@@ -166,7 +162,7 @@ export function availableElements(skill: Skill): Element[] {
 
 export function defaultElement(skill: Skill): Element | undefined {
   const els = availableElements(skill)
-  // Body position is the manual's most general comment; fall back to whatever exists.
+  // Body position is the most general comment; fall back to whatever exists.
   return els.includes('body') ? 'body' : els[0]
 }
 
@@ -187,8 +183,8 @@ export function suggestFocus(skills: Skill[], status: Record<string, string | un
 }
 
 /**
- * First passed skill to praise. Prefers skills with manual comments (strokes, kicks, treading) because the
- * manual says swimmer-level cards should avoid leading with dives and jumps.
+ * First passed skill to praise. Prefers skills with must-sees (strokes, kicks, treading), because leading a
+ * swimmer-level card with a dive or a jump reads oddly.
  */
 export function suggestPraise(skills: Skill[], status: Record<string, string | undefined>): string | undefined {
   const passed = skills.filter((s) => status[s.id] === 'pass')

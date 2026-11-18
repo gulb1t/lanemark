@@ -61,7 +61,7 @@ export function lessonHeadcount(cls: SwimClass, lessonId: string) {
   return { present, late, absent, marked: present + late + absent }
 }
 
-/** A swimmer passes a level only when every skill is passed (per the manual). */
+/** A swimmer passes a level only when every skill is passed. */
 export function passedLevel(enrollment: Enrollment, skills: Skill[]): boolean {
   return skills.length > 0 && skills.every((s) => enrollment.skills[s.id] === 'pass')
 }

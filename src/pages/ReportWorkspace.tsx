@@ -483,7 +483,7 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
         tour="report-comment"
         done={Boolean(e.comment.trim()) && !commentIssues.some((w) => w.level === 'warn')}
         hint={
-          mode === 'empty' ? 'Lanemark can write it from the skills above, in the report card manual’s own words.' : 'Edit it as much as you like. It saves as you type.'
+          mode === 'empty' ? 'Lanemark can write it from the skills above.' : 'Edit it as much as you like. It saves as you type.'
         }
       >
         {mode === 'empty' && !writingOwn ? (
@@ -571,13 +571,13 @@ function SwimmerReport({ cls, row, level, position, total }: { cls: SwimClass; r
   )
 }
 
-/** The manual's rules, shown as a short checklist once there's a comment. */
+/** The report card rules, shown as a short checklist once there's a comment. */
 function CommentChecks({ issues, hasComment }: { issues: ReturnType<typeof reportWarnings>; hasComment: boolean }) {
   if (!hasComment) return null
   if (!issues.length)
     return (
       <p className="mt-3 flex items-center gap-2 rounded-xl bg-good/[0.08] px-3 py-2 text-[13px] text-good">
-        <Check size={15} strokeWidth={3} /> Follows the manual: mentions two or more skills, and no attendance or behaviour.
+        <Check size={15} strokeWidth={3} /> Follows the rules: mentions two or more skills, and no attendance or behaviour.
       </p>
     )
   return (
@@ -628,7 +628,7 @@ function NextLevelStep({
           ? 'Registration for this program is based on age, so there’s nothing to choose.'
           : passed
             ? `${first} passed every skill, so they move up.`
-            : `${first} hasn’t passed every skill yet, so they repeat the level. That’s the manual’s rule.`
+            : `${first} hasn’t passed every skill yet, so they repeat the level.`
       }
     >
       {!level?.ageBased && (
@@ -665,7 +665,7 @@ function NextLevelStep({
       {advancing && (
         <p className="mt-3 flex items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/[0.08] px-3 py-2 text-[13px] leading-snug">
           <AlertTriangle size={15} className="mt-px shrink-0 text-warn" />
-          Moving up with {progressIncomplete} skill{progressIncomplete === 1 ? '' : 's'} not yet passed. The manual says every skill must be passed first.
+          Moving up with {progressIncomplete} skill{progressIncomplete === 1 ? '' : 's'} not yet passed. Every skill should be passed first.
         </p>
       )}
     </Step>
@@ -743,7 +743,7 @@ function PraiseChips({ cls, e, selected, onToggle }: { cls: SwimClass; e: Enroll
 function FocusChips({ cls, e, picks, onToggle }: { cls: SwimClass; e: Enrollment; picks: FocusPick[]; onToggle: (id: string, el: Element) => void }) {
   const [all, setAll] = useState(false)
   const commentable = cls.skills.filter((s) => availableElements(s).length)
-  if (!commentable.length) return <p className="text-[13px] text-dim">This class’s skills have no manual wording to use. Write the comment by hand.</p>
+  if (!commentable.length) return <p className="text-[13px] text-dim">This class’s skills have no coaching cues to use. Write the comment by hand.</p>
   const incomplete = commentable.filter((s) => e.skills[s.id] === 'incomplete')
   const picked = (s: Skill, el: Element) => picks.findIndex((f) => f.skillId === s.id && f.element === el)
   const shown = all ? commentable : commentable.filter((s) => e.skills[s.id] === 'incomplete' || picks.some((f) => f.skillId === s.id))

@@ -8,8 +8,8 @@ import { LevelCloud, LiveAttendance, LiveMatrix, LiveReport, LiveSearch } from '
 const TABS = [
   { id: 'skills', label: 'Skills', icon: ListChecks, title: 'Check off a whole class in one pass', body: 'Every level’s skills and distances come preloaded. Tap through the grid while they swim.', demo: <LiveMatrix />, extra: null },
   { id: 'attendance', label: 'Attendance', icon: CalendarCheck, title: 'Attendance in two taps', body: 'Tap to cycle present, late and absent, or mark the whole lesson at once.', demo: <LiveAttendance />, extra: <AttendanceStats /> },
-  { id: 'reports', label: 'Report cards', icon: FileText, title: 'Report cards that write themselves', body: 'Pick what they nailed and what to work on. The comment is drafted from the manual’s must-sees.', demo: <LiveReport />, extra: <ReportPicks /> },
-  { id: 'curriculum', label: 'Curriculum', icon: BookOpen, title: 'The whole manual, searchable', body: 'Find any skill across every Swim for Life level in a keystroke.', demo: <LiveSearch />, extra: <LevelCloud /> },
+  { id: 'reports', label: 'Report cards', icon: FileText, title: 'Report cards that write themselves', body: 'Pick what they nailed and what to work on. The comment is drafted from each skill’s coaching cues.', demo: <LiveReport />, extra: <ReportPicks /> },
+  { id: 'curriculum', label: 'Curriculum', icon: BookOpen, title: 'Every level, searchable', body: 'Find any skill across every Swim for Life level in a keystroke.', demo: <LiveSearch />, extra: <LevelCloud /> },
 ] as const
 
 const CLASSES = [

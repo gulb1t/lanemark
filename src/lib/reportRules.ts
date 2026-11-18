@@ -3,7 +3,7 @@ import { plainSkillName, skillPhrase, skillWords } from './report.ts'
 import { passedLevel, skillProgress } from './stats.ts'
 
 /**
- * Checks a report card against the report card guidelines:
+ * Checks a report card against the usual report card rules:
  *  - comment on at least two items,
  *  - never mention attendance or behaviour,
  *  - a swimmer passes a level only when every item is passed.
@@ -11,12 +11,12 @@ import { passedLevel, skillProgress } from './stats.ts'
 
 export interface ReportWarning {
   id: string
-  /** 'warn' breaks a rule in the manual; 'info' is worth a look but fine to print. */
+  /** 'warn' breaks a rule; 'info' is worth a look but fine to print. */
   level: 'warn' | 'info'
   text: string
 }
 
-// Words that signal attendance or behaviour. "focus" and "attention" are left out on purpose: the manual's own
+// Words that signal attendance or behaviour. "focus" and "attention" are left out on purpose: the comment
 // templates use them for skills ("be sure to focus on…").
 const CONDUCT =
   /\b(attend(?:ance|ed|ing)?|absen(?:t|ce|ces)|missed (?:a |some |several |many )?(?:class|classes|lesson|lessons)|tard(?:y|iness)|late to|behaviou?r(?:al|s)?|misbehav\w*|disruptive|disrupting|rude(?:ness)?|attitude|listening|did not listen|didn’t listen|horsing around|goofing)\b/i

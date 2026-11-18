@@ -23,7 +23,7 @@ describe('report card rules', () => {
   it('flags attendance and behaviour', () => {
     expect(ids(enrol({ comment: 'Your front crawl and back crawl improved, but you missed several lessons.' }))).toContain('conduct')
     expect(ids(enrol({ comment: 'Front crawl and back crawl: great behaviour in the water.' }))).toContain('conduct')
-    // The manual's own wording is fine.
+    // The templates' own wording is fine.
     expect(ids(enrol({ comment: 'For your front crawl, be sure to focus on your arms. For your back crawl, pay attention to your kick.' }))).not.toContain('conduct')
   })
 

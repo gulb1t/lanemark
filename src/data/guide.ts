@@ -51,7 +51,7 @@ export const GUIDE: GuideSection[] = [
         shot: 'new-class',
         steps: [
           'Press **New** at the top of the screen, then **New class**. (On a phone, press **New** next to your classes on the home screen.)',
-          'Pick the **level**, for example Swimmer 3. Its skills from the Swim for Life manual are loaded in automatically.',
+          'Pick the **level**, for example Swimmer 3. Its Swim for Life skills are loaded in automatically.',
           'Add the **session** (like Fall 2026) and the **day and time**. The class name fills itself in.',
           'Choose the **number of lessons**, then press **Create class**.',
         ],
@@ -107,7 +107,7 @@ export const GUIDE: GuideSection[] = [
           '**One swimmer** shows a single swimmer with a **Passed** and a **Not yet** button for each skill. It’s easier on a phone.',
           'When a swimmer passes every skill, Lanemark celebrates and their report card switches to the passing wording.',
         ],
-        tips: ['Tap a skill’s name in the One swimmer view to see what the manual says to look for.'],
+        tips: ['Tap a skill’s name in the One swimmer view to see what to look for.'],
         tryIt: 'skills',
       },
       {
@@ -129,7 +129,7 @@ export const GUIDE: GuideSection[] = [
   {
     id: 'reports',
     title: 'Report cards',
-    intro: 'At the end of the session. Lanemark writes the comments from the manual; you check them.',
+    intro: 'At the end of the session. Lanemark drafts the comments; you check them.',
     topics: [
       {
         id: 'write-reports',
@@ -139,7 +139,7 @@ export const GUIDE: GuideSection[] = [
         steps: [
           'Open the class, go to the **Report cards** tab and press **Start writing**.',
           '**Step 1, skills:** tap **Passed** or **Not yet** for each skill. (Already done in the Skills tab? It’s filled in here too.)',
-          '**Step 2, the comment:** press **Write it for me**. Lanemark writes it from the skills, in the report card manual’s own words. Read it and change anything you like.',
+          '**Step 2, the comment:** press **Write it for me**. Lanemark writes it from the skills and their coaching cues. Read it and change anything you like.',
           'Want it to praise something else, or mention different things to work on? Press **Change what it says** and pick.',
           '**Step 3, next level:** already filled in. A swimmer moves up only when every skill is passed.',
           'Press **Next** to go to the next swimmer. Everything saves as you go.',
@@ -166,14 +166,14 @@ export const GUIDE: GuideSection[] = [
       {
         id: 'manual-rules',
         title: 'Report card rules',
-        summary: 'What the report card manual asks for, and how Lanemark helps.',
+        summary: 'What a good report card needs, and how Lanemark helps.',
         steps: [
           'Comment on **at least two** skills. Lanemark warns you if a comment names fewer.',
           'Never mention **attendance or behaviour**. Lanemark flags words like “absent” or “listening”.',
           'A swimmer passes a level only when **every** skill is passed. Otherwise they register in the same level again.',
           'Keep it positive and specific: something they did well, then what to work on next.',
         ],
-        tips: ['A green “Follows the manual” note under the comment means it meets these rules.'],
+        tips: ['A green “Follows the rules” note under the comment means it meets these rules.'],
       },
     ],
   },

@@ -3,7 +3,7 @@ import { Device, IS_APP } from '../native/platform'
 import type { Enrollment, SwimClass } from '../types'
 import { passedLevel } from './stats'
 
-/** Name of the level a swimmer should register in next, per the manual's rules. */
+/** Name of the level a swimmer should register in next, per the report card rules. */
 export function nextLevelLabel(cls: SwimClass, e: Enrollment): string {
   const level = getLevel(cls.levelId)
   if (level?.ageBased) return 'Registration is based on age'

@@ -26,8 +26,8 @@ The demo keeps everything in your browser.
 - **Attendance and lessons.** Mark each swimmer with one tap: here, late, absent. Plan what each lesson covers, and
   fill in a season's dates in one go.
 - **Skills.** A grid of swimmers against skills, or one swimmer at a time on a phone.
-- **Report cards.** Tick the skills, get a draft comment written from the manual's wording, then check it against
-  the rules and print letter-size cards for a swimmer or the whole class.
+- **Report cards.** Tick the skills, get a draft comment built from each skill's coaching cues, then check it
+  against the usual report card rules and print letter-size cards for a swimmer or the whole class.
 - **Pools.** Instructors join their facility with an invite code. Supervisors see every class: what's behind, why,
   and how caught up each instructor is. They can open any class read-only.
 - **Works offline.** Edits save on the device first and sync when there's a connection. A service worker keeps the
@@ -116,8 +116,8 @@ machine, `./ship.sh` (or `ship` on Windows) pulls, checks, commits, pushes and d
 
 ## About the curriculum
 
-The levels, skills and distances follow the Lifesaving Society's Swim for Life *At-a-Glance* guides. The report card
-wording follows a municipal report card writing manual. Lanemark isn't affiliated with or endorsed by the Lifesaving
+The levels, skills and distances follow the Lifesaving Society's Swim for Life *At-a-Glance* guides. The coaching
+cues and report card wording are Lanemark's own. Lanemark isn't affiliated with or endorsed by the Lifesaving
 Society. "Swim for Life" and the level names are theirs.
 
 ## How it was built

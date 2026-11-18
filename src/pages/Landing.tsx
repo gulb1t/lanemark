@@ -304,13 +304,13 @@ function Audience() {
       icon: <Waves size={20} />,
       who: 'For instructors',
       title: 'Thirty seconds on deck, not thirty minutes at home.',
-      points: ['Attendance in two taps, even with no Wi-Fi', 'Every Swim for Life level, skill and distance preloaded', 'Report card comments built from the manual’s own wording', 'Big targets that work with wet hands'],
+      points: ['Attendance in two taps, even with no Wi-Fi', 'Every Swim for Life level, skill and distance preloaded', 'Report card comments drafted from the skills you tick', 'Big targets that work with wet hands'],
     },
     {
       icon: <Building2 size={20} />,
       who: 'For supervisors and cities',
       title: 'Every instructor’s cards look and read the same.',
-      points: ['One overview of every class: attendance, skills and report cards', 'The manual’s rules checked before a card prints', 'Letter-size cards with the next level already filled in', 'Runs on your own server, in the region you choose'],
+      points: ['One overview of every class: attendance, skills and report cards', 'Report card rules checked before a card prints', 'Letter-size cards with the next level already filled in', 'Runs on your own server, in the region you choose'],
     },
   ]
   return (
@@ -363,8 +363,8 @@ const STORY = [
   },
   {
     when: 'Last week of the session',
-    title: 'Report cards that follow the manual',
-    body: 'Tap what they nailed and what to work on. The comment writes itself, and Lanemark flags anything the manual doesn’t allow.',
+    title: 'Report cards that follow the rules',
+    body: 'Tap what they nailed and what to work on. The comment writes itself, and Lanemark flags anything a report card shouldn’t say.',
     visual: 'rules',
   },
   {
@@ -540,10 +540,10 @@ const FAQ = [
   ['Does it work without Wi-Fi?', 'Yes. Once you’ve opened Lanemark on a device, the app itself is kept on it, so it opens with no signal. Every edit saves on the device first and syncs when you’re back online. The sync pill in the top bar always shows where things stand.'],
   ['Where is swimmer data stored?', 'On the server and database whoever runs Lanemark chooses (a city can host it itself, in Canada), plus an offline copy on the instructor’s own device. Swimmer records never go to a third party. The privacy page has the details.'],
   ['Can a supervisor see every class?', 'Yes, with a pool. Instructors join with an invite code, and supervisors get an overview of every class’s attendance, skills assessed and report cards done, plus rankings of which classes and instructors are most caught up. They can open any class to check attendance, skill marks and comments, or print its report cards, but only the instructor can change it. Swimmers are never ranked.'],
-  ['Does it follow the report card manual?', 'Comments are built from the manual’s passing and not-yet-passing templates and must-sees, incomplete items are highlighted like the paper card, and Lanemark warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
+  ['Does it follow the usual report card rules?', 'Comments follow a passing or not-yet-passing pattern built from each skill’s coaching cues, incomplete items are highlighted like the paper card, and Lanemark warns when a comment names fewer than two items, mentions attendance or behaviour, or moves up a swimmer who hasn’t passed every item.'],
   ['Which programs does it cover?', `The Lifesaving Society’s Swim for Life levels (Parent & Tot, Preschool 1–5, Swimmer 1–6), Swim Patrol (Rookie, Ranger, Star), Bronze Star and Teen/Adult 1–3: ${LEVELS.length} levels in total.`],
   ['Can I change the skills?', 'Every class gets its own editable copy of its level’s skills. Rename, reorder, add or remove them without touching the presets.'],
-  ['How do report cards work?', 'Lanemark follows the manual’s passing and failing templates. Pick what the swimmer excelled at and what to work on, and it writes the comment from the official must-sees. Edit freely, then print the whole class.'],
+  ['How do report cards work?', 'Pick what the swimmer excelled at and what to work on, and Lanemark writes a passing or not-yet-passing comment from each skill’s coaching cues. Edit freely, then print the whole class.'],
   ['Is there a phone app?', 'You can add Lanemark to your home screen today and it runs like an app, offline included. An Android app with fingerprint unlock is being tested before it goes on the Play Store. An iPhone app is planned.'],
 ]
 

@@ -84,7 +84,6 @@ Device plugins need Swift versions (Keychain + Face ID, and UIPrintInteractionCo
 
 ## Curriculum sources
 
-- report card writing guide (item names, must-see comments, report templates)
 - Lifesaving Society Swim for Life *At-a-Glance* guides (skills and distances)
 
 Levels are presets: every class gets its own editable copy of its skills.

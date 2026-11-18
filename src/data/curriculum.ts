@@ -2,13 +2,12 @@ import type { LevelDef, ProgramId, Skill } from '../types.ts'
 import { MUST_SEES } from './mustSees.ts'
 
 /**
- * Preset levels for the Lifesaving Society Swim for Life program .
+ * Preset levels for the Lifesaving Society Swim for Life program.
  *
  * Sources:
- *  - report card writing guide (2025): level structure, item names, must-see comments.
  *  - Lifesaving Society Swim for Life At-a-Glance guides (Preschool, Swimmer, Adult): official skills and distances.
  *  - Swim Patrol distances follow the Lifesaving Society program overview.
- * Items the manual splits (e.g. "Float on front" / "Float on back") are kept as separate skills so each can be
+ * Paired items (e.g. "Float on front" / "Float on back") are kept as separate skills so each can be
  * marked and commented on individually. Everything here is a preset: classes get their own editable copy.
  */
 

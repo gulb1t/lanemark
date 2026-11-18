@@ -173,7 +173,7 @@ const SECTIONS: { id: string; title: string; icon: typeof Eye; body: ReactNode }
       <ul>
         <li>Turn on two-factor authentication in Settings → Security.</li>
         <li>Use a phone passcode, and sign out of shared deck tablets when you’re done.</li>
-        <li>Leave attendance and behaviour out of comments, as the report card manual asks.</li>
+        <li>Leave attendance and behaviour out of comments, as report cards should.</li>
       </ul>
     ),
   },

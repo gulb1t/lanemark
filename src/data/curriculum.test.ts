@@ -21,7 +21,7 @@ describe('curriculum data', () => {
     }
   })
 
-  it('never leaks the manual’s [add comment…] placeholders into must-sees', () => {
+  it('keeps every must-see a finished sentence', () => {
     for (const [key, ms] of Object.entries(MUST_SEES)) {
       for (const text of Object.values(ms)) {
         expect(text, key).not.toMatch(/\[|\]/)

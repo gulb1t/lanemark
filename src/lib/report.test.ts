@@ -32,11 +32,11 @@ describe('generateComment', () => {
       skills: sw3,
     })
     expect(text).toMatch(/^Good effort this session, Maya\./)
-    expect(text).toContain('When doing your front crawl, ensure you are blowing bubbles')
-    expect(text).toContain('Also, for your back crawl, remember to keep your body on your back.')
+    expect(text).toContain('When doing your front crawl, blow bubbles while your face is in')
+    expect(text).toContain('Also, for your back crawl, keep your body on its back the whole way.')
     expect(text).toContain('Great job with your back whip kick!')
     expect(text).toMatch(/Best of luck next session\. You were a pleasure to teach!$/)
-    // The manual says never to write "Nice try" / "better luck next time".
+    // Report cards never say "Nice try" / "better luck next time".
     expect(text).not.toMatch(/nice try|better luck/i)
   })
 
@@ -114,7 +114,7 @@ describe('wording for every skill', () => {
   it('says "When treading water" rather than "When doing your treading"', () => {
     const tread = find('sw3', 'Tread water')
     const text = generateComment({ name: 'Maya', passed: false, focus: [{ skillId: tread.id, element: 'arms' }], skills: sw('sw3') })
-    expect(text).toContain('When treading water, make sure your arms')
+    expect(text).toContain('When treading water, keep your arms')
     expect(text).not.toContain('doing your treading')
   })
 

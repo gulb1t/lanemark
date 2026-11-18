@@ -33,7 +33,7 @@ const PLANS: Plan[] = [
     items: [
       ['Every feature in the app'],
       ['Up to 5,000 classes and swimmers'],
-      ['Report cards drafted from the manual, printed on letter paper'],
+      ['Report cards drafted from the skills, printed on letter paper'],
       ['Works offline and syncs across your devices'],
       ['Two-factor sign-in and device management'],
     ],
