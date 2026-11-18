@@ -120,11 +120,10 @@ The levels, skills and distances follow the Lifesaving Society's Swim for Life *
 cues and report card wording are Lanemark's own. Lanemark isn't affiliated with or endorsed by the Lifesaving
 Society. "Swim for Life" and the level names are theirs.
 
-## How it was built
+## About
 
-I designed Lanemark around how lessons actually run on deck. I used AI coding tools (Claude Code) to help write and
-review a lot of the code along the way. The decisions about what it does, how it looks and what's good enough to ship
-were mine, and I tested it on my own phone as it went.
+Made by [gulb1t](https://github.com/gulb1t). I built Lanemark because keeping a class on paper and then typing up
+report cards at the end of the session took way too long. Claude Code helped with parts of the code.
 
 ## License
 
