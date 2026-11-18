@@ -174,7 +174,7 @@ function Panel({ title, description, children, tone }: { title: string; descript
   )
 }
 
-// ── This phone (the Android app only) ────────────────────────────────
+// This phone (the Android app only)
 function PhoneSection() {
   const biometrics = useLock((s) => s.biometrics)
   const available = useLock((s) => s.biometrics !== 'none' || s.screenLock)
@@ -251,7 +251,7 @@ function PhoneSection() {
   )
 }
 
-// ── Account ──────────────────────────────────────────────────────────
+// Account
 function AccountSection() {
   const user = useSession((s) => s.user)!
   const [name, setName] = useState(user.name)
@@ -494,7 +494,7 @@ function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   )
 }
 
-// ── Security ─────────────────────────────────────────────────────────
+// Security
 function SecuritySection() {
   const user = useSession((s) => s.user)!
   return (
@@ -976,7 +976,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
   )
 }
 
-// ── Devices ──────────────────────────────────────────────────────────
+// Devices
 interface SessionRow {
   id: string
   current: boolean
@@ -1061,7 +1061,7 @@ function DevicesSection() {
   )
 }
 
-// ── Data ─────────────────────────────────────────────────────────────
+// Data
 function DataSection() {
   const status = useSession((s) => s.status)
   const sync = useSync()
@@ -1174,7 +1174,7 @@ function DataSection() {
   )
 }
 
-// ── Appearance ───────────────────────────────────────────────────────
+// Appearance
 function AppearanceSection() {
   const pref = useTheme((s) => s.pref)
   const options: { value: ThemePref; label: string; icon: ReactNode }[] = [

@@ -6,7 +6,7 @@ const text = (max: number) => z.string().max(max)
 const boundedRecord = <T extends z.ZodType>(value: T, max: number) =>
   z.record(z.string().max(80), value).refine((r) => Object.keys(r).length <= max, `At most ${max} entries`)
 
-// ── Auth ────────────────────────────────────────────────────────────
+// Auth
 export const Email = z
   .string()
   .trim()
@@ -61,7 +61,7 @@ export const ForgotBody = z.object({ email: Email })
 export const ResetBody = TokenBody.extend({ password: z.string().max(PASSWORD_MAX) })
 export const ChangeEmailBody = z.object({ email: Email, password: z.string().min(1).max(PASSWORD_MAX), code: z.string().trim().max(20).optional() })
 
-// ── Assistant ───────────────────────────────────────────────────────
+// Assistant
 export const AssistantBody = z.object({
   messages: z
     .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1).max(2000) }))
@@ -90,7 +90,7 @@ export const AssistantBody = z.object({
   }),
 })
 
-// ── Synced documents (mirror src/types.ts) ──────────────────────────
+// Synced documents (mirror src/types.ts)
 const MustSees = z
   .object({ arms: text(1000), legs: text(1000), breathing: text(1000), body: text(1000), note: text(1000) })
   .partial()

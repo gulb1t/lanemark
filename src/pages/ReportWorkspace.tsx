@@ -313,7 +313,7 @@ function PaperPreview({ children }: { children: ReactNode }) {
   )
 }
 
-// ── One swimmer ─────────────────────────────────────────────────────
+// One swimmer
 
 function Step({ n, title, hint, done, children, tour }: { n: number; title: string; hint: ReactNode; done: boolean; children: ReactNode; tour?: string }) {
   return (

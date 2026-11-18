@@ -82,7 +82,7 @@ export function otpauthUrl(secret: string, account: string, issuer = 'Lanemark')
   return `otpauth://totp/${label}?${params}`
 }
 
-// ── Recovery codes ─────────────────────────────────────────────────
+// Recovery codes
 const CODE_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789' // no look-alikes (0/o, 1/l/i)
 
 export function normalizeRecoveryCode(code: string): string {

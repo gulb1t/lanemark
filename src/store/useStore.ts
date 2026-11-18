@@ -118,7 +118,7 @@ export const useStore = create<State>()((set, get) => ({
   swimmers: [],
   classes: [],
 
-  // ── classes ────────────────────────────────────────────────
+  // Classes
   addClass: ({ levelId, name, session, schedule, lessonCount }) => {
     const id = uid()
     const count = Math.min(MAX_LESSONS, Math.max(1, Math.round(lessonCount) || DEFAULT_LESSONS))
@@ -157,7 +157,7 @@ export const useStore = create<State>()((set, get) => ({
     return copyId
   },
 
-  // ── lessons ────────────────────────────────────────────────
+  // Lessons
   setLessonCount: (classId, count) =>
     set((s) => ({
       classes: mapClass(s.classes, classId, (c) => {
@@ -192,7 +192,7 @@ export const useStore = create<State>()((set, get) => ({
       })),
     })),
 
-  // ── skills ─────────────────────────────────────────────────
+  // Skills
   addSkill: (classId, { name, category }) =>
     set((s) => ({
       classes: mapClass(s.classes, classId, (c) => {
@@ -260,7 +260,7 @@ export const useStore = create<State>()((set, get) => ({
       }),
     })),
 
-  // ── swimmers & roster ──────────────────────────────────────
+  // Swimmers & roster
   addSwimmer: ({ name, notes }, classId) => {
     const id = uid()
     const swimmer: Swimmer = { id, name: name.trim() || 'New swimmer', notes: notes ?? '', createdAt: Date.now() }
@@ -295,7 +295,7 @@ export const useStore = create<State>()((set, get) => ({
       })),
     })),
 
-  // ── records ────────────────────────────────────────────────
+  // Records
   setAttendance: (classId, swimmerId, lessonId, status) =>
     set((s) => ({
       classes: mapClass(s.classes, classId, (c) =>
@@ -322,7 +322,7 @@ export const useStore = create<State>()((set, get) => ({
       classes: mapClass(s.classes, classId, (c) => mapEnrollment(c, swimmerId, (e) => ({ ...e, nextLevelId: levelId }))),
     })),
 
-  // ── data ───────────────────────────────────────────────────
+  // Data
   hydrate: (data) => set({ swimmers: data.swimmers, classes: [...data.classes].sort(newestFirst) }),
   applyRemote: (docs) =>
     set((s) => {

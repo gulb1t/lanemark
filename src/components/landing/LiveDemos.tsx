@@ -22,7 +22,7 @@ function useTicker(ms: number) {
 
 const KIDS = ['Maya Chen', 'Noah Patel', 'Sofia Rossi', 'Ethan Kim', 'Amara Okafor']
 
-// ── Hero preview: skill matrix that fills itself in ──────────────────
+// Hero preview: skill matrix that fills itself in
 const SKILLS = LEVEL_BY_ID.sw3.skills.filter((s) => s.category === 'Movement & Swimming' || s.category === 'Surface Support').slice(0, 6)
 
 export function LiveMatrix() {
@@ -81,7 +81,7 @@ function Row({ name, r, step, cols }: { name: string; r: number; step: number; c
   )
 }
 
-// ── Attendance ───────────────────────────────────────────────────────
+// Attendance
 const CYCLE = ['present', 'present', 'late', 'present', 'absent', 'present'] as const
 export function LiveAttendance() {
   const { ref, n } = useTicker(700)
@@ -115,7 +115,7 @@ export function LiveAttendance() {
   )
 }
 
-// ── Report card typewriter ───────────────────────────────────────────
+// Report card typewriter
 // Written by the real generator, so the landing page shows exactly what the app produces.
 const REPORT = (() => {
   const skills = LEVEL_BY_ID.sw3.skills
@@ -149,7 +149,7 @@ export function LiveReport() {
   )
 }
 
-// ── Offline sync ─────────────────────────────────────────────────────
+// Offline sync
 export function LiveSync() {
   const { ref, n } = useTicker(1400)
   const phase = n % 4
@@ -192,7 +192,7 @@ export function LiveSync() {
   )
 }
 
-// ── Lesson plan ──────────────────────────────────────────────────────
+// Lesson plan
 const LESSONS = [
   ['Sep 9', 'Entries and floats'],
   ['Sep 16', 'Front glide, flutter kick'],
@@ -217,7 +217,7 @@ export function LiveLessons() {
   )
 }
 
-// ── 2FA ──────────────────────────────────────────────────────────────
+// 2FA
 export function LiveTwoFactor() {
   const { ref, n } = useTicker(900)
   const codes = ['482 913', '107 355', '936 028', '551 764']
@@ -247,7 +247,7 @@ export function LiveTwoFactor() {
   )
 }
 
-// ── Curriculum search ────────────────────────────────────────────────
+// Curriculum search
 const QUERY = 'front crawl 50m'
 const HITS = LEVELS.flatMap((l) => l.skills.filter((s) => /front crawl, 50 m/i.test(s.name)).map((s) => ({ l, s }))).slice(0, 3)
 export function LiveSearch() {
@@ -284,7 +284,7 @@ export function LiveSearch() {
   )
 }
 
-// ── Levels ───────────────────────────────────────────────────────────
+// Levels
 export function LevelCloud() {
   return (
     <div className="flex flex-wrap gap-1.5">

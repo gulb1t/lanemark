@@ -33,5 +33,4 @@ describe('the data file after the rename', () => {
     expect(readFileSync(join(dir, 'lanemark.db'), 'utf8')).toBe('new')
     expect(existsSync(join(dir, 'swimtrack.db'))).toBe(true)
   })
-
 })

@@ -66,7 +66,7 @@ const FIT = 'Fitness'
 const WS = 'Water Smart'
 
 export const LEVELS: LevelDef[] = [
-  // ── Parent & Tot ────────────────────────────────────────────────
+  // Parent & Tot
   build(
     { id: 'pt1', program: 'parent-tot', name: 'Parent & Tot 1', short: 'PT1', ages: '4–12 months', minutes: 30, next: 'pt2', ageBased: true,
       blurb: 'Learn to enjoy the water together with a parent.' },
@@ -105,7 +105,7 @@ export const LEVELS: LevelDef[] = [
     ]],
   ),
 
-  // ── Preschool ───────────────────────────────────────────────────
+  // Preschool
   build(
     { id: 'ps1', program: 'preschool', name: 'Preschool 1', short: 'PS1', ages: '3–5 years', minutes: 30, next: 'ps2',
       blurb: 'Getting in and out, face in the water, assisted floats and glides.' },
@@ -199,7 +199,7 @@ export const LEVELS: LevelDef[] = [
     ],
   ),
 
-  // ── Swimmer 1–6 ─────────────────────────────────────────────────
+  // Swimmer 1–6
   build(
     { id: 'sw1', program: 'swimmer', name: 'Swimmer 1', short: 'SW1', ages: '5+ years', minutes: 30, next: 'sw2',
       blurb: 'Comfort in the water: jumps, breath control, floats, glides and kicking.' },
@@ -329,7 +329,7 @@ export const LEVELS: LevelDef[] = [
     ],
   ),
 
-  // ── Swim Patrol ─────────────────────────────────────────────────
+  // Swim Patrol
   build(
     { id: 'rookie', program: 'patrol', name: 'Swimmer 7: Rookie Patrol', short: 'SW7', ages: 'Swim Patrol', minutes: 60, next: 'ranger',
       blurb: '50 m strokes, 100 m in 3 minutes, and first aid basics.' },
@@ -408,7 +408,7 @@ export const LEVELS: LevelDef[] = [
     ],
   ),
 
-  // ── Bronze ──────────────────────────────────────────────────────
+  // Bronze
   build(
     { id: 'bronze-star', program: 'bronze', name: 'Swimmer 10: Bronze Star', short: 'SW10', ages: 'Bronze', minutes: 60,
       blurb: 'Self rescue, 400 m endurance, obstacle swim and CPR.' },
@@ -430,7 +430,7 @@ export const LEVELS: LevelDef[] = [
     ],
   ),
 
-  // ── Teen / Adult ────────────────────────────────────────────────
+  // Teen / Adult
   build(
     { id: 'ta1', program: 'teen-adult', name: 'Teen / Adult 1', short: 'TA1', ages: 'Teens & adults', minutes: 45, next: 'ta2',
       blurb: 'Water confidence, floats, kicking and a 10–15 m swim on front and back.' },

@@ -136,7 +136,7 @@ export async function syncNow(): Promise<void> {
   if (inflight) await inflight
 }
 
-// ── internals ────────────────────────────────────────────────────────
+// Internals
 
 function onLocalChange(next: PersistedData, prev: PersistedData) {
   if (applyingRemote || !userId) return
@@ -249,7 +249,7 @@ function splitKey(key: Key): ['class' | 'swimmer', string] {
   return [key.slice(0, i) as 'class' | 'swimmer', key.slice(i + 1)]
 }
 
-// ── one-time import of data from the pre-account version ─────────────
+// One-time import of data from the pre-account version
 const LEGACY_KEY = 'lanemark:v1'
 
 export function readLegacyData(): PersistedData | null {

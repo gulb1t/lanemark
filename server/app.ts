@@ -112,7 +112,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
   const MFA_COOKIE = secure ? '__Host-st_mfa' : 'st_mfa'
   const TRUST_COOKIE = secure ? '__Host-st_trust' : 'st_trust'
 
-  // ── helpers ───────────────────────────────────────────────────────
+  // Helpers
   const fail = (c: Ctx, status: 400 | 401 | 403 | 404 | 409 | 413 | 415 | 429, code: string, message: string) =>
     c.json({ error: { code, message } }, status)
 
@@ -225,7 +225,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
 
   const secretOf = (enc: string) => decrypt(config.secretKey, enc)
 
-  // ── email ─────────────────────────────────────────────────────────
+  // Email
   /** Sends without making the request wait, so response times don't reveal whether an account exists. */
   const deliver = (mail: Mail) => void mailer.send(mail).catch((err) => console.error('[mail] delivery failed:', err))
 
@@ -288,7 +288,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return null
   }
 
-  // ── global middleware ─────────────────────────────────────────────
+  // Global middleware
   app.use(
     '*',
     secureHeaders({
@@ -375,7 +375,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     await next()
   }
 
-  // ── public ────────────────────────────────────────────────────────
+  // Public
   app.get('/api/health', (c) => c.json({ ok: true, db: repo.kind }))
 
   // Android checks this before letting the app open lanemark.fly.dev links (invites, email links). It lists the
@@ -587,7 +587,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ ok: true })
   })
 
-  // ── signed in ─────────────────────────────────────────────────────
+  // Signed in
   app.use('/api/me', requireUser)
   app.use('/api/account/*', requireUser)
   app.use('/api/sync', requireUser)
@@ -710,7 +710,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ ok: true })
   })
 
-  // ── two-factor ────────────────────────────────────────────────────
+  // Two-factor
   app.post('/api/account/2fa/setup', async (c) => {
     const data = await body(c, PasswordBody)
     if (data instanceof Response) return data
@@ -771,7 +771,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ recoveryCodes: codes })
   })
 
-  // ── sync ──────────────────────────────────────────────────────────
+  // Sync
   /**
    * One round trip: apply the client's queued changes, then return every document changed after the client's
    * cursor (including tombstones). Last write wins.
@@ -808,7 +808,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ cursor, docs })
   })
 
-  // ── pools (supervisor overview) ───────────────────────────────────
+  // Pools (supervisor overview)
   app.use('/api/pool', requireUser)
   app.use('/api/pool/*', requireUser)
 
@@ -1040,7 +1040,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     })
   })
 
-  // ── assistant ─────────────────────────────────────────────────────
+  // Assistant
   app.get('/api/assistant', (c) => c.json({ enabled: Boolean(config.ai.key) }))
 
   // Works signed in or in the demo. Limits per account (or address) plus a server-wide hourly cap on the AI key.
@@ -1064,7 +1064,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     }
   })
 
-  // ── pilot requests (pricing section) ───────────────────────────────
+  // Pilot requests (pricing section)
   app.get('/api/contact', (c) => c.json({ enabled: Boolean(config.contactEmail) }))
 
   // Emailed to the team, never stored. Nothing is sent back to the address in the form, so it can't be used to
@@ -1082,7 +1082,7 @@ export function createApp({ config, repo, limiter = new RateLimiter(), now = Dat
     return c.json({ ok: true })
   })
 
-  // ── development outbox ────────────────────────────────────────────
+  // Development outbox
   if (!config.production && 'list' in mailer) {
     const outbox = mailer as ReturnType<typeof outboxMailer>
     app.get('/api/dev/outbox', (c) => {

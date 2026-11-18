@@ -167,7 +167,7 @@ export function lockMessage(error: VaultError): string {
   }
 }
 
-// ── locking again after time away ────────────────────────────────────
+// Locking again after time away
 let awaySince = 0
 /** Call when the app goes to the background or comes back. `signedIn` gates it to real sessions. */
 export function onAppState(active: boolean, signedIn: boolean) {

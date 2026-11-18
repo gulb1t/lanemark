@@ -57,7 +57,7 @@ const red = paint('31')
 const yellow = paint('33')
 const cyan = paint('36')
 
-// ── arguments ───────────────────────────────────────────────────────
+// Arguments
 const args = process.argv.slice(2)
 const opts = { message: '', commit: true, quick: false, deploy: true, secrets: false, shots: false, dry: false }
 for (let i = 0; i < args.length; i++) {
@@ -75,7 +75,7 @@ for (let i = 0; i < args.length; i++) {
   else fail(`Unknown option: ${a}`, 'Run with --help to see the options.')
 }
 
-// ── helpers ─────────────────────────────────────────────────────────
+// Helpers
 const started = Date.now()
 let stepNo = 0
 function step(title) {
@@ -141,7 +141,7 @@ function findFly() {
   return null
 }
 
-// ── 0. can this computer ship? ──────────────────────────────────────
+// Can this computer ship?
 const major = Number(process.versions.node.split('.')[0])
 if (major < 24) fail(`Lanemark needs Node 24 or newer (this is ${process.versions.node}).`, 'Install it from https://nodejs.org and run this again.')
 if (read('git', ['--version']) === null) fail('Git isn’t installed.', 'Install it from https://git-scm.com and run this again.')
@@ -151,7 +151,7 @@ const branch = read('git', ['rev-parse', '--abbrev-ref', 'HEAD'])
 console.log(bold(`Shipping Lanemark`) + dim(`  ·  branch ${branch}  ·  ${new Date().toLocaleString()}`))
 if (opts.dry) note('Dry run: nothing will be committed, pushed or deployed.')
 
-// ── 1. pull ─────────────────────────────────────────────────────────
+// Pull
 step('Getting the latest from GitHub')
 const before = read('git', ['rev-parse', 'HEAD'])
 const upstream = read('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'])
@@ -164,7 +164,7 @@ else {
   ok(before === after ? 'Already up to date' : `Pulled ${read('git', ['rev-list', '--count', `${before}..${after}`])} new commit(s)`)
 }
 
-// ── 2. packages ─────────────────────────────────────────────────────
+// Packages
 step('Packages')
 const lockChanged = before && read('git', ['diff', '--name-only', before, 'HEAD', '--', 'package-lock.json'])
 if (!existsSync('node_modules') || lockChanged) {
@@ -172,7 +172,7 @@ if (!existsSync('node_modules') || lockChanged) {
   ok('Installed')
 } else ok('Nothing new to install')
 
-// ── 3. docs and screenshots ─────────────────────────────────────────
+// Docs and screenshots
 if (opts.shots) {
   step('Retaking the Help screenshots')
   const port = 5290 + Math.floor(Math.random() * 50)
@@ -200,7 +200,7 @@ step('Help guide (docs/GUIDE.md)')
 run(process.execPath, ['scripts/guide-md.ts'], { quiet: true })
 ok('Up to date with the Help page')
 
-// ── 4. checks ───────────────────────────────────────────────────────
+// Checks
 step(opts.quick ? 'Type-check and build (quick)' : 'Type-check, test, lint and build')
 run('npx', ['tsc', '-b'], { hint: 'Fix the type errors above, then ship again.' })
 ok('Types')
@@ -219,7 +219,7 @@ if (!opts.quick) {
 run('npx', ['vite', 'build', '--logLevel', 'warn'], { hint: 'The build failed (see above).' })
 ok('Built')
 
-// ── 5. commit and push ──────────────────────────────────────────────
+// Commit and push
 step('Saving to GitHub')
 const changes = read('git', ['status', '--porcelain', '--', '.'])
 if (changes && !opts.commit) warn('You have changes that won’t be committed (--no-commit). The live site gets them anyway, GitHub doesn’t.')
@@ -258,7 +258,7 @@ else {
   ok(`Pushed to GitHub (${upstream ?? `origin/${branch}`})`)
 }
 
-// ── 6. deploy ───────────────────────────────────────────────────────
+// Deploy
 if (!opts.deploy) {
   finish('Skipped deploying (--no-deploy).')
 } else {

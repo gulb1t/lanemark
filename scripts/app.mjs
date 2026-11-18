@@ -35,7 +35,7 @@ function fail(message, hint) {
   process.exit(1)
 }
 
-// ── find Java and the Android SDK ──────────────────────────────────────
+// Find Java and the Android SDK
 const home = homedir()
 const firstExisting = (paths) => paths.find((p) => p && existsSync(p))
 const javaHome = firstExisting([
@@ -83,7 +83,7 @@ function ask(question, { hidden = false } = {}) {
   })
 }
 
-// ── the release signing key ──────────────────────────────────────────
+// The release signing key
 if (mode === 'keystore') {
   const props = join(android, 'keystore.properties')
   const store = join(android, 'lanemark-release.jks')
@@ -117,7 +117,7 @@ if (mode === 'keystore') {
   process.exit(0)
 }
 
-// ── build ─────────────────────────────────────────────────────────────
+// Build
 if (!javaHome) fail('Java 21 wasn’t found.', 'Install Android Studio (it includes Java), or set JAVA_HOME.')
 if (!sdk) fail('The Android SDK wasn’t found.', 'Install Android Studio (it installs the SDK), or set ANDROID_HOME.')
 if (mode === 'release' && !existsSync(join(android, 'keystore.properties'))) fail('There’s no release key yet.', 'Run `npm run app:keystore` once first.')

@@ -61,7 +61,7 @@ function PageHeader({ pool, sub, actions }: { pool: Pool; sub: ReactNode; action
   )
 }
 
-// ── not in a pool ───────────────────────────────────────────────────
+// Not in a pool
 
 function NoPool() {
   const userId = useUserId()
@@ -164,7 +164,7 @@ function NoPool() {
   )
 }
 
-// ── instructor ──────────────────────────────────────────────────────
+// Instructor
 
 function InstructorView({ pool }: { pool: Pool }) {
   const userId = useUserId()
@@ -237,7 +237,7 @@ function InstructorView({ pool }: { pool: Pool }) {
   )
 }
 
-// ── supervisor ──────────────────────────────────────────────────────
+// Supervisor
 
 function SupervisorView({ pool }: { pool: Pool }) {
   const [params, setParams] = useSearchParams()

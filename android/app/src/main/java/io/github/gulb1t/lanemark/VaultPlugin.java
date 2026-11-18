@@ -57,7 +57,7 @@ public class VaultPlugin extends Plugin {
         return getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    // ── what the phone can do ────────────────────────────────────────
+    // What the phone can do
 
     private boolean can(int authenticators) {
         return BiometricManager.from(getContext()).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS;
@@ -81,7 +81,7 @@ public class VaultPlugin extends Plugin {
         call.resolve(res);
     }
 
-    // ── reading and writing ──────────────────────────────────────────
+    // Reading and writing
 
     @PluginMethod
     public void has(PluginCall call) {
@@ -174,7 +174,7 @@ public class VaultPlugin extends Plugin {
         call.resolve();
     }
 
-    // ── helpers ──────────────────────────────────────────────────────
+    // Helpers
 
     private void save(String key, String mode, Cipher cipher, String value) throws Exception {
         byte[] sealed = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
