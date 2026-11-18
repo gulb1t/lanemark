@@ -2,9 +2,8 @@ name: Lanemark Android
 
 on:
   push:
-    paths:
-      - 'Lanemark/**'
-      - '.github/workflows/lanemark-android.yml'
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
 
 jobs:
@@ -12,9 +11,6 @@ jobs:
     name: Build test APK
     # Pinned so a runner image change (ubuntu-latest moves to 26) can't silently break the Android SDK setup.
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: Lanemark
     steps:
       - uses: actions/checkout@v5
 
@@ -22,7 +18,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: Lanemark/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - uses: actions/setup-java@v5
         with:
@@ -48,5 +44,5 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: lanemark-test-apk
-          path: Lanemark/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
