@@ -90,14 +90,27 @@ async function browser(scheme) {
     })
   const run = async (expression) => (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result?.result?.value
   await send('Page.enable')
-  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 860, deviceScaleFactor: SCALE, mobile: false })
-  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: scheme }] })
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 1500, deviceScaleFactor: SCALE, mobile: false })
+  await send('Emulation.setEmulatedMedia', {
+    features: [
+      { name: 'prefers-color-scheme', value: scheme },
+      { name: 'prefers-reduced-motion', value: 'reduce' },
+    ],
+  })
   const go = async (url) => {
     await send('Page.navigate', { url })
     await sleep(2200)
     await run(`document.head.insertAdjacentHTML('beforeend', ${JSON.stringify(`<style>${HIDE}</style>`)})`)
   }
-  return { send, run, go, close: () => (ws.close(), stop()) }
+  /** Waits until nothing is animating (Motion's fades run as Web Animations, which the CSS above can't stop). */
+  const settle = async () => {
+    for (let i = 0; i < 40; i++) {
+      await sleep(150)
+      const busy = await run(`document.getAnimations().some((a) => a.playState === 'running')`)
+      if (!busy) return
+    }
+  }
+  return { send, run, go, settle, close: () => (ws.close(), stop()) }
 }
 
 const sizes = {}
@@ -123,11 +136,19 @@ for (const scheme of ['light', 'dark']) {
       await b.run(step)
       await sleep(700)
     }
-    await b.run('window.scrollTo(0, 0)')
-    await sleep(500)
-    const clip = await b.run(shot.area)
+    await b.settle()
+    // Steps like "Write it for me" scroll the page; shots are measured from the top.
+    await b.run(`document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0)`)
+    await sleep(300)
+    let clip = await b.run(shot.area)
     if (!clip) throw new Error(`Nothing to capture for ${shot.name}`)
-    const r = await b.send('Page.captureScreenshot', { format: 'webp', quality: 82, captureBeyondViewport: true, clip: { ...clip, scale: 1 } })
+    // Only what's on screen can be captured, so bring a low area into view and measure it again.
+    if (clip.y + clip.height > (await b.run('innerHeight'))) {
+      await b.run(`window.scrollTo(0, ${Math.max(0, clip.y - 16)})`)
+      await b.settle()
+      clip = await b.run(shot.area)
+    }
+    const r = await b.send('Page.captureScreenshot', { format: 'webp', quality: 82, captureBeyondViewport: false, clip: { ...clip, scale: 1 } })
     writeFileSync(`${OUT}/${shot.name}-${scheme}.webp`, Buffer.from(r.result.data, 'base64'))
     sizes[shot.name] = { width: Math.round(clip.width), height: Math.round(clip.height) }
     console.log(`${shot.name}-${scheme}.webp  ${sizes[shot.name].width}×${sizes[shot.name].height}`)
