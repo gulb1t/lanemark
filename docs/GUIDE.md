@@ -26,7 +26,7 @@ _Today’s classes, what’s left to do, and all your classes in one place._
 2. The **To do** list shows what’s left: attendance you missed, skills to check and report cards that are due. Tap an item to go straight there.
 3. Below that are **all your classes**. Tap one to open it.
 
-> 💡 The first time you open a page, a short tour points out the important parts. To see them again, go to **Help → Replay the tour**.
+> **Tip:** The first time you open a page, a short tour points out the important parts. To see them again, go to **Help → Replay the tour**.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/dashboard-dark.webp">
@@ -46,7 +46,7 @@ _Pick the level and Lanemark loads its skills for you._
 3. Add the **session** (like Fall 2026) and the **day and time**. The class name fills itself in.
 4. Choose the **number of lessons**, then press **Create class**.
 
-> 💡 Every class gets its own copy of the skills, so you can rename or add skills in one class without changing the others.
+> **Tip:** Every class gets its own copy of the skills, so you can rename or add skills in one class without changing the others.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/new-class-dark.webp">
@@ -66,9 +66,9 @@ _Add new swimmers, or put swimmers you already have into a class._
 3. **Tick** everyone you want in this class, then press **Add**. Nothing changes until you press it.
 4. Someone new? Press **New swimmer**, type their name and press **Add to class**.
 
-> 💡 To take a swimmer out of a class, press the person icon on their card. Lanemark asks first and tells you what will be removed.
+> **Tip:** To take a swimmer out of a class, press the person icon on their card. Lanemark asks first and tells you what will be removed.
 >
-> 💡 A swimmer can be in more than one class. Their profile shows every class they’re in.
+> **Tip:** A swimmer can be in more than one class. Their profile shows every class they’re in.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/add-swimmers-dark.webp">
@@ -92,9 +92,9 @@ _A few taps at the start of each lesson._
 3. Everyone else is here? Press **Mark the rest present**.
 4. When everyone is marked you’ll see **attendance done**, with a shortcut to check skills.
 
-> 💡 Tapped the wrong one? Just tap the right one.
+> **Tip:** Tapped the wrong one? Just tap the right one.
 >
-> 💡 Missed a lesson? Pick it from the row of lessons at the top, or the To do list will remind you.
+> **Tip:** Missed a lesson? Pick it from the row of lessons at the top, or the To do list will remind you.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/attendance-dark.webp">
@@ -114,7 +114,7 @@ _Mark each skill as passed or not yet, for the whole class or one swimmer at a t
 3. **One swimmer** shows a single swimmer with a **Passed** and a **Not yet** button for each skill. It’s easier on a phone.
 4. When a swimmer passes every skill, Lanemark celebrates and their report card switches to the passing wording.
 
-> 💡 Tap a skill’s name in the One swimmer view to see what the manual says to look for.
+> **Tip:** Tap a skill’s name in the One swimmer view to see what the manual says to look for.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/skills-dark.webp">
@@ -134,7 +134,7 @@ _A topic, date and notes for each lesson._
 3. Press **Fill dates**, pick the **first lesson** and how often it **repeats** (weekly for most sessions), then press **Fill dates** again. Every lesson gets its date.
 4. Use **+** and **–** to change how many lessons there are.
 
-> 💡 Lessons need dates for today’s class to show up on your home screen.
+> **Tip:** Lessons need dates for today’s class to show up on your home screen.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/lessons-dark.webp">
@@ -160,9 +160,9 @@ _One swimmer at a time, in three steps._
 5. **Step 3, next level:** already filled in. A swimmer moves up only when every skill is passed.
 6. Press **Next** to go to the next swimmer. Everything saves as you go.
 
-> 💡 A green check next to a step means it’s done. The bar at the bottom shows how many cards are finished.
+> **Tip:** A green check next to a step means it’s done. The bar at the bottom shows how many cards are finished.
 >
-> 💡 In a hurry? On the Report cards tab, **More → Write the missing comments** writes one for everyone who doesn’t have one. Read them before you print.
+> **Tip:** In a hurry? On the Report cards tab, **More → Write the missing comments** writes one for everyone who doesn’t have one. Read them before you print.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/report-card-dark.webp">
@@ -181,7 +181,7 @@ _Letter-size report cards, one per page, or a spreadsheet of the whole class._
 2. Press **Print**, then choose **one swimmer’s card** or the **whole class**.
 3. For records, go to the **Report cards** tab and press **More → Download as a spreadsheet**. It opens in Excel or Google Sheets.
 
-> 💡 In the print window, choose Letter paper and turn off headers and footers for the cleanest cards.
+> **Tip:** In the print window, choose Letter paper and turn off headers and footers for the cleanest cards.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../public/guide/preview-dark.webp">
@@ -201,7 +201,7 @@ _What the report card manual asks for, and how Lanemark helps._
 3. A swimmer passes a level only when **every** skill is passed. Otherwise they register in the same level again.
 4. Keep it positive and specific: something they did well, then what to work on next.
 
-> 💡 A green “Follows the manual” note under the comment means it meets these rules.
+> **Tip:** A green “Follows the manual” note under the comment means it meets these rules.
 
 ## Pools and supervisors
 
@@ -217,9 +217,9 @@ _For instructors. It takes one code._
 2. Open the link (or go to **Settings → Account → Join or start a pool** and type the code).
 3. Read what supervisors can see, then press **Join pool**.
 
-> 💡 Supervisors can see your classes, swimmers, attendance, skill marks and report card comments. They can’t change anything.
+> **Tip:** Supervisors can see your classes, swimmers, attendance, skill marks and report card comments. They can’t change anything.
 >
-> 💡 You can leave any time from the Pool tab. They stop seeing your classes straight away.
+> **Tip:** You can leave any time from the Pool tab. They stop seeing your classes straight away.
 
 <a id="supervise"></a>
 
@@ -254,7 +254,7 @@ _Everything saves on your device first._
 2. The little status pill at the top says **Saved**, **Saving** or **Offline**.
 3. When you’re back online, Lanemark syncs by itself, so your other devices catch up.
 
-> 💡 Open Lanemark once on each device while you have signal. After that it opens even with none.
+> **Tip:** Open Lanemark once on each device while you have signal. After that it opens even with none.
 
 <a id="mistakes"></a>
 

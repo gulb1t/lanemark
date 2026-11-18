@@ -1,7 +1,7 @@
 import { cloneSkills, LEVEL_BY_ID } from '../data/curriculum.ts'
 import { addDays, isoDate, parseIso } from './dates.ts'
 import { rng, seasonOf } from './demo.ts'
-import { classProgress } from './overview.ts'
+import { clamp, classProgress } from './overview.ts'
 import { draftComment } from './report.ts'
 import type { InstructorProgress, Pool, PoolMember } from '../store/usePool.ts'
 import type { AttendanceStatus, Enrollment, SkillStatus, Swimmer, SwimClass } from '../types.ts'
@@ -100,8 +100,6 @@ const COACHES: DemoCoach[] = [
     ],
   },
 ]
-
-const clamp = (n: number) => Math.min(1, Math.max(0, n))
 
 const FIRST = [
   'Aria',

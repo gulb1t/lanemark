@@ -253,6 +253,3 @@ export const GUIDE: GuideSection[] = [
     ],
   },
 ]
-
-/** Every topic, in order, with the section it belongs to. */
-export const ALL_TOPICS = GUIDE.flatMap((section) => section.topics.map((topic) => ({ section, topic })))

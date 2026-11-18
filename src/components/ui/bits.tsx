@@ -234,27 +234,6 @@ export function Kbd({ children }: { children: ReactNode }) {
   )
 }
 
-/** Words fade up out of a blur, one after another. */
-export function BlurText({ text, className = '', wordClassName = '', delay = 0 }: { text: string; className?: string; wordClassName?: string; delay?: number }) {
-  const words = text.split(' ')
-  return (
-    <span className={className}>
-      {words.map((w, i) => (
-        <motion.span
-          key={i}
-          className={`inline-block whitespace-pre ${wordClassName}`}
-          initial={{ opacity: 0, filter: 'blur(10px)', y: 12 }}
-          animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-          transition={{ duration: 0.7, delay: delay + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {w}
-          {i < words.length - 1 ? ' ' : ''}
-        </motion.span>
-      ))}
-    </span>
-  )
-}
-
 export function Spinner({ size = 16 }: { size?: number }) {
   return (
     <span

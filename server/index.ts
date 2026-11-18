@@ -17,7 +17,7 @@ const repo = config.mongoUri
   : openSqlite(dataFile(config.dataDir))
 
 if (config.production && config.mongoUri && !process.env.SECRET_KEY) {
-  console.warn('⚠  Set SECRET_KEY in production. Without it, 2FA secrets can’t be decrypted after the data folder is wiped.')
+  console.warn('Set SECRET_KEY in production. Without it, 2FA secrets can’t be decrypted after the data folder is wiped.')
 }
 
 const mailer = config.smtpUrl ? smtpMailer(config.smtpUrl, config.mailFrom) : outboxMailer()

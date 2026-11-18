@@ -68,7 +68,7 @@ export function classProgress(cls: SwimClass, today: string): ClassProgress {
   }
 }
 
-const clamp = (n: number) => Math.min(1, Math.max(0, n))
+export const clamp = (n: number) => Math.min(1, Math.max(0, n))
 
 /** 0–1: how far through its lessons the class is (past lessons, or lessons taught if that's more). */
 export function sessionProgress(p: ClassProgress): number {

@@ -51,21 +51,6 @@ export function useReducedMotion() {
   return system || lite
 }
 
-export function useOnline(): boolean {
-  return useSyncExternalStore(
-    (cb) => {
-      window.addEventListener('online', cb)
-      window.addEventListener('offline', cb)
-      return () => {
-        window.removeEventListener('online', cb)
-        window.removeEventListener('offline', cb)
-      }
-    },
-    () => navigator.onLine,
-    () => true,
-  )
-}
-
 /** Re-renders every `ms` so relative times ("2 min ago") stay fresh. */
 export function useNow(ms = 30_000): number {
   const [now, setNow] = useState(() => Date.now())

@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomInt } from 'node:crypto'
 
 /** URL-safe random token with `bytes` bytes of entropy. */
 export function randomToken(bytes = 32): string {
@@ -7,12 +7,6 @@ export function randomToken(bytes = 32): string {
 
 export function sha256(value: string): string {
   return createHash('sha256').update(value).digest('base64url')
-}
-
-export function safeEqual(a: string, b: string): boolean {
-  const x = Buffer.from(a)
-  const y = Buffer.from(b)
-  return x.length === y.length && timingSafeEqual(x, y)
 }
 
 /** AES-256-GCM. Output: v1.<iv>.<tag>.<ciphertext>, all base64url. */

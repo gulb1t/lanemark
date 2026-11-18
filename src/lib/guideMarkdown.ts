@@ -38,7 +38,7 @@ export function renderGuideMarkdown(guide: GuideSection[], shots: Shots): string
       t.steps.forEach((step, i) => out.push(`${i + 1}. ${step}`))
       if (t.tips?.length) {
         out.push('')
-        for (const tip of t.tips) out.push(`> 💡 ${tip}`, '>')
+        for (const tip of t.tips) out.push(`> **Tip:** ${tip}`, '>')
         out.pop()
       }
       if (t.shot && shots[t.shot]) out.push('', picture(t.shot, t.title, shots))
