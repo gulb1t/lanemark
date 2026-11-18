@@ -24,13 +24,17 @@ script also finds them in `~/Android/jdk-21` and the usual SDK folders.
 - **By file:** send `app-debug.apk` to the phone (Drive, email, cable) and open it. Android asks once to allow installs
   from that app.
 
-Every test APK is signed with the same shared test key (`android/app/debug.keystore`), wherever it's built, so a new
-one installs over the last. The release APK uses your own key: to switch between the two, uninstall first.
+Test APKs are signed with `android/app/debug.keystore` when that file exists, and with your computer's own Android
+debug key when it doesn't. The file is never committed: GitHub writes it from the `ANDROID_TEST_KEYSTORE` secret
+(the keystore, base64-encoded), so every APK built there installs over the last. A build signed with a different key
+won't install over it; uninstall first. The same goes for switching to the release APK.
 
 ### Without Android Studio
 
-Every push that changes `Lanemark/` builds the test APK on GitHub (the **Lanemark Android** workflow). Open the run
+Every push that changes the app builds the test APK on GitHub (the **Lanemark Android** workflow). Open the run
 under the repo's **Actions** tab and download `lanemark-test-apk` at the bottom: it's a zip with the APK inside.
+Without the `ANDROID_TEST_KEYSTORE` secret each run signs with a throwaway key, so you'd have to uninstall between
+builds.
 
 ## What's in it
 
@@ -62,8 +66,9 @@ Tests: `server/test/app-client.test.ts`. The app's origin runs at `https://local
 
 Pool invites (`/app/pool?code=…`) and the email links (`/verify-email`, `/reset-password`) open in the app when it's
 installed. Android checks `https://lanemark.fly.dev/.well-known/assetlinks.json`, which lists the certificates in
-`server/app-links.json`. That list holds this computer's debug key (for the test APK). `npm run app:keystore` adds the
-release key's fingerprint; ship the site afterwards.
+`server/app-links.json`. That list holds the test key's fingerprint (never a key that's public: anyone holding it
+could build an app that catches reset links). `npm run app:keystore` adds the release key's fingerprint; ship the
+site afterwards.
 
 ## Play Store (next)
 
