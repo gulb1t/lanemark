@@ -48,8 +48,8 @@ aren't delivered; they're only written to the server log, so set up email before
 
 3. Open `https://my-lanemark.fly.dev`. `fly logs` shows the server log.
 
-**Updating it later:** run `./ship.sh` (Windows: `ship`) from the project folder. It pulls, checks, commits,
-pushes, deploys and checks the live site in one go. See "Updating the live site" in the README for its options.
+**Updating it later:** push to `main` and GitHub deploys it (add a Fly deploy token as the `FLY_API_TOKEN`
+repository secret), or use `ship` from your own machine, below.
 
 **Backups:** `fly ssh sftp get /data/lanemark.db` downloads the whole database. Each instructor can also
 download their own data from Settings → Data → Backup.
@@ -97,3 +97,36 @@ don't come from a personal Gmail.
 
 Set `MONGODB_URI` (and optionally `MONGODB_DB`) and Lanemark uses Atlas instead of the `/data` folder. You then
 don't need a volume, and Atlas handles backups. Choose the Atlas region `ca-central-1` to keep the data in Canada.
+
+## Shipping from your own machine
+
+Once it's on Fly, `ship` does everything in order, and stops with a plain explanation if anything fails:
+
+1. Pulls the latest from GitHub.
+2. Installs packages if they changed.
+3. Regenerates the Markdown guide.
+4. Type-checks, tests, lints and builds.
+5. Commits your changes (it asks for a message) and pushes.
+6. Deploys to Fly and checks the live site is running the new build.
+
+```bash
+./ship.sh                      # Linux and macOS
+```
+
+```bat
+ship                           :: Windows (Command Prompt or PowerShell, in this folder)
+```
+
+It works from any folder, and there's nothing to add to your PATH (`npm run ship` works too). The options:
+
+| Option | What it does |
+|---|---|
+| `-m "what changed"` | Commit message, so it doesn't ask |
+| `--no-commit` | Leave local changes out of Git; push and deploy what's committed |
+| `--quick` | Skip tests and lint (still type-checks and builds) |
+| `--no-deploy` | Stop after pushing to GitHub |
+| `--secrets` | Also copy the email, assistant and MongoDB settings from `.env` to Fly. It never sends `APP_URL`, `SECRET_KEY` or other settings that only make sense on your computer, and never prints the values. |
+| `--shots` | Retake the Help screenshots first (needs Chrome or Chromium) |
+| `--dry-run` | Pull and check, then show what it would commit, push and deploy |
+
+It needs Node 24+, Git, and the [Fly command line tool](https://fly.io/docs/flyctl/install/). It signs you in to Fly the first time.
