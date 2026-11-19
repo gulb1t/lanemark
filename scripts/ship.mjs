@@ -9,7 +9,7 @@
  *   5. commit your changes and push them to GitHub
  *   6. deploy to Fly and check the live site is running this build
  *
- * Run it from anywhere:  ./ship.sh (Linux, macOS)  ·  ship.cmd (Windows)  ·  npm run ship -- [options]
+ * Run it with:  npm run ship -- [options]
  * It stops at the first thing that fails, and says what to do about it.
  */
 import { spawn, spawnSync } from 'node:child_process'
@@ -20,7 +20,7 @@ import { createInterface } from 'node:readline/promises'
 import { fileURLToPath } from 'node:url'
 
 const HELP = `
-Usage: ./ship.sh [options]        (Windows: ship [options])
+Usage: npm run ship -- [options]
 
 Pulls, checks, commits, pushes and deploys Lanemark in one go.
 
@@ -37,8 +37,8 @@ Options
   -h, --help             Show this
 
 Examples
-  ./ship.sh -m "fix: typo on the pricing page"
-  ./ship.sh --quick --no-deploy
+  npm run ship -- -m "fix: typo on the pricing page"
+  npm run ship -- --quick --no-deploy
 `
 
 // The settings worth copying to the live server. Everything else in .env (APP_URL, SECRET_KEY, PORT…) is about this

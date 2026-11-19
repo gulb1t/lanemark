@@ -1,3 +1,0 @@
-# Keep each script's line endings right on every system.
-*.sh text eol=lf
-*.cmd text eol=crlf

@@ -112,7 +112,7 @@ assistant only ever sees class summaries, never names. See `/privacy` in the app
 It's one Node process serving the API and the site, with a `Dockerfile` and `fly.toml` included. Pushing to `main`
 runs the checks and deploys to Fly once a `FLY_API_TOKEN` secret is set. Without it, the deploy job just skips.
 [docs/HOSTING.md](docs/HOSTING.md) covers Fly, Railway, email and MongoDB setup step by step. To deploy from your own
-machine, `./ship.sh` (or `ship` on Windows) pulls, checks, commits, pushes and deploys in one go.
+machine, `npm run ship` pulls, checks, commits, pushes and deploys in one go.
 
 ## About the curriculum
 

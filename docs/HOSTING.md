@@ -110,14 +110,11 @@ Once it's on Fly, `ship` does everything in order, and stops with a plain explan
 6. Deploys to Fly and checks the live site is running the new build.
 
 ```bash
-./ship.sh                      # Linux and macOS
+npm run ship
+npm run ship -- -m "what changed"   # options go after --
 ```
 
-```bat
-ship                           :: Windows (Command Prompt or PowerShell, in this folder)
-```
-
-It works from any folder, and there's nothing to add to your PATH (`npm run ship` works too). The options:
+The options:
 
 | Option | What it does |
 |---|---|

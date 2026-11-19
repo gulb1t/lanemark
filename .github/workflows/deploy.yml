@@ -1,6 +1,6 @@
 name: Lanemark deploy
 
-# Same as the last step of ./ship.sh, from GitHub: checks the code, deploys to Fly and confirms the live site answers.
+# Same as the last step of `npm run ship`, from GitHub: checks the code, deploys to Fly and confirms the live site answers.
 # Runs on every push to main (docs-only changes skipped), or by hand (Actions → Lanemark deploy → Run workflow).
 # Needs a Fly deploy token saved as the repository secret FLY_API_TOKEN; without it the run stops with a note.
 
