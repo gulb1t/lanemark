@@ -5,6 +5,7 @@ import { Splash } from './components/Splash'
 import { Overlays } from './components/ui/Overlays'
 import { guidePath, isGuideTarget } from './lib/guideLinks'
 import { useSpotlight } from './lib/hooks'
+import { pageMeta } from './lib/seo'
 import { AppLock } from './native/AppLock'
 import { useLock } from './native/lock'
 import { IS_APP } from './native/platform'
@@ -84,6 +85,7 @@ export default function App() {
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo({ top: 0 })
+    document.title = pageMeta(pathname).title
   }, [pathname])
 
   return (

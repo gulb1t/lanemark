@@ -9,6 +9,7 @@ import { openMongo } from './db/mongo.ts'
 import { openSqlite } from './db/sqlite.ts'
 import { dataFile } from './lib/dataFile.ts'
 import { outboxMailer, smtpMailer } from './lib/mailer.ts'
+import { renderShell, robotsTxt, sitemapXml } from '../src/lib/seo.ts'
 
 const config = loadConfig()
 
@@ -38,11 +39,17 @@ if (existsSync(join(config.staticDir, 'index.html'))) {
     '/assets/*',
     serveStatic({ root, onFound: (_path, c) => c.header('Cache-Control', 'public, max-age=31536000, immutable') }),
   )
-  // index.html must always be revalidated, or browsers keep running an old build after a deploy.
+  // index.html must always be revalidated, or browsers keep running an old build after a deploy. Each page gets its
+  // own title and description, and anything that isn't a public page is kept out of search results.
+  const origin = new URL(config.appUrl).origin
   const shell = (c: Context) => {
+    const page = renderShell(indexHtml, c.req.path, origin)
     c.header('Cache-Control', 'no-cache')
-    return c.html(indexHtml)
+    if (!page.index) c.header('X-Robots-Tag', 'noindex')
+    return c.html(page.html)
   }
+  app.get('/robots.txt', (c) => c.text(robotsTxt(origin)))
+  app.get('/sitemap.xml', (c) => c.body(sitemapXml(origin), 200, { 'Content-Type': 'application/xml; charset=utf-8' }))
   app.get('/', shell)
   app.get('/index.html', shell)
   // The service worker must be revalidated too, so new builds reach devices that are offline-capable.

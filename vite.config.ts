@@ -22,8 +22,9 @@ function serviceWorker(): Plugin {
     },
     generateBundle(_options, bundle) {
       const built = Object.keys(bundle).filter((f) => /\.(js|css|svg|png)$/.test(f) || /latin-(wght|400).*\.woff2$/.test(f))
-      // Files at the top of public/ only: guide screenshots in public/guide/ load when the Help page shows them.
-      const pub = readdirSync('public').filter((f) => f !== 'sw.js' && statSync(`public/${f}`).isFile())
+      // Files at the top of public/ only: guide screenshots in public/guide/ load when the Help page shows them, and
+      // og.png is only for link previews.
+      const pub = readdirSync('public').filter((f) => f !== 'sw.js' && f !== 'og.png' && statSync(`public/${f}`).isFile())
       const assets = [...built, ...pub].map((f) => `/${f}`)
       const version = createHash('sha256').update(assets.join()).digest('hex').slice(0, 12)
       const source = readFileSync('scripts/sw.template.js', 'utf8').replace("'__VERSION__'", JSON.stringify(version)).replace('__ASSETS__', JSON.stringify(assets))
